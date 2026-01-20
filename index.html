@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Pittsburgh Help Finder</title>
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#111a33cc;
+      --panel2:#0f1730cc;
+      --text:#eef3ff;
+      --muted:#a9b7e6;
+      --accent:#67e8f9;
+      --accent2:#a78bfa;
+      --warn:#fbbf24;
+      --good:#34d399;
+      --meh:#fbbf24;
+      --bad:#fb7185;
+      --stroke:#26335d;
+      --shadow: 0 12px 34px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius2:14px;
+      --maxw: 920px;
+      --tap: 52px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: radial-gradient(1200px 900px at 15% 5%, rgba(103,232,249,.18), transparent 60%),
+                  radial-gradient(1000px 800px at 80% 20%, rgba(167,139,250,.18), transparent 62%),
+                  radial-gradient(1200px 1000px at 40% 95%, rgba(251,191,36,.10), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    .wrap{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 18px 14px 40px;
+    }
+
+    /* ===== Hope Banner Animation ===== */
+    .hope-banner{
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 26px;
+      padding: 18px 16px 16px;
+      background: linear-gradient(135deg, rgba(17,26,51,.65), rgba(15,23,48,.65));
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .hope-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .hope-title h1{
+      margin:0;
+      font-size: 1.28rem;
+      letter-spacing: .2px;
+      line-height: 1.2;
+    }
+    .hope-title p{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.35;
+    }
+
+    .badge{
+      flex:0 0 auto;
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: rgba(238,243,255,.92);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+
+    .aurora{
+      position:absolute;
+      inset:-40px;
+      background:
+        radial-gradient(520px 280px at 12% 20%, rgba(103,232,249,.28), transparent 60%),
+        radial-gradient(460px 240px at 88% 25%, rgba(167,139,250,.26), transparent 58%),
+        radial-gradient(520px 260px at 40% 90%, rgba(251,191,36,.18), transparent 58%);
+      filter: blur(18px);
+      opacity: .9;
+      animation: drift 11s ease-in-out infinite alternate;
+      pointer-events:none;
+    }
+
+    @keyframes drift{
+      from{ transform: translate3d(-18px, -8px, 0) scale(1.04); }
+      to  { transform: translate3d(18px, 10px, 0) scale(1.06); }
+    }
+
+    .lights{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.85;
+      mask-image: radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+      -webkit-mask-image: radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+    }
+
+    .light{
+      position:absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.28);
+      box-shadow: 0 0 22px rgba(103,232,249,.35);
+      animation: floatUp 7s linear infinite;
+    }
+
+    @keyframes floatUp{
+      from{ transform: translate3d(0, 40px, 0); opacity:0; }
+      10%{ opacity:.7; }
+      70%{ opacity:.5; }
+      to{ transform: translate3d(0, -220px, 0); opacity:0; }
+    }
+
+    /* ===== Primary Call Card ===== */
+    .primary{
+      margin-top: 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .card{
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(17,26,51,.55);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-inner{
+      padding: 14px 14px 12px;
+    }
+
+    .callbox{
+      display:flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .call-left{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .label{
+      color: var(--muted);
+      font-size: .82rem;
+      letter-spacing:.2px;
+    }
+
+    .big-name{
+      margin: 5px 0 4px;
+      font-size: 1.05rem;
+      font-weight: 720;
+      line-height:1.25;
+    }
+
+    .small{
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .call-btn{
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 150px;
+      padding: 0 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(103,232,249,.22), rgba(167,139,250,.18));
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      text-decoration:none;
+      color: var(--text);
+      height: var(--tap);
+      font-weight: 750;
+      letter-spacing:.2px;
+      gap: 10px;
+      white-space: nowrap;
+      user-select:none;
+    }
+    .call-btn:active{ transform: translateY(1px); }
+
+    .call-btn span{
+      display:inline-block;
+      font-family: var(--mono);
+      font-size: .98rem;
+    }
+
+    .pill-row{
+      margin-top: 10px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill{
+      font-size:.78rem;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: rgba(238,243,255,.92);
+    }
+
+    /* ===== Section List ===== */
+    .section{
+      margin-top: 14px;
+    }
+
+    .section h2{
+      margin: 16px 2px 10px;
+      font-size: 1.05rem;
+      letter-spacing:.2px;
+    }
+
+    .item{
+      margin: 10px 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .item:first-child{ border-top:none; }
+
+    .item-head{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding: 12px 14px;
+    }
+
+    .item-title{
+      margin:0;
+      font-size: .98rem;
+      font-weight: 720;
+      line-height: 1.2;
+    }
+    .item-meta{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.35;
+    }
+
+    .item-actions{
+      flex:0 0 auto;
+      display:flex;
+      gap: 8px;
+      align-items:center;
+    }
+
+    .mini-btn{
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      user-select:none;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: .88rem;
+    }
+    .mini-btn:active{ transform: translateY(1px); }
+
+    .mini-btn.primary{
+      background: linear-gradient(135deg, rgba(103,232,249,.20), rgba(167,139,250,.16));
+      border-color: rgba(255,255,255,.12);
+    }
+
+    details{
+      padding: 0 14px 12px;
+    }
+    details summary{
+      cursor:pointer;
+      list-style:none;
+      color: var(--accent);
+      font-weight: 750;
+      margin-top: 0;
+      user-select:none;
+    }
+    details summary::-webkit-details-marker{ display:none; }
+
+    .details-box{
+      margin-top: 10px;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(0,0,0,.18);
+      padding: 10px 12px;
+      color: rgba(238,243,255,.94);
+      line-height: 1.4;
+      font-size: .92rem;
+    }
+
+    .muted-note{
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.35;
+      margin: 10px 0 0;
+    }
+
+    /* ===== Footer Feedback ===== */
+    .feedback{
+      margin-top: 18px;
+    }
+    .feedback h3{
+      margin:0;
+      font-size: 1.0rem;
+    }
+    .feedback p{
+      margin: 6px 0 10px;
+      color: var(--muted);
+      font-size:.92rem;
+      line-height:1.35;
+    }
+
+    .rate-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+    }
+
+    .rate-btn{
+      flex: 1 1 140px;
+      height: var(--tap);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing:.2px;
+      cursor:pointer;
+      box-shadow: 0 10px 18px rgba(0,0,0,.20);
+    }
+    .rate-btn.good{ background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.25); }
+    .rate-btn.meh{  background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.22); }
+    .rate-btn.bad{  background: rgba(251,113,133,.14); border-color: rgba(251,113,133,.22); }
+    .rate-btn:active{ transform: translateY(1px); }
+
+    .why{
+      margin-top: 10px;
+      display:none;
+      gap: 10px;
+    }
+
+    textarea{
+      width:100%;
+      min-height: 88px;
+      resize: vertical;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-size: .95rem;
+      line-height: 1.35;
+      outline:none;
+    }
+    textarea::placeholder{ color: rgba(169,183,230,.65); }
+
+    .send-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+      margin-top: 10px;
+    }
+
+    .send-btn{
+      height: var(--tap);
+      padding: 0 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(103,232,249,.20), rgba(167,139,250,.16));
+      color: var(--text);
+      font-weight: 850;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    .send-btn:active{ transform: translateY(1px); }
+
+    .fineprint{
+      margin: 6px 0 0;
+      color: rgba(169,183,230,.80);
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+
+    /* ===== Utilities ===== */
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+
+    .search{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+    }
+    .search input{
+      width:100%;
+      height: 48px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      padding: 0 12px;
+      font-size: .95rem;
+      outline:none;
+    }
+
+    .tiny{
+      font-size:.8rem;
+      color: rgba(169,183,230,.85);
+      font-family: var(--mono);
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 520px){
+      .callbox{ flex-direction: column; }
+      .call-btn{ width: 100%; min-width: 0; }
+      .item-head{ flex-direction: column; align-items: stretch; }
+      .item-actions{ justify-content:flex-start; }
+      .mini-btn{ flex: 1 1 auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hope-banner">
+      <div class="aurora"></div>
+      <div class="lights" id="lights"></div>
+
+      <div class="hope-title">
+        <div>
+          <h1 id="appTitle">Pittsburgh Help Finder</h1>
+          <p id="appSubtitle">Fast, practical resources for housing, food, and care — one tap at a time.</p>
+        </div>
+        <div class="badge">
+          <div>Updated</div>
+          <div id="updatedDate">—</div>
+        </div>
+      </div>
+
+      <div class="search">
+        <input id="searchInput" type="text" placeholder="Search: shelter, food, youth, veterans, clinic, etc." />
+      </div>
+
+      <p class="muted-note" id="metaNotes"></p>
+    </div>
+
+    <div class="primary card">
+      <div class="card-inner">
+        <div class="label">Most important first step</div>
+        <div class="callbox">
+          <div class="call-left">
+            <div class="big-name" id="primaryName">Loading…</div>
+            <p class="small" id="primaryShort"></p>
+
+            <div class="pill-row" id="primaryPills"></div>
+          </div>
+
+          <a class="call-btn" id="primaryCallBtn" href="#">
+            ☎️ <span id="primaryPhone">—</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="sectionsRoot"></div>
+
+    <div class="feedback card">
+      <div class="card-inner">
+        <h3>Help improve this tool</h3>
+        <p>
+          If something is wrong, outdated, or confusing, you can send feedback.
+          <strong>This inbox is NOT checked for urgent help</strong> — it’s only used to improve the system.
+        </p>
+
+        <div class="rate-row">
+          <button class="rate-btn good" onclick="rate('GOOD')">✅ Helpful</button>
+          <button class="rate-btn meh" onclick="rate('MEH')">🤔 Okay / Meh</button>
+          <button class="rate-btn bad" onclick="rate('BAD')">⚠️ Problematic</button>
+        </div>
+
+        <div class="why" id="whyBox">
+          <textarea id="whyText" placeholder="Optional: what should be fixed? (wrong number, hours changed, not welcoming, unclear instructions, etc.)"></textarea>
+
+          <div class="send-row">
+            <button class="send-btn" onclick="sendFeedbackEmail()">Send feedback email</button>
+            <div class="tiny" id="ratingStatus">Rating: —</div>
+          </div>
+
+          <div class="fineprint">
+            Sends to: <strong>jaadoc@upmc.edu</strong> (not monitored for urgent help).  
+            If someone needs immediate help, use the “Start Here” contacts above.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let APP_DATA = null;
+  let CURRENT_RATING = null;
+
+  // ====== Hope Animation: floating lights ======
+  (function makeLights(){
+    const holder = document.getElementById("lights");
+    const n = 16;
+    for(let i=0;i<n;i++){
+      const d = document.createElement("div");
+      d.className = "light";
+      const left = Math.random()*100;
+      const top = 60 + Math.random()*55; // start lower
+      const dur = 5 + Math.random()*7;
+      const delay = Math.random()*6;
+      const size = 6 + Math.random()*10;
+
+      d.style.left = left + "%";
+      d.style.top = top + "%";
+      d.style.animationDuration = dur + "s";
+      d.style.animationDelay = delay + "s";
+      d.style.width = size + "px";
+      d.style.height = size + "px";
+      d.style.opacity = 0.35 + Math.random()*0.35;
+      holder.appendChild(d);
+    }
+  })();
+
+  function safeText(s){
+    return (s ?? "").toString();
+  }
+
+  function fmtPhoneForTel(phoneRaw){
+    // expects +1... or digits; allow empty
+    if(!phoneRaw) return "";
+    return phoneRaw.replace(/\s+/g,'');
+  }
+
+  function makePills(tags){
+    const wrap = document.createElement("div");
+    wrap.className = "pill-row";
+    (tags || []).slice(0,6).forEach(t=>{
+      const p = document.createElement("div");
+      p.className = "pill";
+      p.textContent = t;
+      wrap.appendChild(p);
+    });
+    return wrap;
+  }
+
+  function buildItemCard(item){
+    const phone = safeText(item.display_phone || "");
+    const tel = fmtPhoneForTel(item.phone || "");
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const head = document.createElement("div");
+    head.className = "item-head";
+
+    const left = document.createElement("div");
+    left.style.flex = "1 1 auto";
+    left.style.minWidth = "0";
+
+    const title = document.createElement("div");
+    title.className = "item-title";
+    title.textContent = safeText(item.name);
+
+    const meta = document.createElement("div");
+    meta.className = "item-meta";
+
+    const lines = [];
+    if(item.summary) lines.push(item.summary);
+    if(item.address) lines.push("📍 " + item.address);
+    if(item.hours) lines.push("🕒 " + item.hours);
+    if((item.tags || []).length) lines.push("🏷️ " + item.tags.join(" • "));
+
+    meta.textContent = lines.join("  |  ");
+
+    left.appendChild(title);
+    left.appendChild(meta);
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    if(tel){
+      const callA = document.createElement("a");
+      callA.className = "mini-btn primary";
+      callA.href = "tel:" + tel;
+      callA.innerHTML = "☎️ Call";
+      callA.title = "Call " + phone;
+      actions.appendChild(callA);
+    }
+
+    if(item.address){
+      const mapsA = document.createElement("a");
+      mapsA.className = "mini-btn";
+      const q = encodeURIComponent(item.address);
+      mapsA.href = "https://www.google.com/maps/search/?api=1&query=" + q;
+      mapsA.target = "_blank";
+      mapsA.rel = "noopener noreferrer";
+      mapsA.innerHTML = "🗺️ Map";
+      mapsA.title = "Open in maps";
+      actions.appendChild(mapsA);
+    }
+
+    head.appendChild(left);
+    head.appendChild(actions);
+
+    div.appendChild(head);
+
+    // Collapsible details
+    const det = document.createElement("details");
+    const sum = document.createElement("summary");
+    sum.textContent = "See more";
+
+    const box = document.createElement("div");
+    box.className = "details-box";
+
+    const bits = [];
+    if(phone) bits.push("Phone: " + phone);
+    if(item.details) bits.push(item.details);
+
+    box.textContent = bits.filter(Boolean).join("\n\n");
+
+    det.appendChild(sum);
+    det.appendChild(box);
+    div.appendChild(det);
+
+    return div;
+  }
+
+  function buildSection(section){
+    const container = document.createElement("div");
+    container.className = "section card";
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    const h2 = document.createElement("h2");
+    h2.textContent = section.title;
+
+    inner.appendChild(h2);
+
+    (section.items || []).forEach(item=>{
+      inner.appendChild(buildItemCard(item));
+    });
+
+    container.appendChild(inner);
+    return container;
+  }
+
+  function renderAll(queryText=""){
+    const root = document.getElementById("sectionsRoot");
+    root.innerHTML = "";
+
+    if(!APP_DATA) return;
+
+    const q = queryText.trim().toLowerCase();
+    const sections = [...(APP_DATA.sections || [])]
+      .sort((a,b)=>(a.importance||999)-(b.importance||999))
+      .map(sec=>{
+        if(!q) return sec;
+
+        const filteredItems = (sec.items || []).filter(it=>{
+          const blob = [
+            it.name, it.summary, it.details, it.address, it.hours, (it.tags||[]).join(" ")
+          ].join(" ").toLowerCase();
+          return blob.includes(q);
+        });
+
+        return {...sec, items: filteredItems};
+      })
+      .filter(sec => (sec.items || []).length > 0 || !q);
+
+    sections.forEach(sec=>{
+      root.appendChild(buildSection(sec));
+    });
+  }
+
+  function fillHeader(){
+    document.getElementById("appTitle").textContent = safeText(APP_DATA?.meta?.title || "Pittsburgh Help Finder");
+    document.getElementById("appSubtitle").textContent = safeText(APP_DATA?.meta?.subtitle || "");
+    document.getElementById("updatedDate").textContent = safeText(APP_DATA?.meta?.updated || "—");
+
+    const notes = (APP_DATA?.meta?.notes || []).map(x=>"• " + x).join("  ");
+    document.getElementById("metaNotes").textContent = notes;
+
+    const pc = APP_DATA?.primary_contact;
+    if(pc){
+      document.getElementById("primaryName").textContent = safeText(pc.name);
+      document.getElementById("primaryShort").textContent = safeText(pc.short);
+
+      const phone = safeText(pc.display_phone || "");
+      const tel = fmtPhoneForTel(pc.phone || "");
+      const btn = document.getElementById("primaryCallBtn");
+      btn.href = tel ? ("tel:" + tel) : "#";
+      document.getElementById("primaryPhone").textContent = phone || "Call";
+
+      const pillHost = document.getElementById("primaryPills");
+      pillHost.innerHTML = "";
+      pillHost.appendChild(makePills(["Shelter coordination", "Start here", "Up-to-date referrals"]));
+    }
+  }
+
+  // ===== Feedback flow =====
+  function rate(val){
+    CURRENT_RATING = val;
+    document.getElementById("whyBox").style.display = "grid";
+    document.getElementById("ratingStatus").textContent = "Rating: " + val;
+    // gentle UX: move focus to textarea
+    setTimeout(()=>document.getElementById("whyText").focus(), 50);
+  }
+
+  function sendFeedbackEmail(){
+    const why = (document.getElementById("whyText").value || "").trim();
+
+    const subject = `Pittsburgh Help Finder feedback — ${CURRENT_RATING || "UNSET"}`;
+    const bodyLines = [
+      "Feedback on the Pittsburgh Help Finder tool",
+      "",
+      "Rating: " + (CURRENT_RATING || "UNSET"),
+      "",
+      "Why / Notes:",
+      why || "(no additional details provided)",
+      "",
+      "Reminder: this inbox is NOT monitored for urgent help.",
+      "It is used only to improve the tool.",
+      "",
+      "Sent from the web page."
+    ];
+
+    const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\\n"))}`;
+    window.location.href = mailto;
+  }
+
+  // ===== Load JSON =====
+  async function load(){
+    try{
+      const resp = await fetch("./resources.json", {cache: "no-store"});
+      if(!resp.ok) throw new Error("Could not load resources.json");
+      APP_DATA = await resp.json();
+
+      fillHeader();
+      renderAll("");
+    } catch(err){
+      console.error(err);
+      document.getElementById("primaryName").textContent = "Could not load resources.json";
+      document.getElementById("primaryShort").textContent = "Make sure index.html and resources.json are in the same folder.";
+    }
+  }
+
+  document.getElementById("searchInput").addEventListener("input", (e)=>{
+    renderAll(e.target.value || "");
+  });
+
+  load();
+</script>
+</body>
+</html>
