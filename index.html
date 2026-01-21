@@ -6,22 +6,26 @@
   <title>Pittsburgh Help Finder</title>
 
   <style>
+    /* 
+       AEGIS MODIFICATION: 
+       Switched to Light Theme Variables for better readability.
+    */
     :root{
-      --bg:#0b1020;
-      --panel:#111a33cc;
-      --panel2:#0f1730cc;
-      --text:#eef3ff;
-      --muted:#a9b7e6;
-      --accent:#67e8f9;
-      --accent2:#a78bfa;
-      --warn:#fbbf24;
-      --good:#34d399;
-      --meh:#fbbf24;
-      --bad:#fb7185;
-      --stroke:#26335d;
-      --shadow: 0 12px 34px rgba(0,0,0,.35);
-      --radius:18px;
-      --radius2:14px;
+      --bg: #f8fafc;        /* Light background */
+      --panel: #ffffff;     /* White cards */
+      --panel2: #f1f5f9;    /* Secondary light gray */
+      --text: #0f172a;      /* Dark slate text */
+      --muted: #64748b;     /* Muted slate */
+      --accent: #0284c7;    /* Strong blue for interactions */
+      --accent2: #7c3aed;   /* Violet */
+      --warn: #d97706;
+      --good: #059669;
+      --meh: #d97706;
+      --bad: #e11d48;
+      --stroke: #e2e8f0;    /* Light borders */
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 18px;
+      --radius2: 14px;
       --maxw: 920px;
       --tap: 52px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -29,13 +33,15 @@
     }
 
     *{ box-sizing:border-box; }
+    
     body{
       margin:0;
       font-family: var(--sans);
-      background: radial-gradient(1200px 900px at 15% 5%, rgba(103,232,249,.18), transparent 60%),
-                  radial-gradient(1000px 800px at 80% 20%, rgba(167,139,250,.18), transparent 62%),
-                  radial-gradient(1200px 1000px at 40% 95%, rgba(251,191,36,.10), transparent 60%),
-                  var(--bg);
+      /* Light mode subtle gradient */
+      background: 
+        radial-gradient(800px 800px at 10% 10%, rgba(14, 165, 233, 0.08), transparent 50%),
+        radial-gradient(800px 800px at 90% 90%, rgba(124, 58, 237, 0.08), transparent 50%),
+        var(--bg);
       color: var(--text);
       min-height:100vh;
     }
@@ -47,15 +53,21 @@
     }
 
     /* ===== Hope Banner Animation ===== */
+    /* 
+       Keep banner dark so the lights/aurora animation is visible 
+       even in light mode.
+    */
     .hope-banner{
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
       border-radius: 26px;
       padding: 18px 16px 16px;
-      background: linear-gradient(135deg, rgba(17,26,51,.65), rgba(15,23,48,.65));
-      box-shadow: var(--shadow);
+      /* Dark background forced for this element */
+      background: linear-gradient(135deg, #0f172a, #1e1b4b);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       margin-bottom: 14px;
+      color: #f8fafc; /* Force light text inside banner */
     }
 
     .hope-title{
@@ -70,10 +82,11 @@
       font-size: 1.28rem;
       letter-spacing: .2px;
       line-height: 1.2;
+      color: #fff;
     }
     .hope-title p{
       margin:6px 0 0;
-      color: var(--muted);
+      color: #cbd5e1; /* Light gray for banner */
       font-size: .95rem;
       line-height: 1.35;
     }
@@ -82,11 +95,11 @@
       flex:0 0 auto;
       font-family: var(--mono);
       font-size: .78rem;
-      color: rgba(238,243,255,.92);
+      color: #fff;
       padding: 10px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
       backdrop-filter: blur(8px);
       box-shadow: 0 8px 18px rgba(0,0,0,.18);
       white-space: nowrap;
@@ -124,8 +137,8 @@
       width: 10px;
       height: 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.28);
-      box-shadow: 0 0 22px rgba(103,232,249,.35);
+      background: rgba(255,255,255,.4);
+      box-shadow: 0 0 22px rgba(103,232,249,.5);
       animation: floatUp 7s linear infinite;
     }
 
@@ -136,6 +149,55 @@
       to{ transform: translate3d(0, -220px, 0); opacity:0; }
     }
 
+    /* ===== Icon Navigation (New) ===== */
+    .icon-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .icon-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius2);
+      padding: 16px 6px;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .icon-btn:active { 
+      transform: scale(0.96); 
+      background: var(--panel2);
+    }
+    
+    .icon-btn-emoji {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+    }
+    
+    .icon-btn-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.1;
+      opacity: 0.9;
+    }
+
+    @media (min-width: 600px) {
+      .icon-nav { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+    }
+
     /* ===== Primary Call Card ===== */
     .primary{
       margin-top: 14px;
@@ -144,8 +206,8 @@
     }
 
     .card{
-      border: 1px solid rgba(255,255,255,.09);
-      background: rgba(17,26,51,.55);
+      border: 1px solid var(--stroke);
+      background: var(--panel);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
@@ -170,6 +232,7 @@
       color: var(--muted);
       font-size: .82rem;
       letter-spacing:.2px;
+      font-weight: 600;
     }
 
     .big-name{
@@ -177,6 +240,7 @@
       font-size: 1.05rem;
       font-weight: 720;
       line-height:1.25;
+      color: var(--text);
     }
 
     .small{
@@ -194,11 +258,12 @@
       min-width: 150px;
       padding: 0 14px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(103,232,249,.22), rgba(167,139,250,.18));
-      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      border: 1px solid rgba(0,0,0,.05);
+      /* Lighter gradient for light mode */
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
       text-decoration:none;
-      color: var(--text);
+      color: var(--accent); /* Colored text for emphasis in light mode */
       height: var(--tap);
       font-weight: 750;
       letter-spacing:.2px;
@@ -225,14 +290,16 @@
       font-size:.78rem;
       padding: 8px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
-      color: rgba(238,243,255,.92);
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      color: var(--muted);
+      font-weight: 600;
     }
 
     /* ===== Section List ===== */
     .section{
       margin-top: 14px;
+      scroll-margin-top: 20px; /* Helper for scrolling */
     }
 
     .section h2{
@@ -243,7 +310,7 @@
 
     .item{
       margin: 10px 0;
-      border-top: 1px solid rgba(255,255,255,.06);
+      border-top: 1px solid var(--stroke);
     }
 
     .item:first-child{ border-top:none; }
@@ -280,8 +347,8 @@
       height: 44px;
       padding: 0 12px;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
       color: var(--text);
       text-decoration:none;
       display:flex;
@@ -296,8 +363,9 @@
     .mini-btn:active{ transform: translateY(1px); }
 
     .mini-btn.primary{
-      background: linear-gradient(135deg, rgba(103,232,249,.20), rgba(167,139,250,.16));
-      border-color: rgba(255,255,255,.12);
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      border-color: rgba(0,0,0,.05);
+      color: var(--accent);
     }
 
     details{
@@ -316,16 +384,16 @@
     .details-box{
       margin-top: 10px;
       border-radius: var(--radius2);
-      border: 1px solid rgba(255,255,255,.09);
-      background: rgba(0,0,0,.18);
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
       padding: 10px 12px;
-      color: rgba(238,243,255,.94);
+      color: var(--text);
       line-height: 1.4;
       font-size: .92rem;
     }
 
     .muted-note{
-      color: var(--muted);
+      color: rgba(255,255,255,.7); /* Specific for banner usage */
       font-size: .9rem;
       line-height: 1.35;
       margin: 10px 0 0;
@@ -356,17 +424,17 @@
       flex: 1 1 140px;
       height: var(--tap);
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
       color: var(--text);
       font-weight: 800;
       letter-spacing:.2px;
       cursor:pointer;
-      box-shadow: 0 10px 18px rgba(0,0,0,.20);
+      box-shadow: 0 2px 5px rgba(0,0,0,.05);
     }
-    .rate-btn.good{ background: rgba(52,211,153,.16); border-color: rgba(52,211,153,.25); }
-    .rate-btn.meh{  background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.22); }
-    .rate-btn.bad{  background: rgba(251,113,133,.14); border-color: rgba(251,113,133,.22); }
+    .rate-btn.good{ background: #dcfce7; border-color: #86efac; color: #166534; }
+    .rate-btn.meh{  background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .rate-btn.bad{  background: #ffe4e6; border-color: #fda4af; color: #9f1239; }
     .rate-btn:active{ transform: translateY(1px); }
 
     .why{
@@ -381,14 +449,14 @@
       resize: vertical;
       border-radius: 16px;
       padding: 12px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
+      border: 1px solid var(--stroke);
+      background: var(--bg);
       color: var(--text);
       font-size: .95rem;
       line-height: 1.35;
       outline:none;
     }
-    textarea::placeholder{ color: rgba(169,183,230,.65); }
+    textarea::placeholder{ color: var(--muted); }
 
     .send-row{
       display:flex;
@@ -402,19 +470,19 @@
       height: var(--tap);
       padding: 0 14px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(135deg, rgba(103,232,249,.20), rgba(167,139,250,.16));
-      color: var(--text);
+      border: 1px solid rgba(0,0,0,.05);
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      color: var(--accent);
       font-weight: 850;
       cursor:pointer;
       user-select:none;
-      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
     }
     .send-btn:active{ transform: translateY(1px); }
 
     .fineprint{
       margin: 6px 0 0;
-      color: rgba(169,183,230,.80);
+      color: var(--muted);
       font-size: .82rem;
       line-height: 1.35;
     }
@@ -437,17 +505,18 @@
       width:100%;
       height: 48px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
+      border: 1px solid rgba(255,255,255,.3); /* Light border for search input in banner */
+      background: rgba(255,255,255,.15);
+      color: #fff;
       padding: 0 12px;
       font-size: .95rem;
       outline:none;
     }
+    .search input::placeholder { color: rgba(255,255,255,.7); }
 
     .tiny{
       font-size:.8rem;
-      color: rgba(169,183,230,.85);
+      color: var(--muted);
       font-family: var(--mono);
     }
 
@@ -485,6 +554,9 @@
 
       <p class="muted-note" id="metaNotes"></p>
     </div>
+
+    <!-- Quick Access Icon Nav -->
+    <div id="iconNav" class="icon-nav"></div>
 
     <div class="primary card">
       <div class="card-inner">
@@ -672,6 +744,8 @@
   function buildSection(section){
     const container = document.createElement("div");
     container.className = "section card";
+    // We add an ID to the section card to make scrolling accurate
+    container.id = "sec-" + section.id;
 
     const inner = document.createElement("div");
     inner.className = "card-inner";
@@ -773,6 +847,64 @@
     window.location.href = mailto;
   }
 
+  // ===== Icon & Speech Features (New) =====
+  const SECTION_ICONS = {
+    "immediate": "🆘",
+    "shelters": "🏠",
+    "youth": "🎒",
+    "veterans": "🎖️",
+    "dropin": "🚿",
+    "food": "🍲",
+    "health": "🏥",
+    "recovery": "❤️‍🩹",
+    "publicspaces": "🚽"
+  };
+
+  function speakLabel(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel(); // Stop any current speech
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1.1; // Slightly faster for responsiveness
+      window.speechSynthesis.speak(utter);
+    }
+  }
+
+  function renderIconNav() {
+    if (!APP_DATA || !APP_DATA.sections) return;
+    const nav = document.getElementById("iconNav");
+    nav.innerHTML = "";
+
+    APP_DATA.sections.forEach(sec => {
+      const btn = document.createElement("div");
+      btn.className = "icon-btn";
+      
+      const iconChar = SECTION_ICONS[sec.id] || "📌";
+      
+      const emoji = document.createElement("div");
+      emoji.className = "icon-btn-emoji";
+      emoji.textContent = iconChar;
+
+      const lbl = document.createElement("div");
+      lbl.className = "icon-btn-label";
+      // Use short name for button label
+      lbl.textContent = sec.title.split("(")[0].trim(); 
+
+      btn.appendChild(emoji);
+      btn.appendChild(lbl);
+
+      btn.onclick = () => {
+        speakLabel(sec.title); // Speak the full title
+        // Scroll to the specific section card
+        const target = document.getElementById("sec-" + sec.id);
+        if(target) {
+          target.scrollIntoView({behavior: "smooth", block: "start"});
+        }
+      };
+
+      nav.appendChild(btn);
+    });
+  }
+
   // ===== Load JSON =====
   async function load(){
     try{
@@ -782,6 +914,7 @@
 
       fillHeader();
       renderAll("");
+      renderIconNav(); // Initialize icons after data load
     } catch(err){
       console.error(err);
       document.getElementById("primaryName").textContent = "Could not load resources.json";
