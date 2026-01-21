@@ -6,20 +6,23 @@
   <title>Pittsburgh Help Finder</title>
 
   <style>
+    /* 
+       AEGIS MODIFICATION: 
+       Switched to Light Theme Variables for better readability.
+    */
     :root{
-      /* Light Theme Variables */
-      --bg: #f8fafc;
-      --panel: #ffffff;
-      --panel2: #f1f5f9;
-      --text: #0f172a;
-      --muted: #64748b;
-      --accent: #0284c7;
-      --accent2: #7c3aed;
+      --bg: #f8fafc;        /* Light background */
+      --panel: #ffffff;     /* White cards */
+      --panel2: #f1f5f9;    /* Secondary light gray */
+      --text: #0f172a;      /* Dark slate text */
+      --muted: #64748b;     /* Muted slate */
+      --accent: #0284c7;    /* Strong blue for interactions */
+      --accent2: #7c3aed;   /* Violet */
       --warn: #d97706;
       --good: #059669;
       --meh: #d97706;
       --bad: #e11d48;
-      --stroke: #e2e8f0;
+      --stroke: #e2e8f0;    /* Light borders */
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       --radius: 18px;
       --radius2: 14px;
@@ -34,6 +37,7 @@
     body{
       margin:0;
       font-family: var(--sans);
+      /* Light mode subtle gradient */
       background: 
         radial-gradient(800px 800px at 10% 10%, rgba(14, 165, 233, 0.08), transparent 50%),
         radial-gradient(800px 800px at 90% 90%, rgba(124, 58, 237, 0.08), transparent 50%),
@@ -48,30 +52,59 @@
       padding: 18px 14px 40px;
     }
 
-    /* ===== Hope Banner (Simplified) ===== */
+    /* ===== Hope Banner Animation ===== */
+    /* 
+       Keep banner dark so the lights/aurora animation is visible 
+       even in light mode.
+    */
     .hope-banner{
       position: relative;
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.15);
       border-radius: 26px;
-      padding: 20px 16px;
+      padding: 18px 16px 16px;
+      /* Dark background forced for this element */
       background: linear-gradient(135deg, #0f172a, #1e1b4b);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      margin-bottom: 20px;
-      color: #f8fafc;
-      text-align: center; /* Center the title */
+      margin-bottom: 14px;
+      color: #f8fafc; /* Force light text inside banner */
+    }
+
+    .hope-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
     }
 
     .hope-title h1{
       margin:0;
-      font-size: 1.5rem; /* Larger title since subtitles are gone */
+      font-size: 1.28rem;
       letter-spacing: .2px;
       line-height: 1.2;
       color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .hope-title p{
+      margin:6px 0 0;
+      color: #cbd5e1; /* Light gray for banner */
+      font-size: .95rem;
+      line-height: 1.35;
     }
 
-    /* Aurora & Lights (Background FX) */
+    .badge{
+      flex:0 0 auto;
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+
     .aurora{
       position:absolute;
       inset:-40px;
@@ -116,15 +149,13 @@
       to{ transform: translate3d(0, -220px, 0); opacity:0; }
     }
 
-    /* ===== Icon Navigation (The 9 Buttons) ===== */
+    /* ===== Icon Navigation (New) ===== */
     .icon-nav {
-      position: relative; /* Sit on top of banner background if needed, or below */
-      z-index: 10;
       display: grid;
-      /* Mobile: 3 columns = 3 rows for 9 items */
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 12px;
-      margin-top: 20px;
+      /* Mobile: 3 columns */
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
     }
     
     .icon-btn {
@@ -132,44 +163,46 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.95); /* Slightly translucent white */
-      border: 1px solid rgba(255,255,255,0.2);
+      background: var(--panel);
+      border: 1px solid var(--stroke);
       border-radius: var(--radius2);
-      padding: 14px 4px;
+      padding: 16px 6px;
       cursor: pointer;
       text-align: center;
       user-select: none;
-      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
       color: var(--text);
+      position: relative;
+      overflow: hidden;
     }
     
     .icon-btn:active { 
-      transform: scale(0.95); 
-      background: #fff;
+      transform: scale(0.96); 
+      background: var(--panel2);
     }
     
     .icon-btn-emoji {
       font-size: 2.2rem;
-      margin-bottom: 6px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,.1));
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
     }
     
     .icon-btn-label {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 700;
       line-height: 1.1;
       opacity: 0.9;
     }
 
-    /* Desktop: 2 rows for 9 items -> 5 columns */
+    /* Desktop: 5 columns (creates 2 rows for 9 items) */
     @media (min-width: 600px) {
       .icon-nav { grid-template-columns: repeat(5, 1fr); }
     }
 
     /* ===== Primary Call Card ===== */
     .primary{
-      margin-top: 24px;
+      margin-top: 14px;
       display:grid;
       gap: 10px;
     }
@@ -228,10 +261,11 @@
       padding: 0 14px;
       border-radius: 16px;
       border: 1px solid rgba(0,0,0,.05);
+      /* Lighter gradient for light mode */
       background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
       box-shadow: 0 4px 12px rgba(0,0,0,.08);
       text-decoration:none;
-      color: var(--accent);
+      color: var(--accent); /* Colored text for emphasis in light mode */
       height: var(--tap);
       font-weight: 750;
       letter-spacing:.2px;
@@ -267,8 +301,7 @@
     /* ===== Section List ===== */
     .section{
       margin-top: 14px;
-      /* Scroll margin ensures header doesn't cover title when jumping */
-      scroll-margin-top: 20px; 
+      scroll-margin-top: 20px; /* Helper for scrolling */
     }
 
     .section h2{
@@ -361,6 +394,13 @@
       font-size: .92rem;
     }
 
+    .muted-note{
+      color: rgba(255,255,255,.7); /* Specific for banner usage */
+      font-size: .9rem;
+      line-height: 1.35;
+      margin: 10px 0 0;
+    }
+
     /* ===== Footer Feedback ===== */
     .feedback{
       margin-top: 18px;
@@ -449,7 +489,15 @@
       line-height: 1.35;
     }
 
-    /* ===== QR Code Modal ===== */
+    /* ===== QR Code Modal & Share Link ===== */
+    .share-link {
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: underline;
+      color: rgba(255,255,255,0.8);
+      margin-top: 4px;
+    }
+
     .qr-modal {
       position: fixed;
       inset: 0;
@@ -485,18 +533,15 @@
       color: #334155;
       cursor: pointer;
     }
-    
-    /* Share Button Style */
-    .share-link {
-      margin-top: 10px;
-      display: inline-block;
-      color: rgba(255,255,255,0.7);
-      text-decoration: underline;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
 
-    /* Utilities */
+    /* ===== Utilities ===== */
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    
     .tiny{
       font-size:.8rem;
       color: var(--muted);
@@ -520,15 +565,26 @@
       <div class="aurora"></div>
       <div class="lights" id="lights"></div>
 
-      <div class="hope-title" style="justify-content: center; text-align: center; flex-direction: column;">
-        <h1 id="appTitle">Pittsburgh Help Finder</h1>
-        <!-- "Share via QR" in header/banner area -->
-        <div class="share-link" onclick="toggleQR()">📲 Share this App via QR</div>
+      <div class="hope-title">
+        <div>
+          <h1 id="appTitle">Pittsburgh Help Finder</h1>
+          <p id="appSubtitle">Fast, practical resources for housing, food, and care — one tap at a time.</p>
+          <!-- Share Link added here -->
+          <div class="share-link" onclick="toggleQR()">📲 Share this App via QR</div>
+        </div>
+        <div class="badge">
+          <div>Updated</div>
+          <div id="updatedDate">—</div>
+        </div>
       </div>
-      
-      <!-- Icon Navigation (Moved Inside Banner Context visually, but structurally here) -->
-      <div id="iconNav" class="icon-nav"></div>
+
+      <!-- Search Input Removed -->
+
+      <p class="muted-note" id="metaNotes"></p>
     </div>
+
+    <!-- Quick Access Icon Nav -->
+    <div id="iconNav" class="icon-nav"></div>
 
     <div class="primary card">
       <div class="card-inner">
@@ -537,6 +593,7 @@
           <div class="call-left">
             <div class="big-name" id="primaryName">Loading…</div>
             <p class="small" id="primaryShort"></p>
+
             <div class="pill-row" id="primaryPills"></div>
           </div>
 
@@ -564,7 +621,7 @@
         </div>
 
         <div class="why" id="whyBox">
-          <textarea id="whyText" placeholder="Select a rating above..."></textarea>
+          <textarea id="whyText" placeholder="Optional: what should be fixed? (wrong number, hours changed, not welcoming, unclear instructions, etc.)"></textarea>
 
           <div class="send-row">
             <button class="send-btn" onclick="sendFeedbackEmail()">Send feedback email</button>
@@ -601,7 +658,7 @@
       const d = document.createElement("div");
       d.className = "light";
       const left = Math.random()*100;
-      const top = 60 + Math.random()*55; 
+      const top = 60 + Math.random()*55; // start lower
       const dur = 5 + Math.random()*7;
       const delay = Math.random()*6;
       const size = 6 + Math.random()*10;
@@ -617,9 +674,12 @@
     }
   })();
 
-  function safeText(s){ return (s ?? "").toString(); }
+  function safeText(s){
+    return (s ?? "").toString();
+  }
 
   function fmtPhoneForTel(phoneRaw){
+    // expects +1... or digits; allow empty
     if(!phoneRaw) return "";
     return phoneRaw.replace(/\s+/g,'');
   }
@@ -676,6 +736,7 @@
       callA.className = "mini-btn primary";
       callA.href = "tel:" + tel;
       callA.innerHTML = "☎️ Call";
+      callA.title = "Call " + phone;
       actions.appendChild(callA);
     }
 
@@ -687,12 +748,16 @@
       mapsA.target = "_blank";
       mapsA.rel = "noopener noreferrer";
       mapsA.innerHTML = "🗺️ Map";
+      mapsA.title = "Open in maps";
       actions.appendChild(mapsA);
     }
 
     head.appendChild(left);
     head.appendChild(actions);
 
+    div.appendChild(head);
+
+    // Collapsible details
     const det = document.createElement("details");
     const sum = document.createElement("summary");
     sum.textContent = "See more";
@@ -716,7 +781,7 @@
   function buildSection(section){
     const container = document.createElement("div");
     container.className = "section card";
-    // Important: ID for navigation
+    // We add an ID to the section card to make scrolling accurate
     container.id = "sec-" + section.id;
 
     const inner = document.createElement("div");
@@ -735,13 +800,14 @@
     return container;
   }
 
-  function renderAll(){
+  function renderAll(queryText=""){
     const root = document.getElementById("sectionsRoot");
     root.innerHTML = "";
 
     if(!APP_DATA) return;
 
-    // Just render all sections in order of importance
+    // Search logic removed but function structure kept simple
+    // Just sort by importance and render all
     const sections = [...(APP_DATA.sections || [])]
       .sort((a,b)=>(a.importance||999)-(b.importance||999));
 
@@ -752,8 +818,11 @@
 
   function fillHeader(){
     document.getElementById("appTitle").textContent = safeText(APP_DATA?.meta?.title || "Pittsburgh Help Finder");
-    
-    // Subtitle and Search removed per request.
+    document.getElementById("appSubtitle").textContent = safeText(APP_DATA?.meta?.subtitle || "");
+    document.getElementById("updatedDate").textContent = safeText(APP_DATA?.meta?.updated || "—");
+
+    const notes = (APP_DATA?.meta?.notes || []).map(x=>"• " + x).join("  ");
+    document.getElementById("metaNotes").textContent = notes;
 
     const pc = APP_DATA?.primary_contact;
     if(pc){
@@ -775,26 +844,15 @@
   // ===== Feedback flow =====
   function rate(val){
     CURRENT_RATING = val;
-    const box = document.getElementById("whyBox");
-    const txt = document.getElementById("whyText");
-    
-    box.style.display = "grid";
+    document.getElementById("whyBox").style.display = "grid";
     document.getElementById("ratingStatus").textContent = "Rating: " + val;
-
-    // Optional reflection logic
-    if(val === 'BAD') {
-      txt.placeholder = "Please tell us what is wrong (outdated info, bad experience, etc.)...";
-    } else if(val === 'GOOD') {
-      txt.placeholder = "Glad to hear it! What was most helpful?";
-    } else {
-      txt.placeholder = "Any suggestions for improvement?";
-    }
-
-    setTimeout(()=>txt.focus(), 50);
+    // gentle UX: move focus to textarea
+    setTimeout(()=>document.getElementById("whyText").focus(), 50);
   }
 
   function sendFeedbackEmail(){
     const why = (document.getElementById("whyText").value || "").trim();
+
     const subject = `Pittsburgh Help Finder feedback — ${CURRENT_RATING || "UNSET"}`;
     const bodyLines = [
       "Feedback on the Pittsburgh Help Finder tool",
@@ -804,13 +862,17 @@
       "Why / Notes:",
       why || "(no additional details provided)",
       "",
+      "Reminder: this inbox is NOT monitored for urgent help.",
+      "It is used only to improve the tool.",
+      "",
       "Sent from the web page."
     ];
+
     const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\\n"))}`;
     window.location.href = mailto;
   }
 
-  // ===== Icon & Speech Features =====
+  // ===== Icon & Speech Features (New) =====
   const SECTION_ICONS = {
     "immediate": "🆘",
     "shelters": "🏠",
@@ -825,9 +887,9 @@
 
   function speakLabel(text) {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+      window.speechSynthesis.cancel(); // Stop any current speech
       const utter = new SpeechSynthesisUtterance(text);
-      utter.rate = 1.1; 
+      utter.rate = 1.1; // Slightly faster for responsiveness
       window.speechSynthesis.speak(utter);
     }
   }
@@ -849,19 +911,18 @@
 
       const lbl = document.createElement("div");
       lbl.className = "icon-btn-label";
+      // Use short name for button label
       lbl.textContent = sec.title.split("(")[0].trim(); 
 
       btn.appendChild(emoji);
       btn.appendChild(lbl);
 
       btn.onclick = () => {
-        speakLabel(sec.title);
-        // Scroll to the section
+        speakLabel(sec.title); // Speak the full title
+        // Scroll to the specific section card
         const target = document.getElementById("sec-" + sec.id);
         if(target) {
           target.scrollIntoView({behavior: "smooth", block: "start"});
-        } else {
-          console.warn("Target section not found:", sec.id);
         }
       };
 
@@ -883,11 +944,12 @@
       APP_DATA = await resp.json();
 
       fillHeader();
-      renderAll();
-      renderIconNav();
+      renderAll("");
+      renderIconNav(); // Initialize icons after data load
     } catch(err){
       console.error(err);
       document.getElementById("primaryName").textContent = "Could not load resources.json";
+      document.getElementById("primaryShort").textContent = "Make sure index.html and resources.json are in the same folder.";
     }
   }
 
