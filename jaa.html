@@ -140,13 +140,12 @@
       to{ transform: translate3d(0, -220px, 0); opacity:0; }
     }
 
-    /* ===== Audience Tabs (Patients / Staff / Admin) ===== */
+    /* ===== Audience Tabs (Patients / Staff) ===== */
     .tabs{
       margin-top: 12px;
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
-      align-items:center;
     }
     .tab{
       height: 42px;
@@ -174,21 +173,6 @@
       font-weight: 700;
       opacity: .85;
     }
-
-    /* Admin only indicator (subtle) */
-    .admin-pill{
-      margin-left: auto;
-      font-family: var(--mono);
-      font-size: .76rem;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.20);
-      background: rgba(255,255,255,.10);
-      color: rgba(255,255,255,.85);
-      display:none;
-      white-space: nowrap;
-    }
-    body.admin-on .admin-pill{ display:inline-flex; }
 
     .share-link {
       cursor: pointer;
@@ -463,103 +447,6 @@
       word-break: break-word;
     }
 
-    /* ===== Admin Panels (ONLY visible in Admin mode) ===== */
-    .admin-panel{
-      display:none;
-      margin-top: 12px;
-      border-radius: var(--radius2);
-      border: 1px dashed rgba(2,132,199,.45);
-      background: #ffffff;
-      padding: 12px;
-    }
-    body.admin-on .admin-panel{ display:block; }
-
-    .admin-title{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .admin-title strong{
-      font-size: .92rem;
-      color: var(--text);
-    }
-    .admin-title span{
-      font-family: var(--mono);
-      font-size: .75rem;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-
-    .admin-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    @media (min-width: 640px){
-      .admin-grid{ grid-template-columns: 1fr 1fr; }
-    }
-
-    .chk{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      padding: 10px 10px;
-      border: 1px solid var(--stroke);
-      border-radius: 14px;
-      background: var(--panel2);
-      font-weight: 750;
-      color: var(--text);
-      user-select:none;
-    }
-    .chk input{ width: 18px; height: 18px; }
-
-    .admin-comment{
-      grid-column: 1 / -1;
-    }
-    .admin-comment textarea{
-      min-height: 70px;
-    }
-
-    .admin-footer{
-      display:none;
-      margin-top: 14px;
-    }
-    body.admin-on .admin-footer{ display:block; }
-
-    .admin-actions-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-top: 10px;
-    }
-
-    .ghost-btn{
-      height: 46px;
-      padding: 0 12px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: #ffffff;
-      color: var(--muted);
-      font-weight: 800;
-      cursor:pointer;
-      user-select:none;
-    }
-    .ghost-btn:active{ transform: translateY(1px); }
-
-    .admin-status{
-      font-family: var(--mono);
-      font-size: .78rem;
-      color: var(--muted);
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: var(--panel2);
-    }
-
     /* ===== Footer Feedback ===== */
     .feedback{
       margin-top: 18px;
@@ -698,7 +585,6 @@
       .item-head{ flex-direction: column; align-items: stretch; }
       .item-actions{ justify-content:flex-start; }
       .mini-btn{ flex: 1 1 auto; }
-      .admin-pill{ margin-left: 0; width: 100%; justify-content:center; }
     }
   </style>
 </head>
@@ -722,11 +608,6 @@
             <button class="tab" id="tab-staff" role="tab" aria-selected="false" onclick="setAudience('staff')">
               🩺 Staff
             </button>
-            <button class="tab" id="tab-admin" role="button" aria-pressed="false" onclick="toggleAdmin()">
-              🛠️ Admin
-            </button>
-
-            <div class="admin-pill" id="adminPill">ADMIN MODE ON</div>
           </div>
 
           <!-- Share Link -->
@@ -763,26 +644,6 @@
     </div>
 
     <div id="sectionsRoot"></div>
-
-    <!-- Admin footer (ONLY visible in Admin mode) -->
-    <div class="admin-footer card" id="adminFooter">
-      <div class="card-inner">
-        <h3 style="margin:0;font-size:1rem;">Admin: Flag issues & email</h3>
-        <p style="margin:6px 0 0;color:var(--muted);font-size:.92rem;line-height:1.35;">
-          Use the checkboxes under each section to flag issues. This panel sends a summary email to
-          <strong>jaadoc@gmail.com</strong>.
-        </p>
-
-        <div class="admin-actions-row">
-          <button class="send-btn" onclick="sendAdminEmail()">📧 Send admin flags email</button>
-          <button class="ghost-btn" onclick="clearAdminFlags()">Clear all flags</button>
-          <div class="admin-status" id="adminStatus">Flags: 0</div>
-        </div>
-        <div class="fineprint" style="margin-top:10px;">
-          Tip: Admin controls are hidden unless Admin mode is ON.
-        </div>
-      </div>
-    </div>
 
     <div class="feedback card">
       <div class="card-inner">
@@ -839,16 +700,12 @@
   const SHARE_BASE_URL = "https://dormantone.github.io/streetwise/jaa.html";
 
   let AUDIENCE = "patient";
-  let ADMIN_MODE = false;
-
-  // sectionId -> { html, phone, website, map, comment }
-  const ADMIN_FLAGS = {};
 
   function safeText(s){ return (s ?? "").toString(); }
 
   function fmtPhoneForTel(phoneRaw){
     if(!phoneRaw) return "";
-    return phoneRaw.replace(/\\s+/g,'');
+    return phoneRaw.replace(/\s+/g,'');
   }
 
   function normalizeUrl(u){
@@ -861,7 +718,7 @@
   function hostLabel(url){
     try{
       const u = new URL(url);
-      let h = u.hostname.replace(/^www\\./,'');
+      let h = u.hostname.replace(/^www\./,'');
       return h;
     }catch(e){
       return url;
@@ -902,76 +759,6 @@
       wrap.appendChild(p);
     });
     return wrap;
-  }
-
-  function ensureAdminRecord(sectionId){
-    if(!ADMIN_FLAGS[sectionId]){
-      ADMIN_FLAGS[sectionId] = { html:false, phone:false, website:false, map:false, comment:"" };
-    }
-    return ADMIN_FLAGS[sectionId];
-  }
-
-  function updateAdminStatus(){
-    let n = 0;
-    for(const sid of Object.keys(ADMIN_FLAGS)){
-      const r = ADMIN_FLAGS[sid];
-      if(r.html || r.phone || r.website || r.map || (r.comment||"").trim()) n++;
-    }
-    const el = document.getElementById("adminStatus");
-    if(el) el.textContent = "Flags: " + n;
-  }
-
-  function buildAdminPanel(section){
-    const sectionId = safeText(section.id);
-    const rec = ensureAdminRecord(sectionId);
-
-    const panel = document.createElement("div");
-    panel.className = "admin-panel";
-    panel.setAttribute("data-section-id", sectionId);
-
-    const title = document.createElement("div");
-    title.className = "admin-title";
-    title.innerHTML = `<strong>Admin check</strong><span>Section: ${sectionId}</span>`;
-    panel.appendChild(title);
-
-    const grid = document.createElement("div");
-    grid.className = "admin-grid";
-
-    function mkChk(key, label){
-      const wrap = document.createElement("label");
-      wrap.className = "chk";
-      const id = `adm_${sectionId}_${key}`;
-      wrap.innerHTML = `<input type="checkbox" id="${id}"> <span>${label}</span>`;
-      const cb = wrap.querySelector("input");
-      cb.checked = !!rec[key];
-      cb.addEventListener("change", ()=>{
-        rec[key] = cb.checked;
-        updateAdminStatus();
-        saveAdminFlags();
-      });
-      return wrap;
-    }
-
-    grid.appendChild(mkChk("html", "Flag HTML issue"));
-    grid.appendChild(mkChk("phone", "Flag phone number(s)"));
-    grid.appendChild(mkChk("website", "Flag website link(s)"));
-    grid.appendChild(mkChk("map", "Flag map/address"));
-
-    const cWrap = document.createElement("div");
-    cWrap.className = "admin-comment";
-    const ta = document.createElement("textarea");
-    ta.placeholder = "Admin comment (optional)";
-    ta.value = rec.comment || "";
-    ta.addEventListener("input", ()=>{
-      rec.comment = ta.value;
-      updateAdminStatus();
-      saveAdminFlags();
-    });
-    cWrap.appendChild(ta);
-    grid.appendChild(cWrap);
-
-    panel.appendChild(grid);
-    return panel;
   }
 
   function buildItemCard(item){
@@ -1060,8 +847,10 @@
     if(website) bits.push("Website: " + website);
     if(item.details) bits.push(item.details);
 
-    const text = bits.filter(Boolean).join("\\n\\n");
-    const urlRegex = /(https?:\\/\\/[^\\s]+)/g;
+    // Render with clickable website (and keep safe)
+    const text = bits.filter(Boolean).join("\n\n");
+    // Replace any url in text with clickable anchor
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
     box.innerHTML = text.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
 
     det.appendChild(sum);
@@ -1088,9 +877,6 @@
       inner.appendChild(buildItemCard(item));
     });
 
-    // Admin panel under each section (only visible when Admin mode on)
-    inner.appendChild(buildAdminPanel(section));
-
     container.appendChild(inner);
     return container;
   }
@@ -1106,9 +892,6 @@
     sections.forEach(sec=>{
       root.appendChild(buildSection(sec));
     });
-
-    // In case flags were loaded from storage
-    updateAdminStatus();
   }
 
   function fillHeader(){
@@ -1167,119 +950,6 @@
     ];
 
     const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\\n"))}`;
-    window.location.href = mailto;
-  }
-
-  // ===== Admin Mode =====
-  function setAdmin(on){
-    ADMIN_MODE = !!on;
-    localStorage.setItem("jaa_admin", ADMIN_MODE ? "1" : "0");
-    document.body.classList.toggle("admin-on", ADMIN_MODE);
-
-    const btn = document.getElementById("tab-admin");
-    if(btn){
-      btn.classList.toggle("active", ADMIN_MODE);
-      btn.setAttribute("aria-pressed", ADMIN_MODE ? "true" : "false");
-    }
-
-    const footer = document.getElementById("adminFooter");
-    if(footer) footer.style.display = ADMIN_MODE ? "block" : "none";
-
-    updateAdminStatus();
-  }
-
-  function toggleAdmin(){
-    setAdmin(!ADMIN_MODE);
-  }
-
-  function adminStorageKey(){
-    return "jaa_admin_flags__" + AUDIENCE;
-  }
-
-  function saveAdminFlags(){
-    try{
-      localStorage.setItem(adminStorageKey(), JSON.stringify(ADMIN_FLAGS));
-    }catch(e){}
-  }
-
-  function loadAdminFlags(){
-    try{
-      const raw = localStorage.getItem(adminStorageKey());
-      if(!raw) return;
-      const parsed = JSON.parse(raw);
-      if(parsed && typeof parsed === "object"){
-        for(const k of Object.keys(parsed)){
-          const v = parsed[k];
-          ADMIN_FLAGS[k] = {
-            html: !!v.html,
-            phone: !!v.phone,
-            website: !!v.website,
-            map: !!v.map,
-            comment: safeText(v.comment || "")
-          };
-        }
-      }
-    }catch(e){}
-  }
-
-  function clearAdminFlags(){
-    for(const k of Object.keys(ADMIN_FLAGS)){
-      delete ADMIN_FLAGS[k];
-    }
-    saveAdminFlags();
-    renderAll(); // re-render to reset checkboxes/comments
-  }
-
-  function sendAdminEmail(){
-    // Build summary from flags
-    const parts = [];
-    const now = new Date();
-    parts.push("Admin flags for JAA Home Health Help Finder");
-    parts.push("");
-    parts.push("Audience dataset: " + AUDIENCE);
-    parts.push("Timestamp: " + now.toISOString());
-    parts.push("Page: " + window.location.href);
-    parts.push("");
-
-    const flagged = [];
-    for(const sec of (APP_DATA?.sections || [])){
-      const sid = safeText(sec.id);
-      const r = ADMIN_FLAGS[sid];
-      if(!r) continue;
-      const hasAny = r.html || r.phone || r.website || r.map || (r.comment||"").trim();
-      if(!hasAny) continue;
-
-      const issues = [];
-      if(r.html) issues.push("HTML");
-      if(r.phone) issues.push("Phone");
-      if(r.website) issues.push("Website");
-      if(r.map) issues.push("Map");
-
-      flagged.push({
-        title: safeText(sec.title),
-        id: sid,
-        issues,
-        comment: safeText(r.comment || "").trim()
-      });
-    }
-
-    if(flagged.length === 0){
-      alert("No admin flags yet. Check a box under a section first.");
-      return;
-    }
-
-    parts.push("Flagged sections:");
-    parts.push("");
-
-    flagged.forEach((f, idx)=>{
-      parts.push((idx+1) + ") " + f.title + "  [" + f.id + "]");
-      parts.push("   Issues: " + (f.issues.length ? f.issues.join(", ") : "(none)"));
-      if(f.comment) parts.push("   Comment: " + f.comment);
-      parts.push("");
-    });
-
-    const subject = `JAA Admin Flags (${AUDIENCE}) — ${flagged.length} section(s)`;
-    const mailto = `mailto:jaadoc@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(parts.join("\\n"))}`;
     window.location.href = mailto;
   }
 
@@ -1384,10 +1054,6 @@
     url.searchParams.set("audience", AUDIENCE);
     history.replaceState({}, "", url.toString());
 
-    // load the right flag store for this dataset
-    for(const k of Object.keys(ADMIN_FLAGS)){ delete ADMIN_FLAGS[k]; }
-    loadAdminFlags();
-
     setTabUI();
     load();
   }
@@ -1401,23 +1067,10 @@
     return "patient";
   }
 
-  function getInitialAdmin(){
-    const url = new URL(window.location.href);
-    const qp = (url.searchParams.get("admin") || "").toLowerCase().trim();
-    if(qp === "1" || qp === "true" || qp === "yes") return true;
-    return (localStorage.getItem("jaa_admin") === "1");
-  }
-
   // ===== Load JSON =====
   async function load(){
     try{
       const file = DATA_FILES[AUDIENCE] || DATA_FILES.patient;
-
-      // Friendly warning if opening as file://
-      if(window.location.protocol === "file:"){
-        console.warn("Opened via file:// — browser may block fetch(). Use a local server or GitHub Pages.");
-      }
-
       const resp = await fetch(file, {cache: "no-store"});
       if(!resp.ok) throw new Error("Could not load " + file);
       APP_DATA = await resp.json();
@@ -1428,20 +1081,13 @@
     } catch(err){
       console.error(err);
       document.getElementById("primaryName").textContent = "Could not load data file";
-      const hint = (window.location.protocol === "file:")
-        ? "You opened jaa.html directly. Browsers often block JSON fetch on file://. Run: python3 -m http.server 8000, then open http://localhost:8000/jaa.html"
-        : "Make sure jaa.html and jaa_patient.json / jaa_staff.json are in the same folder.";
-      document.getElementById("primaryShort").textContent = hint;
+      document.getElementById("primaryShort").textContent =
+        "Make sure jaa.html and jaa_patient.json / jaa_staff.json are in the same folder.";
     }
   }
 
-  // Init
   AUDIENCE = getInitialAudience();
-  ADMIN_MODE = getInitialAdmin();
-
-  loadAdminFlags();
   setTabUI();
-  setAdmin(ADMIN_MODE);
   load();
 </script>
 </body>
