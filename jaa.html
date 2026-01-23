@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>JAA Home Health Help Finder</title>
+
+  <style>
+    :root{
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --panel2: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #0284c7;
+      --accent2: #7c3aed;
+      --warn: #d97706;
+      --good: #059669;
+      --meh: #d97706;
+      --bad: #e11d48;
+      --stroke: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 18px;
+      --radius2: 14px;
+      --maxw: 920px;
+      --tap: 52px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background:
+        radial-gradient(800px 800px at 10% 10%, rgba(14, 165, 233, 0.08), transparent 50%),
+        radial-gradient(800px 800px at 90% 90%, rgba(124, 58, 237, 0.08), transparent 50%),
+        var(--bg);
+      color: var(--text);
+      min-height:100vh;
+    }
+
+    .wrap{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 18px 14px 40px;
+    }
+
+    /* ===== Hope Banner Animation ===== */
+    .hope-banner{
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 26px;
+      padding: 18px 16px 16px;
+      background: linear-gradient(135deg, #0f172a, #1e1b4b);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      margin-bottom: 14px;
+      color: #f8fafc;
+    }
+
+    .hope-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .hope-title h1{
+      margin:0;
+      font-size: 1.28rem;
+      letter-spacing: .2px;
+      line-height: 1.2;
+      color: #fff;
+    }
+    .hope-title p{
+      margin:6px 0 0;
+      color: #cbd5e1;
+      font-size: .95rem;
+      line-height: 1.35;
+    }
+
+    .badge{
+      flex:0 0 auto;
+      font-family: var(--mono);
+      font-size: .78rem;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      white-space: nowrap;
+    }
+
+    .aurora{
+      position:absolute;
+      inset:-40px;
+      background:
+        radial-gradient(520px 280px at 12% 20%, rgba(103,232,249,.28), transparent 60%),
+        radial-gradient(460px 240px at 88% 25%, rgba(167,139,250,.26), transparent 58%),
+        radial-gradient(520px 260px at 40% 90%, rgba(251,191,36,.18), transparent 58%);
+      filter: blur(18px);
+      opacity: .9;
+      animation: drift 11s ease-in-out infinite alternate;
+      pointer-events:none;
+    }
+
+    @keyframes drift{
+      from{ transform: translate3d(-18px, -8px, 0) scale(1.04); }
+      to  { transform: translate3d(18px, 10px, 0) scale(1.06); }
+    }
+
+    .lights{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.85;
+      mask-image: radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+      -webkit-mask-image: radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+    }
+
+    .light{
+      position:absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.4);
+      box-shadow: 0 0 22px rgba(103,232,249,.5);
+      animation: floatUp 7s linear infinite;
+    }
+
+    @keyframes floatUp{
+      from{ transform: translate3d(0, 40px, 0); opacity:0; }
+      10%{ opacity:.7; }
+      70%{ opacity:.5; }
+      to{ transform: translate3d(0, -220px, 0); opacity:0; }
+    }
+
+    /* ===== Audience Tabs (Patients / Staff) ===== */
+    .tabs{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .tab{
+      height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+      color: #e2e8f0;
+      font-weight: 800;
+      letter-spacing:.2px;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      transition: transform .08s ease;
+    }
+    .tab:active{ transform: scale(0.98); }
+    .tab.active{
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.35);
+      color: #ffffff;
+    }
+    .tab small{
+      font-weight: 700;
+      opacity: .85;
+    }
+
+    .share-link {
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: underline;
+      color: rgba(255,255,255,0.85);
+      margin-top: 6px;
+      display:inline-block;
+    }
+
+    .muted-note{
+      color: rgba(255,255,255,.7);
+      font-size: .9rem;
+      line-height: 1.35;
+      margin: 10px 0 0;
+    }
+
+    /* ===== Icon Navigation ===== */
+    .icon-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .icon-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius2);
+      padding: 16px 6px;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.96);
+      background: var(--panel2);
+    }
+
+    .icon-btn-emoji {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+    }
+
+    .icon-btn-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.1;
+      opacity: 0.9;
+    }
+
+    @media (min-width: 600px) {
+      .icon-nav { grid-template-columns: repeat(5, 1fr); }
+    }
+
+    /* ===== Primary Call Card ===== */
+    .primary{
+      margin-top: 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .card{
+      border: 1px solid var(--stroke);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-inner{
+      padding: 14px 14px 12px;
+    }
+
+    .callbox{
+      display:flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .call-left{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .label{
+      color: var(--muted);
+      font-size: .82rem;
+      letter-spacing:.2px;
+      font-weight: 600;
+    }
+
+    .big-name{
+      margin: 5px 0 4px;
+      font-size: 1.05rem;
+      font-weight: 720;
+      line-height:1.25;
+      color: var(--text);
+    }
+
+    .small{
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .call-btn{
+      flex: 0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 150px;
+      padding: 0 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.05);
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      text-decoration:none;
+      color: var(--accent);
+      height: var(--tap);
+      font-weight: 750;
+      letter-spacing:.2px;
+      gap: 10px;
+      white-space: nowrap;
+      user-select:none;
+    }
+    .call-btn:active{ transform: translateY(1px); }
+
+    .call-btn span{
+      display:inline-block;
+      font-family: var(--mono);
+      font-size: .98rem;
+    }
+
+    .pill-row{
+      margin-top: 10px;
+      display:flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill{
+      font-size:.78rem;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ===== Section List ===== */
+    .section{
+      margin-top: 14px;
+      scroll-margin-top: 20px;
+    }
+
+    .section h2{
+      margin: 16px 2px 10px;
+      font-size: 1.05rem;
+      letter-spacing:.2px;
+    }
+
+    .item{
+      margin: 10px 0;
+      border-top: 1px solid var(--stroke);
+    }
+
+    .item:first-child{ border-top:none; }
+
+    .item-head{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      padding: 12px 14px;
+    }
+
+    .item-title{
+      margin:0;
+      font-size: .98rem;
+      font-weight: 720;
+      line-height: 1.2;
+    }
+    .item-meta{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.35;
+    }
+
+    .item-actions{
+      flex:0 0 auto;
+      display:flex;
+      gap: 8px;
+      align-items:center;
+    }
+
+    .mini-btn{
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      color: var(--text);
+      text-decoration:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 8px;
+      user-select:none;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: .88rem;
+    }
+    .mini-btn:active{ transform: translateY(1px); }
+
+    .mini-btn.primary{
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      border-color: rgba(0,0,0,.05);
+      color: var(--accent);
+    }
+
+    details{
+      padding: 0 14px 12px;
+    }
+    details summary{
+      cursor:pointer;
+      list-style:none;
+      color: var(--accent);
+      font-weight: 750;
+      margin-top: 0;
+      user-select:none;
+    }
+    details summary::-webkit-details-marker{ display:none; }
+
+    .details-box{
+      margin-top: 10px;
+      border-radius: var(--radius2);
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      padding: 10px 12px;
+      color: var(--text);
+      line-height: 1.4;
+      font-size: .92rem;
+      white-space: pre-wrap;
+    }
+
+    /* ===== Footer Feedback ===== */
+    .feedback{
+      margin-top: 18px;
+    }
+    .feedback h3{
+      margin:0;
+      font-size: 1.0rem;
+    }
+    .feedback p{
+      margin: 6px 0 10px;
+      color: var(--muted);
+      font-size:.92rem;
+      line-height:1.35;
+    }
+
+    .rate-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+    }
+
+    .rate-btn{
+      flex: 1 1 140px;
+      height: var(--tap);
+      border-radius: 16px;
+      border: 1px solid var(--stroke);
+      background: var(--panel2);
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing:.2px;
+      cursor:pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,.05);
+    }
+    .rate-btn.good{ background: #dcfce7; border-color: #86efac; color: #166534; }
+    .rate-btn.meh{  background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .rate-btn.bad{  background: #ffe4e6; border-color: #fda4af; color: #9f1239; }
+    .rate-btn:active{ transform: translateY(1px); }
+
+    .why{
+      margin-top: 10px;
+      display:none;
+      gap: 10px;
+    }
+
+    textarea{
+      width:100%;
+      min-height: 88px;
+      resize: vertical;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid var(--stroke);
+      background: var(--bg);
+      color: var(--text);
+      font-size: .95rem;
+      line-height: 1.35;
+      outline:none;
+    }
+    textarea::placeholder{ color: var(--muted); }
+
+    .send-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+      margin-top: 10px;
+    }
+
+    .send-btn{
+      height: var(--tap);
+      padding: 0 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.05);
+      background: linear-gradient(135deg, #e0f2fe, #f3e8ff);
+      color: var(--accent);
+      font-weight: 850;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    .send-btn:active{ transform: translateY(1px); }
+
+    .fineprint{
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+
+    /* ===== QR Code Modal ===== */
+    .qr-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    .qr-modal.active { display: flex; }
+
+    .qr-card {
+      background: white;
+      padding: 30px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .qr-card h3 { margin: 0 0 15px; color: #0f172a; }
+    .qr-card img { width: 100%; height: auto; border-radius: 8px; }
+    .qr-close {
+      margin-top: 20px;
+      width: 100%;
+      height: 48px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    /* ===== Utilities ===== */
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+
+    .tiny{
+      font-size:.8rem;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 520px){
+      .callbox{ flex-direction: column; }
+      .call-btn{ width: 100%; min-width: 0; }
+      .item-head{ flex-direction: column; align-items: stretch; }
+      .item-actions{ justify-content:flex-start; }
+      .mini-btn{ flex: 1 1 auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="hope-banner">
+      <div class="aurora"></div>
+      <div class="lights" id="lights"></div>
+
+      <div class="hope-title">
+        <div>
+          <h1 id="appTitle">JAA Home Health Help Finder</h1>
+          <p id="appSubtitle">Quick help for home health, hospice, transportation, benefits, and aging support.</p>
+
+          <!-- Tabs -->
+          <div class="tabs" role="tablist" aria-label="Audience Tabs">
+            <button class="tab active" id="tab-patient" role="tab" aria-selected="true" onclick="setAudience('patient')">
+              🧑‍🦳 Patients <small>(default)</small>
+            </button>
+            <button class="tab" id="tab-staff" role="tab" aria-selected="false" onclick="setAudience('staff')">
+              🩺 Staff
+            </button>
+          </div>
+
+          <!-- Share Link -->
+          <div class="share-link" onclick="toggleQR()">📲 Share this page via QR</div>
+        </div>
+
+        <div class="badge">
+          <div>Updated</div>
+          <div id="updatedDate">—</div>
+        </div>
+      </div>
+
+      <p class="muted-note" id="metaNotes"></p>
+    </div>
+
+    <!-- Icon Nav -->
+    <div id="iconNav" class="icon-nav"></div>
+
+    <div class="primary card">
+      <div class="card-inner">
+        <div class="label">Most important first step</div>
+        <div class="callbox">
+          <div class="call-left">
+            <div class="big-name" id="primaryName">Loading…</div>
+            <p class="small" id="primaryShort"></p>
+            <div class="pill-row" id="primaryPills"></div>
+          </div>
+
+          <a class="call-btn" id="primaryCallBtn" href="#">
+            ☎️ <span id="primaryPhone">—</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="sectionsRoot"></div>
+
+    <div class="feedback card">
+      <div class="card-inner">
+        <h3>Help improve this tool</h3>
+        <p>
+          If something is wrong, outdated, or confusing, you can send feedback.
+          <strong>This inbox is NOT checked for urgent help</strong> — it’s only used to improve the system.
+        </p>
+
+        <div class="rate-row">
+          <button class="rate-btn good" onclick="rate('GOOD')">✅ Helpful</button>
+          <button class="rate-btn meh" onclick="rate('MEH')">🤔 Okay / Meh</button>
+          <button class="rate-btn bad" onclick="rate('BAD')">⚠️ Problematic</button>
+        </div>
+
+        <div class="why" id="whyBox">
+          <textarea id="whyText" placeholder="Optional: what should be fixed? (wrong number, hours changed, unclear instructions, etc.)"></textarea>
+
+          <div class="send-row">
+            <button class="send-btn" onclick="sendFeedbackEmail()">Send feedback email</button>
+            <div class="tiny" id="ratingStatus">Rating: —</div>
+          </div>
+
+          <div class="fineprint">
+            Sends to: <strong>jaadoc@upmc.edu</strong> (not monitored for urgent help).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Modal -->
+  <div class="qr-modal" id="qrModal" onclick="toggleQR()">
+    <div class="qr-card" onclick="event.stopPropagation()">
+      <h3 id="qrTitle">Share JAA Home Health</h3>
+      <img id="qrImg" src="" alt="QR Code" />
+      <button class="qr-close" onclick="toggleQR()">Close</button>
+    </div>
+  </div>
+
+<script>
+  let APP_DATA = null;
+  let CURRENT_RATING = null;
+
+  // ===== Config =====
+  // Put these files next to jaa.html in your GitHub Pages folder:
+  //   - jaa_patient.json
+  //   - jaa_staff.json
+  const DATA_FILES = {
+    patient: "./jaa_patient.json",
+    staff: "./jaa_staff.json"
+  };
+
+  // The URL your QR code should share
+  // (Update if your GitHub Pages path changes)
+  const SHARE_BASE_URL = "https://dormantone.github.io/streetwise/jaa.html";
+
+  // default audience
+  let AUDIENCE = "patient";
+
+  // ====== Hope Animation: floating lights ======
+  (function makeLights(){
+    const holder = document.getElementById("lights");
+    const n = 16;
+    for(let i=0;i<n;i++){
+      const d = document.createElement("div");
+      d.className = "light";
+      const left = Math.random()*100;
+      const top = 60 + Math.random()*55;
+      const dur = 5 + Math.random()*7;
+      const delay = Math.random()*6;
+      const size = 6 + Math.random()*10;
+
+      d.style.left = left + "%";
+      d.style.top = top + "%";
+      d.style.animationDuration = dur + "s";
+      d.style.animationDelay = delay + "s";
+      d.style.width = size + "px";
+      d.style.height = size + "px";
+      d.style.opacity = 0.35 + Math.random()*0.35;
+      holder.appendChild(d);
+    }
+  })();
+
+  function safeText(s){ return (s ?? "").toString(); }
+
+  function fmtPhoneForTel(phoneRaw){
+    if(!phoneRaw) return "";
+    return phoneRaw.replace(/\s+/g,'');
+  }
+
+  function makePills(tags){
+    const wrap = document.createElement("div");
+    wrap.className = "pill-row";
+    (tags || []).slice(0,6).forEach(t=>{
+      const p = document.createElement("div");
+      p.className = "pill";
+      p.textContent = t;
+      wrap.appendChild(p);
+    });
+    return wrap;
+  }
+
+  function buildItemCard(item){
+    const phone = safeText(item.display_phone || "");
+    const tel = fmtPhoneForTel(item.phone || "");
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    const head = document.createElement("div");
+    head.className = "item-head";
+
+    const left = document.createElement("div");
+    left.style.flex = "1 1 auto";
+    left.style.minWidth = "0";
+
+    const title = document.createElement("div");
+    title.className = "item-title";
+    title.textContent = safeText(item.name);
+
+    const meta = document.createElement("div");
+    meta.className = "item-meta";
+
+    const lines = [];
+    if(item.summary) lines.push(item.summary);
+    if(item.address) lines.push("📍 " + item.address);
+    if(item.hours) lines.push("🕒 " + item.hours);
+    if((item.tags || []).length) lines.push("🏷️ " + item.tags.join(" • "));
+
+    meta.textContent = lines.join("  |  ");
+
+    left.appendChild(title);
+    left.appendChild(meta);
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    if(tel){
+      const callA = document.createElement("a");
+      callA.className = "mini-btn primary";
+      callA.href = "tel:" + tel;
+      callA.innerHTML = "☎️ Call";
+      callA.title = "Call " + phone;
+      actions.appendChild(callA);
+    }
+
+    if(item.address){
+      const mapsA = document.createElement("a");
+      mapsA.className = "mini-btn";
+      const q = encodeURIComponent(item.address);
+      mapsA.href = "https://www.google.com/maps/search/?api=1&query=" + q;
+      mapsA.target = "_blank";
+      mapsA.rel = "noopener noreferrer";
+      mapsA.innerHTML = "🗺️ Map";
+      mapsA.title = "Open in maps";
+      actions.appendChild(mapsA);
+    }
+
+    head.appendChild(left);
+    head.appendChild(actions);
+    div.appendChild(head);
+
+    const det = document.createElement("details");
+    const sum = document.createElement("summary");
+    sum.textContent = "See more";
+
+    const box = document.createElement("div");
+    box.className = "details-box";
+
+    const bits = [];
+    if(phone) bits.push("Phone: " + phone);
+    if(item.details) bits.push(item.details);
+
+    box.textContent = bits.filter(Boolean).join("\n\n");
+
+    det.appendChild(sum);
+    det.appendChild(box);
+    div.appendChild(det);
+
+    return div;
+  }
+
+  function buildSection(section){
+    const container = document.createElement("div");
+    container.className = "section card";
+    container.id = "sec-" + section.id;
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    const h2 = document.createElement("h2");
+    h2.textContent = section.title;
+
+    inner.appendChild(h2);
+
+    (section.items || []).forEach(item=>{
+      inner.appendChild(buildItemCard(item));
+    });
+
+    container.appendChild(inner);
+    return container;
+  }
+
+  function renderAll(){
+    const root = document.getElementById("sectionsRoot");
+    root.innerHTML = "";
+    if(!APP_DATA) return;
+
+    const sections = [...(APP_DATA.sections || [])]
+      .sort((a,b)=>(a.importance||999)-(b.importance||999));
+
+    sections.forEach(sec=>{
+      root.appendChild(buildSection(sec));
+    });
+  }
+
+  function fillHeader(){
+    document.getElementById("appTitle").textContent = safeText(APP_DATA?.meta?.title || "JAA Home Health Help Finder");
+    document.getElementById("appSubtitle").textContent = safeText(APP_DATA?.meta?.subtitle || "");
+    document.getElementById("updatedDate").textContent = safeText(APP_DATA?.meta?.updated || "—");
+
+    const notes = (APP_DATA?.meta?.notes || []).map(x=>"• " + x).join("  ");
+    document.getElementById("metaNotes").textContent = notes;
+
+    const pc = APP_DATA?.primary_contact;
+    if(pc){
+      document.getElementById("primaryName").textContent = safeText(pc.name);
+      document.getElementById("primaryShort").textContent = safeText(pc.short);
+
+      const phone = safeText(pc.display_phone || "");
+      const tel = fmtPhoneForTel(pc.phone || "");
+      const btn = document.getElementById("primaryCallBtn");
+      btn.href = tel ? ("tel:" + tel) : "#";
+      document.getElementById("primaryPhone").textContent = phone || "Call";
+
+      const pillHost = document.getElementById("primaryPills");
+      pillHost.innerHTML = "";
+      pillHost.appendChild(makePills(AUDIENCE === "staff"
+        ? ["Referrals", "Coordination", "Wraparound services"]
+        : ["Home health intake", "Skilled care", "Support services"]
+      ));
+    }
+  }
+
+  // ===== Feedback flow =====
+  function rate(val){
+    CURRENT_RATING = val;
+    document.getElementById("whyBox").style.display = "grid";
+    document.getElementById("ratingStatus").textContent = "Rating: " + val;
+    setTimeout(()=>document.getElementById("whyText").focus(), 50);
+  }
+
+  function sendFeedbackEmail(){
+    const why = (document.getElementById("whyText").value || "").trim();
+
+    const subject = `JAA Home Health Help Finder feedback — ${CURRENT_RATING || "UNSET"} (${AUDIENCE})`;
+    const bodyLines = [
+      "Feedback on the JAA Home Health Help Finder tool",
+      "",
+      "Audience tab: " + AUDIENCE,
+      "Rating: " + (CURRENT_RATING || "UNSET"),
+      "",
+      "Why / Notes:",
+      why || "(no additional details provided)",
+      "",
+      "Reminder: this inbox is NOT monitored for urgent help.",
+      "It is used only to improve the tool.",
+      "",
+      "Sent from the web page."
+    ];
+
+    const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\\n"))}`;
+    window.location.href = mailto;
+  }
+
+  // ===== Icons for your sections =====
+  const SECTION_ICONS = {
+    "immediate": "🆘",
+    "transportation": "🚐",
+    "care": "🧭",
+    "ltss": "🧾",
+    "home_health": "🏥",
+    "hospice": "🕊️",
+    "adult_day": "🏛️",
+    "food": "🍽️",
+    "benefits": "💊",
+    "legal": "⚖️",
+    "financial": "💡",
+    "home_safety": "🛠️",
+    "facilities": "🏩",
+    "inhome_private": "🧑‍⚕️"
+  };
+
+  function speakLabel(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 1.08;
+      window.speechSynthesis.speak(utter);
+    }
+  }
+
+  function renderIconNav() {
+    if (!APP_DATA || !APP_DATA.sections) return;
+    const nav = document.getElementById("iconNav");
+    nav.innerHTML = "";
+
+    APP_DATA.sections.forEach(sec => {
+      const btn = document.createElement("div");
+      btn.className = "icon-btn";
+
+      const iconChar = SECTION_ICONS[sec.id] || "📌";
+
+      const emoji = document.createElement("div");
+      emoji.className = "icon-btn-emoji";
+      emoji.textContent = iconChar;
+
+      const lbl = document.createElement("div");
+      lbl.className = "icon-btn-label";
+      lbl.textContent = sec.title.split("(")[0].trim();
+
+      btn.appendChild(emoji);
+      btn.appendChild(lbl);
+
+      btn.onclick = () => {
+        speakLabel(sec.title);
+        const target = document.getElementById("sec-" + sec.id);
+        if(target) target.scrollIntoView({behavior: "smooth", block: "start"});
+      };
+
+      nav.appendChild(btn);
+    });
+  }
+
+  // ===== QR Modal Toggle =====
+  function getShareUrl(){
+    // include audience in share link
+    const u = new URL(SHARE_BASE_URL);
+    u.searchParams.set("audience", AUDIENCE);
+    return u.toString();
+  }
+
+  function updateQR(){
+    const shareUrl = getShareUrl();
+    document.getElementById("qrTitle").textContent =
+      AUDIENCE === "staff" ? "Share JAA Home Health (Staff)" : "Share JAA Home Health (Patients)";
+    document.getElementById("qrImg").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(shareUrl);
+  }
+
+  function toggleQR() {
+    updateQR();
+    const m = document.getElementById("qrModal");
+    m.classList.toggle("active");
+  }
+
+  // ===== Audience Tabs =====
+  function setTabUI(){
+    const p = document.getElementById("tab-patient");
+    const s = document.getElementById("tab-staff");
+    const isStaff = AUDIENCE === "staff";
+
+    p.classList.toggle("active", !isStaff);
+    s.classList.toggle("active", isStaff);
+
+    p.setAttribute("aria-selected", (!isStaff).toString());
+    s.setAttribute("aria-selected", (isStaff).toString());
+  }
+
+  function setAudience(a){
+    AUDIENCE = (a === "staff") ? "staff" : "patient";
+    localStorage.setItem("jaa_audience", AUDIENCE);
+
+    // keep URL stable for sharing
+    const url = new URL(window.location.href);
+    url.searchParams.set("audience", AUDIENCE);
+    history.replaceState({}, "", url.toString());
+
+    setTabUI();
+    load(); // reload JSON for new audience
+  }
+
+  function getInitialAudience(){
+    const url = new URL(window.location.href);
+    const qp = (url.searchParams.get("audience") || "").toLowerCase().trim();
+    if(qp === "staff" || qp === "patient") return qp;
+    const saved = (localStorage.getItem("jaa_audience") || "").toLowerCase();
+    if(saved === "staff" || saved === "patient") return saved;
+    return "patient";
+  }
+
+  // ===== Load JSON =====
+  async function load(){
+    try{
+      const file = DATA_FILES[AUDIENCE] || DATA_FILES.patient;
+      const resp = await fetch(file, {cache: "no-store"});
+      if(!resp.ok) throw new Error("Could not load " + file);
+      APP_DATA = await resp.json();
+
+      fillHeader();
+      renderAll();
+      renderIconNav();
+    } catch(err){
+      console.error(err);
+      document.getElementById("primaryName").textContent = "Could not load data file";
+      document.getElementById("primaryShort").textContent =
+        "Make sure jaa.html and jaa_patient.json / jaa_staff.json are in the same folder.";
+    }
+  }
+
+  // Boot
+  AUDIENCE = getInitialAudience();
+  setTabUI();
+  load();
+</script>
+</body>
+</html>
