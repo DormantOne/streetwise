@@ -14,7 +14,8 @@
     "name": "JAA Home Health Services (Jewish Association on Aging)",
     "phone": "+14125863249",
     "display_phone": "412-586-3249",
-    "short": "Call for home health intake, skilled nursing/therapy coordination, and service questions."
+    "short": "Call for home health intake, skilled nursing/therapy coordination, and service questions.",
+    "website": ""
   },
   "sections": [
     {
@@ -35,7 +36,8 @@
             "Disability"
           ],
           "summary": "Front door for aging services: information & referral, OPTIONS care management, caregiver support, benefits assistance referrals, senior centers, and Adult P...",
-          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/SeniorLine | Who they serve: Older adults (typically 60+), caregivers, and professionals seeking aging services in Allegheny County | Limitations/notes: Service availability can vary by program eligibility, funding, and waitlists."
+          "details": "Who they serve: Older adults (typically 60+), caregivers, and professionals seeking aging services in Allegheny County | Limitations/notes: Service availability can vary by program eligibility, funding, and waitlists.",
+          "website": "https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/SeniorLine"
         },
         {
           "name": "Adult Protective Services (APS) – Allegheny County",
@@ -50,7 +52,8 @@
             "Disability"
           ],
           "summary": "Investigates reports and coordinates protective interventions and support services.",
-          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Adult-Protective-Services | Who they serve: Adults 60+ who may be at risk of abuse, neglect, exploitation, or abandonment (including self-neglect) | Limitations/notes: Eligibility is typically 60+ (PA APS). If under 60, call DHS/DAL or Disability Rights PA for guidance."
+          "details": "Who they serve: Adults 60+ who may be at risk of abuse, neglect, exploitation, or abandonment (including self-neglect) | Limitations/notes: Eligibility is typically 60+ (PA APS). If under 60, call DHS/DAL or Disability Rights PA for guidance.",
+          "website": "https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Adult-Protective-Services"
         },
         {
           "name": "DHS Director’s Action Line (DAL) – Allegheny County",
@@ -65,7 +68,8 @@
             "Disability"
           ],
           "summary": "Navigation/help line to connect people to county human services and troubleshoot barriers.",
-          "details": "Website: https://connect.alleghenycounty.us/shelters/ | Who they serve: Allegheny County residents needing help navigating DHS services (housing, food, benefits, etc.) | Limitations/notes: Not an emergency line; response depends on program eligibility/availability."
+          "details": "Who they serve: Allegheny County residents needing help navigating DHS services (housing, food, benefits, etc.) | Limitations/notes: Not an emergency line; response depends on program eligibility/availability.",
+          "website": "https://connect.alleghenycounty.us/shelters/"
         },
         {
           "name": "Allegheny Link (Coordinated Entry / housing & support navigation)",
@@ -80,7 +84,8 @@
             "Disability"
           ],
           "summary": "Single access point for housing/shelter navigation; can connect to case management and related supports.",
-          "details": "Website: https://connect.alleghenycounty.us/housing-shelter/ | Who they serve: People seeking housing navigation, shelter access, or coordinated entry supports | Limitations/notes: Prioritization is needs-based; housing resources can be limited."
+          "details": "Who they serve: People seeking housing navigation, shelter access, or coordinated entry supports | Limitations/notes: Prioritization is needs-based; housing resources can be limited.",
+          "website": "https://connect.alleghenycounty.us/housing-shelter/"
         },
         {
           "name": "PA 211 Southwest (resource navigation)",
@@ -95,7 +100,8 @@
             "Disability"
           ],
           "summary": "Information & referral service for community resources.",
-          "details": "Website: https://southwest.pa211.org/contact/ | Who they serve: Anyone needing help finding local resources (bills, food, housing, etc.) | Limitations/notes: Provides referrals; does not directly deliver services."
+          "details": "Who they serve: Anyone needing help finding local resources (bills, food, housing, etc.) | Limitations/notes: Provides referrals; does not directly deliver services.",
+          "website": "https://southwest.pa211.org/contact/"
         },
         {
           "name": "re:solve Crisis Services (Allegheny County)",
@@ -111,7 +117,8 @@
             "Disability"
           ],
           "summary": "24/7 crisis support, walk-in services, and mobile crisis response.",
-          "details": "Website: https://www.upmc.com/services/behavioral-health/programs/emergency-crisis/resolve-crisis-services | Who they serve: Allegheny County residents experiencing behavioral health crisis | Limitations/notes: For imminent medical danger call 911; non-urgent counseling usually requires follow-up referral."
+          "details": "Who they serve: Allegheny County residents experiencing behavioral health crisis | Limitations/notes: For imminent medical danger call 911; non-urgent counseling usually requires follow-up referral.",
+          "website": "https://www.upmc.com/services/behavioral-health/programs/emergency-crisis/resolve-crisis-services"
         },
         {
           "name": "988 Suicide & Crisis Lifeline (nationwide)",
@@ -127,7 +134,8 @@
             "Disability"
           ],
           "summary": "Immediate emotional support and crisis connection.",
-          "details": "Website: https://988lifeline.org/ | Who they serve: Anyone in emotional distress or suicidal crisis | Limitations/notes: Crisis support, not a substitute for ongoing medical/psychiatric care."
+          "details": "Who they serve: Anyone in emotional distress or suicidal crisis | Limitations/notes: Crisis support, not a substitute for ongoing medical/psychiatric care.",
+          "website": "https://988lifeline.org/"
         }
       ]
     },
@@ -148,7 +156,8 @@
             "Disability"
           ],
           "summary": "Door-to-door paratransit transportation (often using contracted providers).",
-          "details": "Website: https://myaccessride.com/ | Who they serve: Individuals with disabilities who cannot use fixed-route transit; requires eligibility evaluation | Limitations/notes: Eligibility required; scheduling windows/ride times can vary; shared-ride model."
+          "details": "Who they serve: Individuals with disabilities who cannot use fixed-route transit; requires eligibility evaluation | Limitations/notes: Eligibility required; scheduling windows/ride times can vary; shared-ride model.",
+          "website": "https://myaccessride.com/"
         },
         {
           "name": "PRT – Senior Free Fare (ConnectCard)",
@@ -162,7 +171,8 @@
             "Disability"
           ],
           "summary": "Free fares for seniors on PRT services with proper senior ID/registration.",
-          "details": "Website: https://connect.alleghenycounty.us/ | Who they serve: Allegheny County residents age 65+ | Limitations/notes: Requires registration/ID; applies to PRT services (not all private carriers)."
+          "details": "Who they serve: Allegheny County residents age 65+ | Limitations/notes: Requires registration/ID; applies to PRT services (not all private carriers).",
+          "website": "https://connect.alleghenycounty.us/"
         },
         {
           "name": "Older Persons Transportation (OPT) – discounted shared rides",
@@ -176,7 +186,8 @@
             "Disability"
           ],
           "summary": "Discounted shared rides to necessary errands (medical appointments, groceries, etc.).",
-          "details": "Website: https://www.rideprt.org/services/older-persons-transportation-opt/ | Who they serve: Adults age 60+ | Limitations/notes: Trip purpose limits; advance scheduling often required; capacity constraints possible."
+          "details": "Who they serve: Adults age 60+ | Limitations/notes: Trip purpose limits; advance scheduling often required; capacity constraints possible.",
+          "website": "https://www.rideprt.org/services/older-persons-transportation-opt/"
         },
         {
           "name": "AgeWell Pittsburgh (JFCS) – rides, resources, caregiver support",
@@ -190,7 +201,8 @@
             "Disability"
           ],
           "summary": "Volunteer-based rides and supportive services; can help with errands/appointments and aging resources.",
-          "details": "Website: https://www.jfcspgh.org/our-services/older-adults/agewell-pittsburgh/ | Who they serve: Typically 60+ (and some caregivers) | Limitations/notes: Volunteer capacity may limit scheduling; service area and trip types may be restricted."
+          "details": "Who they serve: Typically 60+ (and some caregivers) | Limitations/notes: Volunteer capacity may limit scheduling; service area and trip types may be restricted.",
+          "website": "https://www.jfcspgh.org/our-services/older-adults/agewell-pittsburgh/"
         },
         {
           "name": "GoGoGrandparent (Uber/Lyft relay for seniors)",
@@ -204,7 +216,8 @@
             "Disability"
           ],
           "summary": "Calls/texts to request Uber/Lyft rides without smartphone apps.",
-          "details": "Website: https://gogograndparent.com/ | Who they serve: Adults who prefer phone-based ride ordering; credit card required | Limitations/notes: Fee-based private service; requires registration and payment method."
+          "details": "Who they serve: Adults who prefer phone-based ride ordering; credit card required | Limitations/notes: Fee-based private service; requires registration and payment method.",
+          "website": "https://gogograndparent.com/"
         },
         {
           "name": "Medicaid transportation (MATP / plan-based non-emergency transport)",
@@ -218,7 +231,8 @@
             "Disability"
           ],
           "summary": "Non-emergency medical transportation benefit offered through plans or MATP network.",
-          "details": "Website: https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance-Transportation-Program.aspx | Who they serve: People with Medicaid / Medical Assistance | Limitations/notes: Trip must be medical/covered; prior authorization may apply; provider networks vary."
+          "details": "Who they serve: People with Medicaid / Medical Assistance | Limitations/notes: Trip must be medical/covered; prior authorization may apply; provider networks vary.",
+          "website": "https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance-Transportation-Program.aspx"
         }
       ]
     },
@@ -240,7 +254,8 @@
             "Disability"
           ],
           "summary": "Assessment, service planning, and coordination (home-delivered meals, personal care, respite, etc.).",
-          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults | Who they serve: Older adults needing assessment & care coordination to remain safely at home | Limitations/notes: Funding/eligibility vary; some services may have waitlists or cost-sharing."
+          "details": "Who they serve: Older adults needing assessment & care coordination to remain safely at home | Limitations/notes: Funding/eligibility vary; some services may have waitlists or cost-sharing.",
+          "website": "https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults"
         },
         {
           "name": "UPMC Living-At-Home Program (geriatric care management)",
@@ -255,7 +270,8 @@
             "Disability"
           ],
           "summary": "Care coordination, assessments, and support planning for older adults living at home.",
-          "details": "Website: https://www.upmc.com/services/seniors | Who they serve: Older adults and families seeking care management, navigation, aging-in-place support | Limitations/notes: May be fee-based depending on services; not a substitute for emergency services."
+          "details": "Who they serve: Older adults and families seeking care management, navigation, aging-in-place support | Limitations/notes: May be fee-based depending on services; not a substitute for emergency services.",
+          "website": "https://www.upmc.com/services/seniors"
         }
       ]
     },
@@ -277,7 +293,8 @@
             "Disability"
           ],
           "summary": "Helps start LTSS applications and connects to assessments and managed care enrollment.",
-          "details": "Website: https://www.enrollchc.com/ | Who they serve: People applying for Medicaid long-term services & supports (including Aging Waiver and disability waivers) | Limitations/notes: Requires Medicaid eligibility and level-of-care determination; processing time varies."
+          "details": "Who they serve: People applying for Medicaid long-term services & supports (including Aging Waiver and disability waivers) | Limitations/notes: Requires Medicaid eligibility and level-of-care determination; processing time varies.",
+          "website": "https://www.enrollchc.com/"
         },
         {
           "name": "Community HealthChoices (CHC) Helpline – PA DHS",
@@ -292,7 +309,8 @@
             "Disability"
           ],
           "summary": "Information on CHC managed long-term services supports and enrollment steps.",
-          "details": "Website: https://www.dhs.pa.gov/Services/Disabilities-Aging/Pages/Community-HealthChoices.aspx | Who they serve: Adults needing LTSS through CHC (older adults and adults with physical disabilities) | Limitations/notes: CHC is for eligible participants; MCO plan networks vary."
+          "details": "Who they serve: Adults needing LTSS through CHC (older adults and adults with physical disabilities) | Limitations/notes: CHC is for eligible participants; MCO plan networks vary.",
+          "website": "https://www.dhs.pa.gov/Services/Disabilities-Aging/Pages/Community-HealthChoices.aspx"
         },
         {
           "name": "Allegheny County Office of Developmental Supports (ODS)",
@@ -307,7 +325,8 @@
             "Disability"
           ],
           "summary": "Intake and connection to services for people with ID/A through county supports and waivers.",
-          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Intellectual-Disabilities | Who they serve: Individuals with intellectual disabilities/autism and their families | Limitations/notes: Eligibility determination required; services depend on waiver funding/availability."
+          "details": "Who they serve: Individuals with intellectual disabilities/autism and their families | Limitations/notes: Eligibility determination required; services depend on waiver funding/availability.",
+          "website": "https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Intellectual-Disabilities"
         }
       ]
     },
@@ -329,7 +348,8 @@
             "Disability"
           ],
           "summary": "Skilled nursing, therapy, and home health services (coverage varies).",
-          "details": "Website: https://www.jaapgh.org/home-health/ | Who they serve: Adults needing skilled home health services (often after hospitalization or with chronic needs) | Limitations/notes: Typically requires physician order and insurance authorization; visit frequency based on need/coverage."
+          "details": "Who they serve: Adults needing skilled home health services (often after hospitalization or with chronic needs) | Limitations/notes: Typically requires physician order and insurance authorization; visit frequency based on need/coverage.",
+          "website": "https://www.jaapgh.org/home-health/"
         },
         {
           "name": "AHN Healthcare@Home (home health, hospice, palliative, infusion, DME)",
@@ -344,7 +364,8 @@
             "Disability"
           ],
           "summary": "Home health, hospice, palliative care, infusion therapy, and medical equipment delivery.",
-          "details": "Website: https://www.ahn.org/services/healthcare-at-home | Who they serve: Patients needing home-based medical services and supplies | Limitations/notes: Service area/insurance coverage vary; physician orders required for many services."
+          "details": "Who they serve: Patients needing home-based medical services and supplies | Limitations/notes: Service area/insurance coverage vary; physician orders required for many services.",
+          "website": "https://www.ahn.org/services/healthcare-at-home"
         },
         {
           "name": "UPMC at Home (home health services)",
@@ -359,7 +380,8 @@
             "Disability"
           ],
           "summary": "Home health services through UPMC at Home network.",
-          "details": "Website: https://www.upmc.com/services/home-health-care | Who they serve: Patients needing skilled home care (nursing, rehab, etc.) | Limitations/notes: Coverage/eligibility depend on medical necessity and insurance authorization."
+          "details": "Who they serve: Patients needing skilled home care (nursing, rehab, etc.) | Limitations/notes: Coverage/eligibility depend on medical necessity and insurance authorization.",
+          "website": "https://www.upmc.com/services/home-health-care"
         }
       ]
     },
@@ -381,7 +403,8 @@
             "Disability"
           ],
           "summary": "Hospice and palliative care services with bereavement support.",
-          "details": "Website: https://www.jaapgh.org/hospice/ | Who they serve: People with serious illness and those eligible for hospice services; caregivers | Limitations/notes: Hospice eligibility typically requires physician certification and a limited prognosis; insurance rules apply."
+          "details": "Who they serve: People with serious illness and those eligible for hospice services; caregivers | Limitations/notes: Hospice eligibility typically requires physician certification and a limited prognosis; insurance rules apply.",
+          "website": "https://www.jaapgh.org/hospice/"
         },
         {
           "name": "UPMC Family Hospice, Part of UPMC – West (serves Allegheny County)",
@@ -396,7 +419,8 @@
             "Disability"
           ],
           "summary": "Hospice and palliative services plus bereavement support.",
-          "details": "Website: https://www.upmc.com/services/home-health-care/hospice/locations/southwest-pa/family-hospice-west | Who they serve: Hospice-eligible patients and families in Southwest PA (including Allegheny County) | Limitations/notes: Eligibility per Medicare/insurance hospice benefit; service area coverage applies."
+          "details": "Who they serve: Hospice-eligible patients and families in Southwest PA (including Allegheny County) | Limitations/notes: Eligibility per Medicare/insurance hospice benefit; service area coverage applies.",
+          "website": "https://www.upmc.com/services/home-health-care/hospice/locations/southwest-pa/family-hospice-west"
         },
         {
           "name": "AHN Hospice (Healthcare@Home)",
@@ -411,7 +435,8 @@
             "Disability"
           ],
           "summary": "Hospice care with interdisciplinary team support.",
-          "details": "Website: https://www.ahn.org/services/healthcare-at-home/hospice | Who they serve: Hospice-eligible patients and families in Western PA | Limitations/notes: Eligibility/coverage depend on payer rules; service area applies."
+          "details": "Who they serve: Hospice-eligible patients and families in Western PA | Limitations/notes: Eligibility/coverage depend on payer rules; service area applies.",
+          "website": "https://www.ahn.org/services/healthcare-at-home/hospice"
         }
       ]
     },
@@ -431,7 +456,8 @@
             "Disability"
           ],
           "summary": "Integrated medical + social model: day centers, home supports, primary care, transportation, therapies.",
-          "details": "Website: https://lifepittsburgh.org/ | Who they serve: Typically age 55+ who qualify for nursing-facility level of care but can live safely in the community | Limitations/notes: Eligibility assessment required; enrollment capacity may vary; generally Medicare/Medicaid based."
+          "details": "Who they serve: Typically age 55+ who qualify for nursing-facility level of care but can live safely in the community | Limitations/notes: Eligibility assessment required; enrollment capacity may vary; generally Medicare/Medicaid based.",
+          "website": "https://lifepittsburgh.org/"
         },
         {
           "name": "Anathan Adult Day Memory Care Services (JAA)",
@@ -444,7 +470,8 @@
             "Disability"
           ],
           "summary": "Adult day services with supervision, activities, and caregiver respite.",
-          "details": "Website: https://www.jaapgh.org/anathan/ | Who they serve: Adults needing adult day services, including memory care supports | Limitations/notes: Schedule/costs vary; may require intake and health screening."
+          "details": "Who they serve: Adults needing adult day services, including memory care supports | Limitations/notes: Schedule/costs vary; may require intake and health screening.",
+          "website": "https://www.jaapgh.org/anathan/"
         }
       ]
     },
@@ -466,7 +493,8 @@
             "Disability"
           ],
           "summary": "Entry point for home-delivered meals and related food resources.",
-          "details": "Website: https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/ | Who they serve: Older adults who are homebound or need nutrition support | Limitations/notes: Eligibility and wait times vary; assessment may be required."
+          "details": "Who they serve: Older adults who are homebound or need nutrition support | Limitations/notes: Eligibility and wait times vary; assessment may be required.",
+          "website": "https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/"
         },
         {
           "name": "Meals on Wheels Greater Pittsburgh (general contact)",
@@ -481,7 +509,8 @@
             "Disability"
           ],
           "summary": "Meal delivery programs serving different neighborhoods through partner routes.",
-          "details": "Website: https://mealsonwheelsgreaterpittsburgh.org/ | Who they serve: Homebound older adults/individuals needing meal delivery (varies by program) | Limitations/notes: Service areas differ by route/provider; donation/cost structures vary."
+          "details": "Who they serve: Homebound older adults/individuals needing meal delivery (varies by program) | Limitations/notes: Service areas differ by route/provider; donation/cost structures vary.",
+          "website": "https://mealsonwheelsgreaterpittsburgh.org/"
         },
         {
           "name": "Greater Pittsburgh Community Food Bank – Senior Box Program",
@@ -496,7 +525,8 @@
             "Disability"
           ],
           "summary": "Monthly box of shelf-stable food items (site-based distribution).",
-          "details": "Website: https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/ | Who they serve: Eligible older adults (income/age criteria may apply) | Limitations/notes: Eligibility requirements apply; schedule varies by location."
+          "details": "Who they serve: Eligible older adults (income/age criteria may apply) | Limitations/notes: Eligibility requirements apply; schedule varies by location.",
+          "website": "https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/"
         }
       ]
     },
@@ -519,7 +549,8 @@
             "Disability"
           ],
           "summary": "Free, unbiased Medicare counseling: enrollment, plan comparisons, appeals guidance.",
-          "details": "Website: https://www.pa.gov/agencies/aging/aging-programs-and-services/pa-medi-medicare-counseling | Who they serve: Medicare beneficiaries and caregivers | Limitations/notes: Counseling only; does not provide direct insurance coverage."
+          "details": "Who they serve: Medicare beneficiaries and caregivers | Limitations/notes: Counseling only; does not provide direct insurance coverage.",
+          "website": "https://www.pa.gov/agencies/aging/aging-programs-and-services/pa-medi-medicare-counseling"
         },
         {
           "name": "PACE / PACENET – PA prescription assistance (65+)",
@@ -535,7 +566,8 @@
             "Disability"
           ],
           "summary": "State prescription assistance that works with Medicare Part D to reduce out-of-pocket costs.",
-          "details": "Website: https://www.pa.gov/services/aging/apply-for-the-pharmaceutical-assistance-contract-for-the-elderly | Who they serve: PA residents age 65+ meeting income and insurance criteria | Limitations/notes: Income eligibility; must maintain other coverage requirements; formulary/benefits rules apply."
+          "details": "Who they serve: PA residents age 65+ meeting income and insurance criteria | Limitations/notes: Income eligibility; must maintain other coverage requirements; formulary/benefits rules apply.",
+          "website": "https://www.pa.gov/services/aging/apply-for-the-pharmaceutical-assistance-contract-for-the-elderly"
         },
         {
           "name": "GoodRx (discount cards/price comparisons)",
@@ -551,7 +583,8 @@
             "Disability"
           ],
           "summary": "Price comparison and discount coupons at participating pharmacies.",
-          "details": "Website: https://www.goodrx.com/ | Who they serve: Anyone buying prescriptions (cash-pay discounts may apply) | Limitations/notes: Not insurance; discounts vary by pharmacy and medication."
+          "details": "Who they serve: Anyone buying prescriptions (cash-pay discounts may apply) | Limitations/notes: Not insurance; discounts vary by pharmacy and medication.",
+          "website": "https://www.goodrx.com/"
         },
         {
           "name": "ACorx (bubble-packaged medication organization)",
@@ -567,7 +600,8 @@
             "Disability"
           ],
           "summary": "Medication packaging/organization service (insurance billed; copays typically unchanged).",
-          "details": "Website: (check local listing) | Who they serve: People who want pre-sorted medications in blister/bubble packs | Limitations/notes: Not a discount program; availability and delivery options vary."
+          "details": "Website: (check local listing) | Who they serve: People who want pre-sorted medications in blister/bubble packs | Limitations/notes: Not a discount program; availability and delivery options vary.",
+          "website": ""
         }
       ]
     },
@@ -589,7 +623,8 @@
             "Disability"
           ],
           "summary": "Free legal information/advice/referrals; brief services in certain areas of elder law.",
-          "details": "Website: https://seniorlawcenter.org/projects/pennsylvania-seniorlaw-helpline/ | Who they serve: Pennsylvanians age 60+ | Limitations/notes: Scope limits by topic; capacity may vary."
+          "details": "Who they serve: Pennsylvanians age 60+ | Limitations/notes: Scope limits by topic; capacity may vary.",
+          "website": "https://seniorlawcenter.org/projects/pennsylvania-seniorlaw-helpline/"
         },
         {
           "name": "Pennsylvania Health Law Project (PHLP) – Medicaid/healthcare legal help",
@@ -604,7 +639,8 @@
             "Disability"
           ],
           "summary": "Free legal help on Medicaid/healthcare access issues.",
-          "details": "Website: https://www.phlp.org/en/contact | Who they serve: People needing help accessing Medicaid/health benefits, coverage issues, appeals | Limitations/notes: Healthcare/benefits focus (not a general civil legal clinic)."
+          "details": "Who they serve: People needing help accessing Medicaid/health benefits, coverage issues, appeals | Limitations/notes: Healthcare/benefits focus (not a general civil legal clinic).",
+          "website": "https://www.phlp.org/en/contact"
         },
         {
           "name": "Disability Rights Pennsylvania (DRP) – disability legal advocacy",
@@ -619,7 +655,8 @@
             "Disability"
           ],
           "summary": "Legal advocacy, rights information, and assistance for disability-related issues.",
-          "details": "Website: https://www.disabilityrightspa.org/ | Who they serve: People with disabilities (all ages) and advocates | Limitations/notes: Not all cases can be accepted; prioritization by issue area and capacity."
+          "details": "Who they serve: People with disabilities (all ages) and advocates | Limitations/notes: Not all cases can be accepted; prioritization by issue area and capacity.",
+          "website": "https://www.disabilityrightspa.org/"
         },
         {
           "name": "Pennsylvania Long-Term Care Ombudsman (nursing homes, assisted living, personal care homes)",
@@ -634,7 +671,8 @@
             "Disability"
           ],
           "summary": "Advocates for resident rights; helps resolve complaints and quality-of-care concerns.",
-          "details": "Website: https://www.aging.pa.gov/aging-services/long-term-care-ombudsman/Pages/default.aspx | Who they serve: Residents of long-term care facilities and their families | Limitations/notes: Ombudsman is an advocate, not a regulator; emergency safety concerns may require APS/911."
+          "details": "Who they serve: Residents of long-term care facilities and their families | Limitations/notes: Ombudsman is an advocate, not a regulator; emergency safety concerns may require APS/911.",
+          "website": "https://www.aging.pa.gov/aging-services/long-term-care-ombudsman/Pages/default.aspx"
         }
       ]
     },
@@ -654,7 +692,8 @@
             "Disability"
           ],
           "summary": "Rebates for property tax or rent paid in PA (up to program maximums).",
-          "details": "Website: https://www.pa.gov/agencies/revenue/ptrr | Who they serve: Older adults 65+, widows/widowers 50+, and adults 18+ with disabilities (income limits apply) | Limitations/notes: Annual application and eligibility rules; deadlines apply."
+          "details": "Who they serve: Older adults 65+, widows/widowers 50+, and adults 18+ with disabilities (income limits apply) | Limitations/notes: Annual application and eligibility rules; deadlines apply.",
+          "website": "https://www.pa.gov/agencies/revenue/ptrr"
         },
         {
           "name": "LIHEAP (Low Income Home Energy Assistance Program) – PA DHS",
@@ -667,7 +706,8 @@
             "Disability"
           ],
           "summary": "Heating assistance grants and crisis supports for eligible households.",
-          "details": "Website: https://www.pa.gov/services/dhs/apply-for-the-low-income-home-energy-assistance-program-liheap | Who they serve: Low-income households needing help with heating bills or heating crisis | Limitations/notes: Seasonal program windows; eligibility depends on income and household info."
+          "details": "Who they serve: Low-income households needing help with heating bills or heating crisis | Limitations/notes: Seasonal program windows; eligibility depends on income and household info.",
+          "website": "https://www.pa.gov/services/dhs/apply-for-the-low-income-home-energy-assistance-program-liheap"
         },
         {
           "name": "Duquesne Light – Customer Assistance Program (CAP)",
@@ -680,7 +720,8 @@
             "Disability"
           ],
           "summary": "Reduced monthly payments and payment plans to help maintain electric service.",
-          "details": "Website: https://duquesnelight.com/account-billing/payment-assistance/customer-assistance-program | Who they serve: Eligible low-income Duquesne Light customers | Limitations/notes: Requires eligibility; program rules apply; must be within service territory."
+          "details": "Who they serve: Eligible low-income Duquesne Light customers | Limitations/notes: Requires eligibility; program rules apply; must be within service territory.",
+          "website": "https://duquesnelight.com/account-billing/payment-assistance/customer-assistance-program"
         }
       ]
     },
@@ -702,7 +743,8 @@
             "Disability"
           ],
           "summary": "Critical home repairs and safety modifications (program-dependent).",
-          "details": "Website: https://www.rebuildingtogetherpittsburgh.org/ | Who they serve: Homeowners who qualify (often older adults/low-income/disabled) | Limitations/notes: Eligibility and waitlists vary; project scope depends on funding/volunteers."
+          "details": "Who they serve: Homeowners who qualify (often older adults/low-income/disabled) | Limitations/notes: Eligibility and waitlists vary; project scope depends on funding/volunteers.",
+          "website": "https://www.rebuildingtogetherpittsburgh.org/"
         },
         {
           "name": "ACTION-Housing (housing help, repairs, accessibility, weatherization programs vary)",
@@ -717,7 +759,8 @@
             "Disability"
           ],
           "summary": "Housing services and programs that may include home repairs/modifications depending on eligibility.",
-          "details": "Website: https://actionhousing.org/ | Who they serve: Residents needing housing stabilization, accessibility help, or repairs (program-specific) | Limitations/notes: Programs vary; documentation and eligibility requirements apply."
+          "details": "Who they serve: Residents needing housing stabilization, accessibility help, or repairs (program-specific) | Limitations/notes: Programs vary; documentation and eligibility requirements apply.",
+          "website": "https://actionhousing.org/"
         },
         {
           "name": "TechOWL (PA Assistive Technology Program)",
@@ -732,7 +775,8 @@
             "Disability"
           ],
           "summary": "Assistive technology info, device demonstrations/loans (program-dependent), and accessibility support.",
-          "details": "Website: https://techowlpa.org/ | Who they serve: People with disabilities, older adults, caregivers | Limitations/notes: Not a direct equipment vendor for all devices; program scope varies."
+          "details": "Who they serve: People with disabilities, older adults, caregivers | Limitations/notes: Not a direct equipment vendor for all devices; program scope varies.",
+          "website": "https://techowlpa.org/"
         },
         {
           "name": "Pennsylvania Assistive Technology Foundation (PATF) – financing for AT",
@@ -747,7 +791,8 @@
             "Disability"
           ],
           "summary": "Loans and programs to help finance assistive technology and accessibility modifications.",
-          "details": "Website: https://www.patf.us/ | Who they serve: Pennsylvanians needing financing for assistive technology or home modifications | Limitations/notes: Loan approval/terms apply; not a grant program in most cases."
+          "details": "Who they serve: Pennsylvanians needing financing for assistive technology or home modifications | Limitations/notes: Loan approval/terms apply; not a grant program in most cases.",
+          "website": "https://www.patf.us/"
         }
       ]
     },
@@ -769,7 +814,8 @@
             "Disability"
           ],
           "summary": "County-operated long-term care facilities and rehabilitation.",
-          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Kane-Community-Living-Centers | Who they serve: Individuals needing skilled nursing / long-term care (eligibility and payor mix varies) | Limitations/notes: Admissions depend on bed availability and clinical criteria."
+          "details": "Who they serve: Individuals needing skilled nursing / long-term care (eligibility and payor mix varies) | Limitations/notes: Admissions depend on bed availability and clinical criteria.",
+          "website": "https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Kane-Community-Living-Centers"
         }
       ]
     },
@@ -791,7 +837,8 @@
             "Disability"
           ],
           "summary": "Non-medical in-home caregiving: companionship, personal care assistance, respite.",
-          "details": "Website: https://www.homeinstead.com/home-care/usa/pa/southwest-allegheny-county/265/service-area/pittsburgh-pa/ | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+          "details": "Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area.",
+          "website": "https://www.homeinstead.com/home-care/usa/pa/southwest-allegheny-county/265/service-area/pittsburgh-pa/"
         },
         {
           "name": "Visiting Angels (Pittsburgh)",
@@ -806,7 +853,8 @@
             "Disability"
           ],
           "summary": "Non-medical home care: personal care, companionship, respite, dementia support options.",
-          "details": "Website: https://www.visitingangels.com/pittsburgh/home | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+          "details": "Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area.",
+          "website": "https://www.visitingangels.com/pittsburgh/home"
         },
         {
           "name": "Comfort Keepers (Pittsburgh City)",
@@ -821,7 +869,8 @@
             "Disability"
           ],
           "summary": "Non-medical in-home care, companionship, personal care, respite.",
-          "details": "Website: https://www.comfortkeepers.com/offices/pennsylvania/pittsburgh-city/ | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+          "details": "Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area.",
+          "website": "https://www.comfortkeepers.com/offices/pennsylvania/pittsburgh-city/"
         },
         {
           "name": "Right at Home (Greater Pittsburgh)",
@@ -836,7 +885,8 @@
             "Disability"
           ],
           "summary": "Non-medical home care, personal care, companionship, light housekeeping, respite.",
-          "details": "Website: https://www.rightathome.net/greater-pittsburgh | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+          "details": "Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area.",
+          "website": "https://www.rightathome.net/greater-pittsburgh"
         }
       ]
     }
