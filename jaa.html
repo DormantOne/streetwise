@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -380,6 +381,7 @@
       display:flex;
       gap: 8px;
       align-items:center;
+      flex-wrap: wrap;
     }
 
     .mini-btn{
@@ -407,6 +409,12 @@
       color: var(--accent);
     }
 
+    .mini-btn.web{
+      background: #ffffff;
+      border-color: rgba(2,132,199,.25);
+      color: var(--accent);
+    }
+
     details{
       padding: 0 14px 12px;
     }
@@ -430,6 +438,13 @@
       line-height: 1.4;
       font-size: .92rem;
       white-space: pre-wrap;
+    }
+
+    .details-box a{
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: underline;
+      word-break: break-word;
     }
 
     /* ===== Footer Feedback ===== */
@@ -558,13 +573,6 @@
     }
 
     /* ===== Utilities ===== */
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-    }
-
     .tiny{
       font-size:.8rem;
       color: var(--muted);
@@ -680,8 +688,7 @@
   let APP_DATA = null;
   let CURRENT_RATING = null;
 
-  // ===== Config =====
-  // Put these files next to jaa.html in your GitHub Pages folder:
+  // Put these files next to jaa.html:
   //   - jaa_patient.json
   //   - jaa_staff.json
   const DATA_FILES = {
@@ -689,12 +696,34 @@
     staff: "./jaa_staff.json"
   };
 
-  // The URL your QR code should share
-  // (Update if your GitHub Pages path changes)
+  // Update if your GitHub Pages path changes
   const SHARE_BASE_URL = "https://dormantone.github.io/streetwise/jaa.html";
 
-  // default audience
   let AUDIENCE = "patient";
+
+  function safeText(s){ return (s ?? "").toString(); }
+
+  function fmtPhoneForTel(phoneRaw){
+    if(!phoneRaw) return "";
+    return phoneRaw.replace(/\s+/g,'');
+  }
+
+  function normalizeUrl(u){
+    const s = safeText(u).trim();
+    if(!s) return "";
+    if(s.startsWith("http://") || s.startsWith("https://")) return s;
+    return "https://" + s;
+  }
+
+  function hostLabel(url){
+    try{
+      const u = new URL(url);
+      let h = u.hostname.replace(/^www\./,'');
+      return h;
+    }catch(e){
+      return url;
+    }
+  }
 
   // ====== Hope Animation: floating lights ======
   (function makeLights(){
@@ -720,13 +749,6 @@
     }
   })();
 
-  function safeText(s){ return (s ?? "").toString(); }
-
-  function fmtPhoneForTel(phoneRaw){
-    if(!phoneRaw) return "";
-    return phoneRaw.replace(/\s+/g,'');
-  }
-
   function makePills(tags){
     const wrap = document.createElement("div");
     wrap.className = "pill-row";
@@ -742,6 +764,7 @@
   function buildItemCard(item){
     const phone = safeText(item.display_phone || "");
     const tel = fmtPhoneForTel(item.phone || "");
+    const website = normalizeUrl(item.website || "");
 
     const div = document.createElement("div");
     div.className = "item";
@@ -765,6 +788,7 @@
     if(item.address) lines.push("📍 " + item.address);
     if(item.hours) lines.push("🕒 " + item.hours);
     if((item.tags || []).length) lines.push("🏷️ " + item.tags.join(" • "));
+    if(website) lines.push("🌐 " + hostLabel(website));
 
     meta.textContent = lines.join("  |  ");
 
@@ -783,6 +807,17 @@
       actions.appendChild(callA);
     }
 
+    if(website){
+      const webA = document.createElement("a");
+      webA.className = "mini-btn web";
+      webA.href = website;
+      webA.target = "_blank";
+      webA.rel = "noopener noreferrer";
+      webA.innerHTML = "🌐 Web";
+      webA.title = "Open website";
+      actions.appendChild(webA);
+    }
+
     if(item.address){
       const mapsA = document.createElement("a");
       mapsA.className = "mini-btn";
@@ -799,6 +834,7 @@
     head.appendChild(actions);
     div.appendChild(head);
 
+    // Collapsible details
     const det = document.createElement("details");
     const sum = document.createElement("summary");
     sum.textContent = "See more";
@@ -808,9 +844,14 @@
 
     const bits = [];
     if(phone) bits.push("Phone: " + phone);
+    if(website) bits.push("Website: " + website);
     if(item.details) bits.push(item.details);
 
-    box.textContent = bits.filter(Boolean).join("\n\n");
+    // Render with clickable website (and keep safe)
+    const text = bits.filter(Boolean).join("\n\n");
+    // Replace any url in text with clickable anchor
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    box.innerHTML = text.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
 
     det.appendChild(sum);
     det.appendChild(box);
@@ -973,7 +1014,6 @@
 
   // ===== QR Modal Toggle =====
   function getShareUrl(){
-    // include audience in share link
     const u = new URL(SHARE_BASE_URL);
     u.searchParams.set("audience", AUDIENCE);
     return u.toString();
@@ -1010,13 +1050,12 @@
     AUDIENCE = (a === "staff") ? "staff" : "patient";
     localStorage.setItem("jaa_audience", AUDIENCE);
 
-    // keep URL stable for sharing
     const url = new URL(window.location.href);
     url.searchParams.set("audience", AUDIENCE);
     history.replaceState({}, "", url.toString());
 
     setTabUI();
-    load(); // reload JSON for new audience
+    load();
   }
 
   function getInitialAudience(){
@@ -1047,7 +1086,6 @@
     }
   }
 
-  // Boot
   AUDIENCE = getInitialAudience();
   setTabUI();
   load();
