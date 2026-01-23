@@ -1,0 +1,844 @@
+{
+  "meta": {
+    "title": "Allegheny Senior & Disability Help Finder",
+    "subtitle": "Quick help for transportation, benefits, home care, meals, safety, and support",
+    "updated": "2026-01-23",
+    "notes": [
+      "Information may change. If a number is busy or a program is full, try another option.",
+      "If this is a medical emergency, call 911.",
+      "If you feel unsafe, threatened, or in emotional crisis, call/text 988.",
+      "For behavioral health crisis help in Allegheny County, call re:solve Crisis Network: 1-888-796-8226."
+    ]
+  },
+  "primary_contact": {
+    "name": "Allegheny County Area Agency on Aging (AAA) – SeniorLine",
+    "phone": "+14123505460",
+    "display_phone": "412-350-5460",
+    "short": "Best first call for Allegheny County aging services: intake, referrals, OPTIONS care management, and Adult Protective Services connections."
+  },
+  "sections": [
+    {
+      "id": "immediate",
+      "title": "Start Here (Intake & Urgent Help)",
+      "importance": 1,
+      "items": [
+        {
+          "name": "Allegheny County Area Agency on Aging (AAA) – SeniorLine",
+          "phone": "+14123505460",
+          "display_phone": "412-350-5460",
+          "address": "2100 Wharton St., Suite 302, Pittsburgh, PA 15203",
+          "hours": "Walk-in Mon–Fri 8:30 AM–4:30 PM (phone line hours may vary)",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Front door for aging services: information & referral, OPTIONS care management, caregiver support, benefits assistance referrals, senior centers, and Adult P...",
+          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/SeniorLine | Who they serve: Older adults (typically 60+), caregivers, and professionals seeking aging services in Allegheny County | Limitations/notes: Service availability can vary by program eligibility, funding, and waitlists."
+        },
+        {
+          "name": "Adult Protective Services (APS) – Allegheny County",
+          "phone": "+14123506905",
+          "display_phone": "412-350-6905",
+          "address": "County program (call first)",
+          "hours": "Mon–Fri 8 AM–5 PM (after-hours line available)",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Investigates reports and coordinates protective interventions and support services.",
+          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Adult-Protective-Services | Who they serve: Adults 60+ who may be at risk of abuse, neglect, exploitation, or abandonment (including self-neglect) | Limitations/notes: Eligibility is typically 60+ (PA APS). If under 60, call DHS/DAL or Disability Rights PA for guidance."
+        },
+        {
+          "name": "DHS Director’s Action Line (DAL) – Allegheny County",
+          "phone": "+18008626783",
+          "display_phone": "800-862-6783",
+          "address": "N/A (call/text)",
+          "hours": "Mon–Fri 8 AM–5 PM",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Navigation/help line to connect people to county human services and troubleshoot barriers.",
+          "details": "Website: https://connect.alleghenycounty.us/shelters/ | Who they serve: Allegheny County residents needing help navigating DHS services (housing, food, benefits, etc.) | Limitations/notes: Not an emergency line; response depends on program eligibility/availability."
+        },
+        {
+          "name": "Allegheny Link (Coordinated Entry / housing & support navigation)",
+          "phone": "+18667302368",
+          "display_phone": "866-730-2368",
+          "address": "Human Services Building, One Smithfield St., Pittsburgh, PA 15222",
+          "hours": "In-person Mon–Fri 8:00 AM–4:00 PM (call hours may vary)",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Single access point for housing/shelter navigation; can connect to case management and related supports.",
+          "details": "Website: https://connect.alleghenycounty.us/housing-shelter/ | Who they serve: People seeking housing navigation, shelter access, or coordinated entry supports | Limitations/notes: Prioritization is needs-based; housing resources can be limited."
+        },
+        {
+          "name": "PA 211 Southwest (resource navigation)",
+          "phone": "+18555675341",
+          "display_phone": "855-567-5341",
+          "address": "N/A",
+          "hours": "Varies (call/text 211 for current hours)",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Information & referral service for community resources.",
+          "details": "Website: https://southwest.pa211.org/contact/ | Who they serve: Anyone needing help finding local resources (bills, food, housing, etc.) | Limitations/notes: Provides referrals; does not directly deliver services."
+        },
+        {
+          "name": "re:solve Crisis Services (Allegheny County)",
+          "phone": "",
+          "display_phone": "1-888-7-YOU-CAN (796-8226)",
+          "address": "Walk-in: 333 N Braddock Ave., Pittsburgh, PA 15208",
+          "hours": "24/7 hotline + walk-in crisis center; mobile crisis team available countywide",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Crisis",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "24/7 crisis support, walk-in services, and mobile crisis response.",
+          "details": "Website: https://www.upmc.com/services/behavioral-health/programs/emergency-crisis/resolve-crisis-services | Who they serve: Allegheny County residents experiencing behavioral health crisis | Limitations/notes: For imminent medical danger call 911; non-urgent counseling usually requires follow-up referral."
+        },
+        {
+          "name": "988 Suicide & Crisis Lifeline (nationwide)",
+          "phone": "+1988",
+          "display_phone": "988",
+          "address": "N/A",
+          "hours": "24/7",
+          "tags": [
+            "Start here",
+            "Navigation",
+            "Crisis",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Immediate emotional support and crisis connection.",
+          "details": "Website: https://988lifeline.org/ | Who they serve: Anyone in emotional distress or suicidal crisis | Limitations/notes: Crisis support, not a substitute for ongoing medical/psychiatric care."
+        }
+      ]
+    },
+    {
+      "id": "transportation",
+      "title": "Transportation",
+      "importance": 2,
+      "items": [
+        {
+          "name": "Pittsburgh Regional Transit (PRT) – ACCESS / Paratransit",
+          "phone": "+14125625353",
+          "display_phone": "412-562-5353",
+          "address": "Countywide paratransit program",
+          "hours": "Reservation and service hours vary (call/website)",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Door-to-door paratransit transportation (often using contracted providers).",
+          "details": "Website: https://myaccessride.com/ | Who they serve: Individuals with disabilities who cannot use fixed-route transit; requires eligibility evaluation | Limitations/notes: Eligibility required; scheduling windows/ride times can vary; shared-ride model."
+        },
+        {
+          "name": "PRT – Senior Free Fare (ConnectCard)",
+          "phone": "+14123505460",
+          "display_phone": "412-350-5460",
+          "address": "Apply/registration online; card use on PRT services",
+          "hours": "Online registration; travel per PRT schedules",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Free fares for seniors on PRT services with proper senior ID/registration.",
+          "details": "Website: https://connect.alleghenycounty.us/ | Who they serve: Allegheny County residents age 65+ | Limitations/notes: Requires registration/ID; applies to PRT services (not all private carriers)."
+        },
+        {
+          "name": "Older Persons Transportation (OPT) – discounted shared rides",
+          "phone": "+14125625385",
+          "display_phone": "412-562-5385",
+          "address": "Allegheny County",
+          "hours": "6:00 AM–12:00 AM, 7 days/week (service availability varies)",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Discounted shared rides to necessary errands (medical appointments, groceries, etc.).",
+          "details": "Website: https://www.rideprt.org/services/older-persons-transportation-opt/ | Who they serve: Adults age 60+ | Limitations/notes: Trip purpose limits; advance scheduling often required; capacity constraints possible."
+        },
+        {
+          "name": "AgeWell Pittsburgh (JFCS) – rides, resources, caregiver support",
+          "phone": "+14124220400",
+          "display_phone": "412-422-0400",
+          "address": "Pittsburgh-area service",
+          "hours": "Program hours vary (call)",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Volunteer-based rides and supportive services; can help with errands/appointments and aging resources.",
+          "details": "Website: https://www.jfcspgh.org/our-services/older-adults/agewell-pittsburgh/ | Who they serve: Typically 60+ (and some caregivers) | Limitations/notes: Volunteer capacity may limit scheduling; service area and trip types may be restricted."
+        },
+        {
+          "name": "GoGoGrandparent (Uber/Lyft relay for seniors)",
+          "phone": "",
+          "display_phone": "See website (account-based)",
+          "address": "Nationwide service",
+          "hours": "Varies",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Calls/texts to request Uber/Lyft rides without smartphone apps.",
+          "details": "Website: https://gogograndparent.com/ | Who they serve: Adults who prefer phone-based ride ordering; credit card required | Limitations/notes: Fee-based private service; requires registration and payment method."
+        },
+        {
+          "name": "Medicaid transportation (MATP / plan-based non-emergency transport)",
+          "phone": "",
+          "display_phone": "Call your Medicaid plan member services",
+          "address": "Varies",
+          "hours": "Varies",
+          "tags": [
+            "Transportation",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Non-emergency medical transportation benefit offered through plans or MATP network.",
+          "details": "Website: https://www.dhs.pa.gov/Services/Assistance/Pages/Medical-Assistance-Transportation-Program.aspx | Who they serve: People with Medicaid / Medical Assistance | Limitations/notes: Trip must be medical/covered; prior authorization may apply; provider networks vary."
+        }
+      ]
+    },
+    {
+      "id": "care",
+      "title": "Aging-in-Place & Care Management",
+      "importance": 3,
+      "items": [
+        {
+          "name": "OPTIONS Program (AAA Care Management)",
+          "phone": "+14123505460",
+          "display_phone": "412-350-5460",
+          "address": "Countywide",
+          "hours": "Varies",
+          "tags": [
+            "Care management",
+            "Aging in place",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Assessment, service planning, and coordination (home-delivered meals, personal care, respite, etc.).",
+          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults | Who they serve: Older adults needing assessment & care coordination to remain safely at home | Limitations/notes: Funding/eligibility vary; some services may have waitlists or cost-sharing."
+        },
+        {
+          "name": "UPMC Living-At-Home Program (geriatric care management)",
+          "phone": "+14127236200",
+          "display_phone": "412-723-6200",
+          "address": "Pittsburgh/Allegheny County (program-based)",
+          "hours": "Varies",
+          "tags": [
+            "Care management",
+            "Aging in place",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Care coordination, assessments, and support planning for older adults living at home.",
+          "details": "Website: https://www.upmc.com/services/seniors | Who they serve: Older adults and families seeking care management, navigation, aging-in-place support | Limitations/notes: May be fee-based depending on services; not a substitute for emergency services."
+        }
+      ]
+    },
+    {
+      "id": "ltss",
+      "title": "Medicaid Waivers & Long-Term Services (LTSS)",
+      "importance": 4,
+      "items": [
+        {
+          "name": "Independent Enrollment Broker (IEB) – PA LTSS eligibility/enrollment",
+          "phone": "+18775504227",
+          "display_phone": "877-550-4227",
+          "address": "Pennsylvania statewide",
+          "hours": "Call for hours",
+          "tags": [
+            "Medicaid",
+            "Waiver/LTSS",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Helps start LTSS applications and connects to assessments and managed care enrollment.",
+          "details": "Website: https://www.enrollchc.com/ | Who they serve: People applying for Medicaid long-term services & supports (including Aging Waiver and disability waivers) | Limitations/notes: Requires Medicaid eligibility and level-of-care determination; processing time varies."
+        },
+        {
+          "name": "Community HealthChoices (CHC) Helpline – PA DHS",
+          "phone": "+18777610700",
+          "display_phone": "877-761-0700",
+          "address": "Pennsylvania statewide",
+          "hours": "Call for hours",
+          "tags": [
+            "Medicaid",
+            "Waiver/LTSS",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Information on CHC managed long-term services supports and enrollment steps.",
+          "details": "Website: https://www.dhs.pa.gov/Services/Disabilities-Aging/Pages/Community-HealthChoices.aspx | Who they serve: Adults needing LTSS through CHC (older adults and adults with physical disabilities) | Limitations/notes: CHC is for eligible participants; MCO plan networks vary."
+        },
+        {
+          "name": "Allegheny County Office of Developmental Supports (ODS)",
+          "phone": "+14122531250",
+          "display_phone": "412-253-1250",
+          "address": "Allegheny County",
+          "hours": "Call for hours",
+          "tags": [
+            "Medicaid",
+            "Waiver/LTSS",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Intake and connection to services for people with ID/A through county supports and waivers.",
+          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Intellectual-Disabilities | Who they serve: Individuals with intellectual disabilities/autism and their families | Limitations/notes: Eligibility determination required; services depend on waiver funding/availability."
+        }
+      ]
+    },
+    {
+      "id": "home_health",
+      "title": "Home Health (Skilled Nursing, Therapy)",
+      "importance": 5,
+      "items": [
+        {
+          "name": "JAA Home Health Services (Jewish Association on Aging)",
+          "phone": "+14125863249",
+          "display_phone": "412-586-3249",
+          "address": "Pittsburgh area",
+          "hours": "Mon–Fri 8:00 AM–4:30 PM (administrative)",
+          "tags": [
+            "Home health",
+            "Skilled care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Skilled nursing, therapy, and home health services (coverage varies).",
+          "details": "Website: https://www.jaapgh.org/home-health/ | Who they serve: Adults needing skilled home health services (often after hospitalization or with chronic needs) | Limitations/notes: Typically requires physician order and insurance authorization; visit frequency based on need/coverage."
+        },
+        {
+          "name": "AHN Healthcare@Home (home health, hospice, palliative, infusion, DME)",
+          "phone": "+18003818080",
+          "display_phone": "800-381-8080",
+          "address": "Western PA service network",
+          "hours": "Call for intake hours (clinical support as needed)",
+          "tags": [
+            "Home health",
+            "Skilled care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Home health, hospice, palliative care, infusion therapy, and medical equipment delivery.",
+          "details": "Website: https://www.ahn.org/services/healthcare-at-home | Who they serve: Patients needing home-based medical services and supplies | Limitations/notes: Service area/insurance coverage vary; physician orders required for many services."
+        },
+        {
+          "name": "UPMC at Home (home health services)",
+          "phone": "",
+          "display_phone": "Use website for local branch contact (multiple locations)",
+          "address": "Multiple Southwest PA branches",
+          "hours": "Varies by branch",
+          "tags": [
+            "Home health",
+            "Skilled care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Home health services through UPMC at Home network.",
+          "details": "Website: https://www.upmc.com/services/home-health-care | Who they serve: Patients needing skilled home care (nursing, rehab, etc.) | Limitations/notes: Coverage/eligibility depend on medical necessity and insurance authorization."
+        }
+      ]
+    },
+    {
+      "id": "hospice",
+      "title": "Hospice & Palliative Care",
+      "importance": 6,
+      "items": [
+        {
+          "name": "Sivitz Hospice & Palliative Care (JAA)",
+          "phone": "+14125866275",
+          "display_phone": "412-586-6275",
+          "address": "Pittsburgh area",
+          "hours": "Call for intake; hospice support is typically 24/7",
+          "tags": [
+            "Hospice",
+            "Palliative care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Hospice and palliative care services with bereavement support.",
+          "details": "Website: https://www.jaapgh.org/hospice/ | Who they serve: People with serious illness and those eligible for hospice services; caregivers | Limitations/notes: Hospice eligibility typically requires physician certification and a limited prognosis; insurance rules apply."
+        },
+        {
+          "name": "UPMC Family Hospice, Part of UPMC – West (serves Allegheny County)",
+          "phone": "+18005132148",
+          "display_phone": "800-513-2148",
+          "address": "300 Northpointe Cir., Suite 303, Seven Fields, PA 16046",
+          "hours": "Hospice support typically 24/7; call for intake",
+          "tags": [
+            "Hospice",
+            "Palliative care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Hospice and palliative services plus bereavement support.",
+          "details": "Website: https://www.upmc.com/services/home-health-care/hospice/locations/southwest-pa/family-hospice-west | Who they serve: Hospice-eligible patients and families in Southwest PA (including Allegheny County) | Limitations/notes: Eligibility per Medicare/insurance hospice benefit; service area coverage applies."
+        },
+        {
+          "name": "AHN Hospice (Healthcare@Home)",
+          "phone": "+18885997328",
+          "display_phone": "888-599-7328",
+          "address": "Western PA",
+          "hours": "Call for intake",
+          "tags": [
+            "Hospice",
+            "Palliative care",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Hospice care with interdisciplinary team support.",
+          "details": "Website: https://www.ahn.org/services/healthcare-at-home/hospice | Who they serve: Hospice-eligible patients and families in Western PA | Limitations/notes: Eligibility/coverage depend on payer rules; service area applies."
+        }
+      ]
+    },
+    {
+      "id": "adult_day",
+      "title": "Adult Day Programs & PACE",
+      "importance": 7,
+      "items": [
+        {
+          "name": "LIFE Pittsburgh (PACE Program of All-Inclusive Care for the Elderly)",
+          "phone": "",
+          "display_phone": "(Use program locator via website)",
+          "address": "Multiple centers in Allegheny County",
+          "hours": "Varies by center",
+          "tags": [
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Integrated medical + social model: day centers, home supports, primary care, transportation, therapies.",
+          "details": "Website: https://lifepittsburgh.org/ | Who they serve: Typically age 55+ who qualify for nursing-facility level of care but can live safely in the community | Limitations/notes: Eligibility assessment required; enrollment capacity may vary; generally Medicare/Medicaid based."
+        },
+        {
+          "name": "Anathan Adult Day Memory Care Services (JAA)",
+          "phone": "+14125862690",
+          "display_phone": "412-586-2690",
+          "address": "Pittsburgh",
+          "hours": "Call for hours",
+          "tags": [
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Adult day services with supervision, activities, and caregiver respite.",
+          "details": "Website: https://www.jaapgh.org/anathan/ | Who they serve: Adults needing adult day services, including memory care supports | Limitations/notes: Schedule/costs vary; may require intake and health screening."
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "title": "Meals, Food & Essentials",
+      "importance": 8,
+      "items": [
+        {
+          "name": "Home-Delivered Meals (Allegheny County) – start via SeniorLine",
+          "phone": "+14123505460",
+          "display_phone": "412-350-5460",
+          "address": "Countywide (delivery)",
+          "hours": "Call to request/assess",
+          "tags": [
+            "Food",
+            "Meals",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Entry point for home-delivered meals and related food resources.",
+          "details": "Website: https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/ | Who they serve: Older adults who are homebound or need nutrition support | Limitations/notes: Eligibility and wait times vary; assessment may be required."
+        },
+        {
+          "name": "Meals on Wheels Greater Pittsburgh (general contact)",
+          "phone": "+14128299250",
+          "display_phone": "412-829-9250",
+          "address": "Pittsburgh region",
+          "hours": "Call for intake",
+          "tags": [
+            "Food",
+            "Meals",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Meal delivery programs serving different neighborhoods through partner routes.",
+          "details": "Website: https://mealsonwheelsgreaterpittsburgh.org/ | Who they serve: Homebound older adults/individuals needing meal delivery (varies by program) | Limitations/notes: Service areas differ by route/provider; donation/cost structures vary."
+        },
+        {
+          "name": "Greater Pittsburgh Community Food Bank – Senior Box Program",
+          "phone": "+14124603663",
+          "display_phone": "412-460-3663",
+          "address": "Distribution sites across Allegheny County",
+          "hours": "Varies by site",
+          "tags": [
+            "Food",
+            "Meals",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Monthly box of shelf-stable food items (site-based distribution).",
+          "details": "Website: https://connect.alleghenycounty.us/food-transportation-and-other-essentials/drive-up-and-meal-delivery-food-resources/ | Who they serve: Eligible older adults (income/age criteria may apply) | Limitations/notes: Eligibility requirements apply; schedule varies by location."
+        }
+      ]
+    },
+    {
+      "id": "benefits",
+      "title": "Benefits & Prescription Help",
+      "importance": 9,
+      "items": [
+        {
+          "name": "PA MEDI (formerly APPRISE) – Medicare counseling / SHIP",
+          "phone": "+18007837067",
+          "display_phone": "800-783-7067",
+          "address": "Statewide",
+          "hours": "Mon–Fri 8:00 AM–5:00 PM",
+          "tags": [
+            "Benefits",
+            "Medicare",
+            "Prescription help",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Free, unbiased Medicare counseling: enrollment, plan comparisons, appeals guidance.",
+          "details": "Website: https://www.pa.gov/agencies/aging/aging-programs-and-services/pa-medi-medicare-counseling | Who they serve: Medicare beneficiaries and caregivers | Limitations/notes: Counseling only; does not provide direct insurance coverage."
+        },
+        {
+          "name": "PACE / PACENET – PA prescription assistance (65+)",
+          "phone": "+18002257223",
+          "display_phone": "800-225-7223",
+          "address": "Pennsylvania statewide",
+          "hours": "Call for assistance; applications via phone/online/mail",
+          "tags": [
+            "Benefits",
+            "Medicare",
+            "Prescription help",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "State prescription assistance that works with Medicare Part D to reduce out-of-pocket costs.",
+          "details": "Website: https://www.pa.gov/services/aging/apply-for-the-pharmaceutical-assistance-contract-for-the-elderly | Who they serve: PA residents age 65+ meeting income and insurance criteria | Limitations/notes: Income eligibility; must maintain other coverage requirements; formulary/benefits rules apply."
+        },
+        {
+          "name": "GoodRx (discount cards/price comparisons)",
+          "phone": "",
+          "display_phone": "N/A",
+          "address": "Online tool",
+          "hours": "24/7 online",
+          "tags": [
+            "Benefits",
+            "Medicare",
+            "Prescription help",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Price comparison and discount coupons at participating pharmacies.",
+          "details": "Website: https://www.goodrx.com/ | Who they serve: Anyone buying prescriptions (cash-pay discounts may apply) | Limitations/notes: Not insurance; discounts vary by pharmacy and medication."
+        },
+        {
+          "name": "ACorx (bubble-packaged medication organization)",
+          "phone": "+14128572922",
+          "display_phone": "412-857-2922",
+          "address": "Pittsburgh region",
+          "hours": "Call for hours",
+          "tags": [
+            "Benefits",
+            "Medicare",
+            "Prescription help",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Medication packaging/organization service (insurance billed; copays typically unchanged).",
+          "details": "Website: (check local listing) | Who they serve: People who want pre-sorted medications in blister/bubble packs | Limitations/notes: Not a discount program; availability and delivery options vary."
+        }
+      ]
+    },
+    {
+      "id": "legal",
+      "title": "Legal Help & Advocacy",
+      "importance": 10,
+      "items": [
+        {
+          "name": "Pennsylvania SeniorLAW HelpLine (Older Pennsylvanians Legal Assistance Program)",
+          "phone": "+18777277529",
+          "display_phone": "877-727-7529",
+          "address": "Statewide (phone-based)",
+          "hours": "Mon–Thu 10:00 AM–12:00 PM (verify current hours)",
+          "tags": [
+            "Legal help",
+            "Advocacy",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Free legal information/advice/referrals; brief services in certain areas of elder law.",
+          "details": "Website: https://seniorlawcenter.org/projects/pennsylvania-seniorlaw-helpline/ | Who they serve: Pennsylvanians age 60+ | Limitations/notes: Scope limits by topic; capacity may vary."
+        },
+        {
+          "name": "Pennsylvania Health Law Project (PHLP) – Medicaid/healthcare legal help",
+          "phone": "+18002743258",
+          "display_phone": "800-274-3258",
+          "address": "100 Fifth Ave., Suite 900, Pittsburgh, PA 15222",
+          "hours": "Helpline open Mondays & Wednesdays starting 8 AM (verify current schedule)",
+          "tags": [
+            "Legal help",
+            "Advocacy",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Free legal help on Medicaid/healthcare access issues.",
+          "details": "Website: https://www.phlp.org/en/contact | Who they serve: People needing help accessing Medicaid/health benefits, coverage issues, appeals | Limitations/notes: Healthcare/benefits focus (not a general civil legal clinic)."
+        },
+        {
+          "name": "Disability Rights Pennsylvania (DRP) – disability legal advocacy",
+          "phone": "+18006927443",
+          "display_phone": "800-692-7443",
+          "address": "429 Fourth Ave., Suite 701, Pittsburgh, PA 15219 (verify)",
+          "hours": "Call for hours",
+          "tags": [
+            "Legal help",
+            "Advocacy",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Legal advocacy, rights information, and assistance for disability-related issues.",
+          "details": "Website: https://www.disabilityrightspa.org/ | Who they serve: People with disabilities (all ages) and advocates | Limitations/notes: Not all cases can be accepted; prioritization by issue area and capacity."
+        },
+        {
+          "name": "Pennsylvania Long-Term Care Ombudsman (nursing homes, assisted living, personal care homes)",
+          "phone": "+18004908505",
+          "display_phone": "800-490-8505",
+          "address": "Statewide program with local representatives",
+          "hours": "Call for hours",
+          "tags": [
+            "Legal help",
+            "Advocacy",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Advocates for resident rights; helps resolve complaints and quality-of-care concerns.",
+          "details": "Website: https://www.aging.pa.gov/aging-services/long-term-care-ombudsman/Pages/default.aspx | Who they serve: Residents of long-term care facilities and their families | Limitations/notes: Ombudsman is an advocate, not a regulator; emergency safety concerns may require APS/911."
+        }
+      ]
+    },
+    {
+      "id": "financial",
+      "title": "Financial Relief & Utility Support",
+      "importance": 11,
+      "items": [
+        {
+          "name": "Property Tax / Rent Rebate (PTRR) – PA Dept. of Revenue",
+          "phone": "+18882229190",
+          "display_phone": "888-222-9190",
+          "address": "Statewide",
+          "hours": "Call for hours; online via myPATH",
+          "tags": [
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Rebates for property tax or rent paid in PA (up to program maximums).",
+          "details": "Website: https://www.pa.gov/agencies/revenue/ptrr | Who they serve: Older adults 65+, widows/widowers 50+, and adults 18+ with disabilities (income limits apply) | Limitations/notes: Annual application and eligibility rules; deadlines apply."
+        },
+        {
+          "name": "LIHEAP (Low Income Home Energy Assistance Program) – PA DHS",
+          "phone": "+18668577095",
+          "display_phone": "866-857-7095",
+          "address": "Statewide (apply via COMPASS/county assistance office)",
+          "hours": "Hotline Mon–Fri; crisis assistance 24/7 via county assistance office",
+          "tags": [
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Heating assistance grants and crisis supports for eligible households.",
+          "details": "Website: https://www.pa.gov/services/dhs/apply-for-the-low-income-home-energy-assistance-program-liheap | Who they serve: Low-income households needing help with heating bills or heating crisis | Limitations/notes: Seasonal program windows; eligibility depends on income and household info."
+        },
+        {
+          "name": "Duquesne Light – Customer Assistance Program (CAP)",
+          "phone": "+18883937600",
+          "display_phone": "888-393-7600",
+          "address": "Service territory",
+          "hours": "Customer service Mon–Fri 8 AM–5 PM (automated phone system 24/7)",
+          "tags": [
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Reduced monthly payments and payment plans to help maintain electric service.",
+          "details": "Website: https://duquesnelight.com/account-billing/payment-assistance/customer-assistance-program | Who they serve: Eligible low-income Duquesne Light customers | Limitations/notes: Requires eligibility; program rules apply; must be within service territory."
+        }
+      ]
+    },
+    {
+      "id": "home_safety",
+      "title": "Home Safety, Repairs & Accessibility",
+      "importance": 12,
+      "items": [
+        {
+          "name": "Rebuilding Together Pittsburgh (home repairs for qualified homeowners)",
+          "phone": "+14122472700",
+          "display_phone": "412-247-2700",
+          "address": "Pittsburgh/Allegheny County",
+          "hours": "Call for hours",
+          "tags": [
+            "Home safety",
+            "Accessibility",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Critical home repairs and safety modifications (program-dependent).",
+          "details": "Website: https://www.rebuildingtogetherpittsburgh.org/ | Who they serve: Homeowners who qualify (often older adults/low-income/disabled) | Limitations/notes: Eligibility and waitlists vary; project scope depends on funding/volunteers."
+        },
+        {
+          "name": "ACTION-Housing (housing help, repairs, accessibility, weatherization programs vary)",
+          "phone": "+14122812102",
+          "display_phone": "412-281-2102",
+          "address": "Pittsburgh, PA",
+          "hours": "Call for hours",
+          "tags": [
+            "Home safety",
+            "Accessibility",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Housing services and programs that may include home repairs/modifications depending on eligibility.",
+          "details": "Website: https://actionhousing.org/ | Who they serve: Residents needing housing stabilization, accessibility help, or repairs (program-specific) | Limitations/notes: Programs vary; documentation and eligibility requirements apply."
+        },
+        {
+          "name": "TechOWL (PA Assistive Technology Program)",
+          "phone": "+18002047428",
+          "display_phone": "800-204-7428",
+          "address": "Pennsylvania statewide",
+          "hours": "Call for hours",
+          "tags": [
+            "Home safety",
+            "Accessibility",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Assistive technology info, device demonstrations/loans (program-dependent), and accessibility support.",
+          "details": "Website: https://techowlpa.org/ | Who they serve: People with disabilities, older adults, caregivers | Limitations/notes: Not a direct equipment vendor for all devices; program scope varies."
+        },
+        {
+          "name": "Pennsylvania Assistive Technology Foundation (PATF) – financing for AT",
+          "phone": "+18887441938",
+          "display_phone": "888-744-1938",
+          "address": "Pennsylvania statewide",
+          "hours": "Call for hours",
+          "tags": [
+            "Home safety",
+            "Accessibility",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Loans and programs to help finance assistive technology and accessibility modifications.",
+          "details": "Website: https://www.patf.us/ | Who they serve: Pennsylvanians needing financing for assistive technology or home modifications | Limitations/notes: Loan approval/terms apply; not a grant program in most cases."
+        }
+      ]
+    },
+    {
+      "id": "facilities",
+      "title": "Long-Term Care Facilities & Placement Support",
+      "importance": 13,
+      "items": [
+        {
+          "name": "Kane Community Living Centers (Allegheny County) – public nursing facilities",
+          "phone": "+14124226000",
+          "display_phone": "412-422-6000",
+          "address": "Locations include Glen Hazel, McKeesport, Scott Township, Ross Township (verify)",
+          "hours": "Call for admissions",
+          "tags": [
+            "Nursing facility",
+            "Placement",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "County-operated long-term care facilities and rehabilitation.",
+          "details": "Website: https://www.alleghenycounty.us/Services/Human-Services-DHS/Programs-Services/Older-Adults/Kane-Community-Living-Centers | Who they serve: Individuals needing skilled nursing / long-term care (eligibility and payor mix varies) | Limitations/notes: Admissions depend on bed availability and clinical criteria."
+        }
+      ]
+    },
+    {
+      "id": "inhome_private",
+      "title": "In-Home Care (Private-Pay Examples)",
+      "importance": 14,
+      "items": [
+        {
+          "name": "Home Instead (Pittsburgh area)",
+          "phone": "+14125957554",
+          "display_phone": "412-595-7554",
+          "address": "",
+          "hours": "",
+          "tags": [
+            "In-home care",
+            "Private-pay",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Non-medical in-home caregiving: companionship, personal care assistance, respite.",
+          "details": "Website: https://www.homeinstead.com/home-care/usa/pa/southwest-allegheny-county/265/service-area/pittsburgh-pa/ | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+        },
+        {
+          "name": "Visiting Angels (Pittsburgh)",
+          "phone": "+14123431515",
+          "display_phone": "412-343-1515",
+          "address": "",
+          "hours": "",
+          "tags": [
+            "In-home care",
+            "Private-pay",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Non-medical home care: personal care, companionship, respite, dementia support options.",
+          "details": "Website: https://www.visitingangels.com/pittsburgh/home | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+        },
+        {
+          "name": "Comfort Keepers (Pittsburgh City)",
+          "phone": "+14122035217",
+          "display_phone": "412-203-5217",
+          "address": "",
+          "hours": "",
+          "tags": [
+            "In-home care",
+            "Private-pay",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Non-medical in-home care, companionship, personal care, respite.",
+          "details": "Website: https://www.comfortkeepers.com/offices/pennsylvania/pittsburgh-city/ | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+        },
+        {
+          "name": "Right at Home (Greater Pittsburgh)",
+          "phone": "+14128240700",
+          "display_phone": "412-824-0700",
+          "address": "",
+          "hours": "",
+          "tags": [
+            "In-home care",
+            "Private-pay",
+            "Seniors",
+            "Disability"
+          ],
+          "summary": "Non-medical home care, personal care, companionship, light housekeeping, respite.",
+          "details": "Website: https://www.rightathome.net/greater-pittsburgh | Limitations/notes: Private-pay or LTC insurance; availability depends on staffing and service area."
+        }
+      ]
+    }
+  ]
+}
