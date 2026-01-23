@@ -140,12 +140,13 @@
       to{ transform: translate3d(0, -220px, 0); opacity:0; }
     }
 
-    /* ===== Audience Tabs (Patients / Staff) ===== */
+    /* ===== Audience Tabs (Patients / Staff / Admin toggle) ===== */
     .tabs{
       margin-top: 12px;
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
     .tab{
       height: 42px;
@@ -172,6 +173,22 @@
     .tab small{
       font-weight: 700;
       opacity: .85;
+    }
+
+    .admin-pill{
+      display:none;
+      height: 42px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,197,94,.35);
+      background: rgba(34,197,94,.18);
+      color: #dcfce7;
+      font-weight: 900;
+      letter-spacing:.2px;
+      user-select:none;
+      align-items:center;
+      gap: 8px;
+      font-family: var(--mono);
     }
 
     .share-link {
@@ -447,6 +464,62 @@
       word-break: break-word;
     }
 
+    /* ===== Admin Panel (only when admin mode ON) ===== */
+    .admin-panel{
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: var(--radius2);
+      border: 1px dashed rgba(2,132,199,.35);
+      background: rgba(224,242,254,.55);
+    }
+    .admin-panel h4{
+      margin: 0 0 8px;
+      font-size: .95rem;
+      letter-spacing: .2px;
+      color: #075985;
+    }
+    .admin-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .admin-check{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(2,132,199,.18);
+      background: rgba(255,255,255,.7);
+      font-weight: 750;
+      color: #0f172a;
+      user-select:none;
+    }
+    .admin-check input{ width: 18px; height: 18px; }
+    .admin-panel textarea{
+      margin-top: 10px;
+      width:100%;
+      min-height: 84px;
+      resize: vertical;
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid rgba(2,132,199,.25);
+      background: rgba(255,255,255,.85);
+      color: var(--text);
+      font-size: .92rem;
+      line-height: 1.35;
+      outline:none;
+    }
+    .admin-hint{
+      margin-top: 8px;
+      color: #0f172a;
+      opacity: .75;
+      font-size: .82rem;
+      line-height: 1.35;
+      font-family: var(--mono);
+    }
+
     /* ===== Footer Feedback ===== */
     .feedback{
       margin-top: 18px;
@@ -586,6 +659,10 @@
       .item-actions{ justify-content:flex-start; }
       .mini-btn{ flex: 1 1 auto; }
     }
+
+    @media (max-width: 520px){
+      .admin-grid{ grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 
@@ -608,6 +685,12 @@
             <button class="tab" id="tab-staff" role="tab" aria-selected="false" onclick="setAudience('staff')">
               🩺 Staff
             </button>
+
+            <button class="tab" id="tab-admin" role="button" aria-pressed="false" onclick="toggleAdmin()">
+              🛠️ Admin
+            </button>
+
+            <div class="admin-pill" id="adminPill">✅ ADMIN MODE</div>
           </div>
 
           <!-- Share Link -->
@@ -644,6 +727,27 @@
     </div>
 
     <div id="sectionsRoot"></div>
+
+    <!-- Admin summary (only visible in admin mode) -->
+    <div class="feedback card" id="adminSummaryCard" style="display:none;">
+      <div class="card-inner">
+        <h3>Admin: Review & Send Flags</h3>
+        <p style="margin-top:6px;color:var(--muted);">
+          These flags are stored <strong>locally on this device</strong>. Use the button below to email a summary to
+          <strong>jaadoc@gmail.com</strong>.
+        </p>
+
+        <div class="send-row">
+          <button class="send-btn" onclick="emailAdminReport()">Email admin report</button>
+          <button class="send-btn" style="background:#fff;border-color:var(--stroke);color:var(--text);" onclick="clearAdminFlags()">Clear admin flags</button>
+          <div class="tiny" id="adminCounts">Flags: —</div>
+        </div>
+
+        <div class="fineprint">
+          Sends to: <strong>jaadoc@gmail.com</strong>
+        </div>
+      </div>
+    </div>
 
     <div class="feedback card">
       <div class="card-inner">
@@ -699,7 +803,15 @@
   // Update if your GitHub Pages path changes
   const SHARE_BASE_URL = "https://dormantone.github.io/streetwise/jaa.html";
 
+  // Which dataset to load
   let AUDIENCE = "patient";
+
+  // Admin mode toggles section flag panels (does NOT change dataset)
+  let ADMIN_MODE = false;
+
+  // Flags stored per section.id
+  // { [sectionId]: { flag_html, flag_phone, flag_web, flag_map, comments } }
+  let ADMIN_FLAGS = {};
 
   function safeText(s){ return (s ?? "").toString(); }
 
@@ -718,8 +830,7 @@
   function hostLabel(url){
     try{
       const u = new URL(url);
-      let h = u.hostname.replace(/^www\./,'');
-      return h;
+      return u.hostname.replace(/^www\./,'');
     }catch(e){
       return url;
     }
@@ -816,6 +927,17 @@
       webA.innerHTML = "🌐 Web";
       webA.title = "Open website";
       actions.appendChild(webA);
+    } else {
+      // If we don't have a known site in JSON, still offer a 1-tap web lookup
+      const searchA = document.createElement("a");
+      searchA.className = "mini-btn web";
+      const q = encodeURIComponent(safeText(item.name || "") + " official website");
+      searchA.href = "https://www.google.com/search?q=" + q;
+      searchA.target = "_blank";
+      searchA.rel = "noopener noreferrer";
+      searchA.innerHTML = "🔎 Web";
+      searchA.title = "Search the web";
+      actions.appendChild(searchA);
     }
 
     if(item.address){
@@ -847,9 +969,7 @@
     if(website) bits.push("Website: " + website);
     if(item.details) bits.push(item.details);
 
-    // Render with clickable website (and keep safe)
     const text = bits.filter(Boolean).join("\n\n");
-    // Replace any url in text with clickable anchor
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     box.innerHTML = text.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
 
@@ -858,6 +978,98 @@
     div.appendChild(det);
 
     return div;
+  }
+
+  // ===== Admin state persistence =====
+  function flagsStorageKey(){
+    return "jaa_admin_flags_" + AUDIENCE;
+  }
+
+  function loadAdminFlags(){
+    try{
+      const raw = localStorage.getItem(flagsStorageKey());
+      ADMIN_FLAGS = raw ? JSON.parse(raw) : {};
+    }catch(e){
+      ADMIN_FLAGS = {};
+    }
+  }
+
+  function saveAdminFlags(){
+    try{
+      localStorage.setItem(flagsStorageKey(), JSON.stringify(ADMIN_FLAGS));
+    }catch(e){}
+    refreshAdminCounts();
+  }
+
+  function getSectionFlags(sectionId){
+    if(!ADMIN_FLAGS[sectionId]){
+      ADMIN_FLAGS[sectionId] = {
+        flag_html: false,
+        flag_phone: false,
+        flag_web: false,
+        flag_map: false,
+        comments: ""
+      };
+    }
+    return ADMIN_FLAGS[sectionId];
+  }
+
+  function buildAdminPanel(section){
+    const sId = section.id;
+
+    const f = getSectionFlags(sId);
+
+    const panel = document.createElement("div");
+    panel.className = "admin-panel";
+
+    const h4 = document.createElement("h4");
+    h4.textContent = "Admin flags (internal)";
+
+    const grid = document.createElement("div");
+    grid.className = "admin-grid";
+
+    function mkCheck(label, key){
+      const wrap = document.createElement("label");
+      wrap.className = "admin-check";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!f[key];
+      cb.onchange = ()=>{
+        f[key] = cb.checked;
+        ADMIN_FLAGS[sId] = f;
+        saveAdminFlags();
+      };
+      const span = document.createElement("span");
+      span.textContent = label;
+      wrap.appendChild(cb);
+      wrap.appendChild(span);
+      return wrap;
+    }
+
+    grid.appendChild(mkCheck("Flag HTML/content", "flag_html"));
+    grid.appendChild(mkCheck("Flag phone number(s)", "flag_phone"));
+    grid.appendChild(mkCheck("Flag website link(s)", "flag_web"));
+    grid.appendChild(mkCheck("Flag map/address", "flag_map"));
+
+    const ta = document.createElement("textarea");
+    ta.placeholder = "Admin comments for this section (what is wrong / what changed / what to verify)…";
+    ta.value = safeText(f.comments || "");
+    ta.oninput = ()=>{
+      f.comments = ta.value;
+      ADMIN_FLAGS[sId] = f;
+      saveAdminFlags();
+    };
+
+    const hint = document.createElement("div");
+    hint.className = "admin-hint";
+    hint.textContent = "Saved locally • dataset=" + AUDIENCE + " • section=" + sId;
+
+    panel.appendChild(h4);
+    panel.appendChild(grid);
+    panel.appendChild(ta);
+    panel.appendChild(hint);
+
+    return panel;
   }
 
   function buildSection(section){
@@ -870,12 +1082,15 @@
 
     const h2 = document.createElement("h2");
     h2.textContent = section.title;
-
     inner.appendChild(h2);
 
     (section.items || []).forEach(item=>{
       inner.appendChild(buildItemCard(item));
     });
+
+    if(ADMIN_MODE){
+      inner.appendChild(buildAdminPanel(section));
+    }
 
     container.appendChild(inner);
     return container;
@@ -892,6 +1107,8 @@
     sections.forEach(sec=>{
       root.appendChild(buildSection(sec));
     });
+
+    refreshAdminCounts();
   }
 
   function fillHeader(){
@@ -949,7 +1166,7 @@
       "Sent from the web page."
     ];
 
-    const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\\n"))}`;
+    const mailto = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join("\n"))}`;
     window.location.href = mailto;
   }
 
@@ -1033,6 +1250,26 @@
     m.classList.toggle("active");
   }
 
+  // ===== Admin toggle =====
+  function updateAdminUI(){
+    const tabA = document.getElementById("tab-admin");
+    const pill = document.getElementById("adminPill");
+    const summary = document.getElementById("adminSummaryCard");
+
+    tabA.classList.toggle("active", ADMIN_MODE);
+    tabA.setAttribute("aria-pressed", ADMIN_MODE.toString());
+
+    pill.style.display = ADMIN_MODE ? "inline-flex" : "none";
+    summary.style.display = ADMIN_MODE ? "block" : "none";
+  }
+
+  function toggleAdmin(){
+    ADMIN_MODE = !ADMIN_MODE;
+    localStorage.setItem("jaa_admin_mode", ADMIN_MODE ? "1" : "0");
+    updateAdminUI();
+    renderAll(); // re-render sections to show/hide admin panels
+  }
+
   // ===== Audience Tabs =====
   function setTabUI(){
     const p = document.getElementById("tab-patient");
@@ -1054,6 +1291,9 @@
     url.searchParams.set("audience", AUDIENCE);
     history.replaceState({}, "", url.toString());
 
+    // Load flags for this dataset too
+    loadAdminFlags();
+
     setTabUI();
     load();
   }
@@ -1065,6 +1305,76 @@
     const saved = (localStorage.getItem("jaa_audience") || "").toLowerCase();
     if(saved === "staff" || saved === "patient") return saved;
     return "patient";
+  }
+
+  function getInitialAdminMode(){
+    const saved = (localStorage.getItem("jaa_admin_mode") || "0").trim();
+    return saved === "1";
+  }
+
+  // ===== Admin email =====
+  function countFlags(){
+    let sections = 0;
+    let flags = 0;
+    for(const [sid, v] of Object.entries(ADMIN_FLAGS || {})){
+      const any = !!(v.flag_html || v.flag_phone || v.flag_web || v.flag_map || (v.comments||"").trim());
+      if(any) sections++;
+      if(v.flag_html) flags++;
+      if(v.flag_phone) flags++;
+      if(v.flag_web) flags++;
+      if(v.flag_map) flags++;
+    }
+    return {sections, flags};
+  }
+
+  function refreshAdminCounts(){
+    const el = document.getElementById("adminCounts");
+    if(!el) return;
+    const c = countFlags();
+    el.textContent = `Flags: ${c.flags} across ${c.sections} section(s) • dataset=${AUDIENCE}`;
+  }
+
+  function emailAdminReport(){
+    const c = countFlags();
+    const subj = `JAA Help Finder Admin Flags (${AUDIENCE}) — ${c.flags} flag(s)`;
+    const lines = [];
+    lines.push("JAA Help Finder — Admin Flag Report");
+    lines.push("");
+    lines.push("Dataset: " + AUDIENCE);
+    lines.push("Flags: " + c.flags + " across " + c.sections + " section(s)");
+    lines.push("Timestamp: " + new Date().toISOString());
+    lines.push("");
+    lines.push("DETAILS:");
+    lines.push("");
+
+    const secTitleById = {};
+    (APP_DATA?.sections || []).forEach(s=>{ secTitleById[s.id] = s.title; });
+
+    for(const sid of Object.keys(ADMIN_FLAGS || {})){
+      const v = ADMIN_FLAGS[sid];
+      const any = !!(v.flag_html || v.flag_phone || v.flag_web || v.flag_map || (v.comments||"").trim());
+      if(!any) continue;
+
+      lines.push("• Section: " + (secTitleById[sid] || sid) + " (" + sid + ")");
+      lines.push("  - flag_html: " + (!!v.flag_html));
+      lines.push("  - flag_phone: " + (!!v.flag_phone));
+      lines.push("  - flag_web: " + (!!v.flag_web));
+      lines.push("  - flag_map: " + (!!v.flag_map));
+      if((v.comments||"").trim()){
+        lines.push("  - comments: " + (v.comments||"").trim());
+      }
+      lines.push("");
+    }
+
+    const mailto = `mailto:jaadoc@gmail.com?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(lines.join("\n"))}`;
+    window.location.href = mailto;
+  }
+
+  function clearAdminFlags(){
+    if(!confirm("Clear all admin flags for " + AUDIENCE + "?")) return;
+    ADMIN_FLAGS = {};
+    saveAdminFlags();
+    renderAll();
   }
 
   // ===== Load JSON =====
@@ -1082,12 +1392,16 @@
       console.error(err);
       document.getElementById("primaryName").textContent = "Could not load data file";
       document.getElementById("primaryShort").textContent =
-        "Make sure jaa.html and jaa_patient.json / jaa_staff.json are in the same folder.";
+        "Make sure jaa.html and jaa_patient.json / jaa_staff.json are in the same folder. (If opening via file://, run a local server.)";
     }
   }
 
+  // Boot
   AUDIENCE = getInitialAudience();
+  ADMIN_MODE = getInitialAdminMode();
+  loadAdminFlags();
   setTabUI();
+  updateAdminUI();
   load();
 </script>
 </body>
