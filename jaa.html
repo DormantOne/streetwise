@@ -140,7 +140,7 @@
       to{ transform: translate3d(0, -220px, 0); opacity:0; }
     }
 
-    /* ===== Tabs (Patients / Staff / Admin) ===== */
+    /* ===== Audience Tabs (Patients / Staff) ===== */
     .tabs{
       margin-top: 12px;
       display:flex;
@@ -447,67 +447,6 @@
       word-break: break-word;
     }
 
-    /* ===== Admin Panels ===== */
-    .admin-note{
-      margin: 10px 0 0;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px dashed rgba(2,132,199,.35);
-      background: rgba(2,132,199,.06);
-      color: var(--text);
-    }
-
-    .admin-note .admin-row{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-      margin-top: 8px;
-    }
-
-    .admin-note label{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      font-weight: 750;
-      font-size: .9rem;
-      color: #0f172a;
-      user-select:none;
-    }
-
-    .admin-note input[type="checkbox"]{
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-      cursor:pointer;
-    }
-
-    .admin-note textarea{
-      width: 100%;
-      min-height: 70px;
-      margin-top: 10px;
-      resize: vertical;
-      border-radius: 14px;
-      padding: 10px 12px;
-      border: 1px solid rgba(15,23,42,.12);
-      background: #ffffff;
-      color: var(--text);
-      font-size: .92rem;
-      line-height: 1.35;
-      outline:none;
-    }
-
-    .admin-badge{
-      display:inline-block;
-      font-family: var(--mono);
-      font-size: .78rem;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(15,23,42,.12);
-      background: #ffffff;
-      color: rgba(15,23,42,.75);
-    }
-
     /* ===== Footer Feedback ===== */
     .feedback{
       margin-top: 18px;
@@ -663,14 +602,11 @@
 
           <!-- Tabs -->
           <div class="tabs" role="tablist" aria-label="Audience Tabs">
-            <button class="tab active" id="tab-patient" role="tab" aria-selected="true" onclick="setMode('patient')">
+            <button class="tab active" id="tab-patient" role="tab" aria-selected="true" onclick="setAudience('patient')">
               🧑‍🦳 Patients <small>(default)</small>
             </button>
-            <button class="tab" id="tab-staff" role="tab" aria-selected="false" onclick="setMode('staff')">
+            <button class="tab" id="tab-staff" role="tab" aria-selected="false" onclick="setAudience('staff')">
               🩺 Staff
-            </button>
-            <button class="tab" id="tab-admin" role="tab" aria-selected="false" onclick="setMode('admin')">
-              🛠️ Admin
             </button>
           </div>
 
@@ -709,28 +645,7 @@
 
     <div id="sectionsRoot"></div>
 
-    <!-- Admin Footer (only visible in Admin mode) -->
-    <div class="feedback card" id="adminFooter" style="display:none;">
-      <div class="card-inner">
-        <h3>Admin review</h3>
-        <p>
-          Use the checkboxes under each section to flag issues. Add comments for context.
-          When ready, send a summary email.
-        </p>
-
-        <div class="send-row">
-          <button class="send-btn" onclick="sendAdminEmail()">Send admin flags email</button>
-          <div class="tiny" id="adminStatus">Flags: —</div>
-        </div>
-
-        <div class="fineprint">
-          Sends to: <strong>jaadoc@gmail.com</strong> (admin review / maintenance).
-        </div>
-      </div>
-    </div>
-
-    <!-- User Feedback -->
-    <div class="feedback card" id="userFeedbackCard">
+    <div class="feedback card">
       <div class="card-inner">
         <h3>Help improve this tool</h3>
         <p>
@@ -773,7 +688,7 @@
   let APP_DATA = null;
   let CURRENT_RATING = null;
 
-  // Files next to jaa.html:
+  // Put these files next to jaa.html:
   //   - jaa_patient.json
   //   - jaa_staff.json
   const DATA_FILES = {
@@ -784,20 +699,13 @@
   // Update if your GitHub Pages path changes
   const SHARE_BASE_URL = "https://dormantone.github.io/streetwise/jaa.html";
 
-  // MODE controls UI: patient / staff / admin
-  // DATA_AUDIENCE controls which dataset is loaded: patient / staff
-  let MODE = "patient";
-  let DATA_AUDIENCE = "patient";
-
-  // Admin flags stored per section id
-  // shape: { [sectionId]: { flag_html: bool, flag_phone: bool, flag_map: bool, comments: string } }
-  let ADMIN_FLAGS = {};
+  let AUDIENCE = "patient";
 
   function safeText(s){ return (s ?? "").toString(); }
 
   function fmtPhoneForTel(phoneRaw){
     if(!phoneRaw) return "";
-    return phoneRaw.replace(/\\s+/g,'');
+    return phoneRaw.replace(/\s+/g,'');
   }
 
   function normalizeUrl(u){
@@ -810,7 +718,7 @@
   function hostLabel(url){
     try{
       const u = new URL(url);
-      let h = u.hostname.replace(/^www\\./,'');
+      let h = u.hostname.replace(/^www\./,'');
       return h;
     }catch(e){
       return url;
@@ -939,10 +847,10 @@
     if(website) bits.push("Website: " + website);
     if(item.details) bits.push(item.details);
 
-    const text = bits.filter(Boolean).join("\\n\\n");
-
     // Render with clickable website (and keep safe)
-    const urlRegex = /(https?:\\/\\/[^\\s]+)/g;
+    const text = bits.filter(Boolean).join("\n\n");
+    // Replace any url in text with clickable anchor
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
     box.innerHTML = text.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" rel="noopener noreferrer">${m}</a>`);
 
     det.appendChild(sum);
@@ -950,103 +858,6 @@
     div.appendChild(det);
 
     return div;
-  }
-
-  function ensureAdminShape(sectionId){
-    if(!ADMIN_FLAGS[sectionId]){
-      ADMIN_FLAGS[sectionId] = {
-        flag_html: false,
-        flag_phone: false,
-        flag_map: false,
-        comments: ""
-      };
-    }
-    return ADMIN_FLAGS[sectionId];
-  }
-
-  function buildAdminSectionPanel(section){
-    const sid = section.id;
-    const state = ensureAdminShape(sid);
-
-    const panel = document.createElement("div");
-    panel.className = "admin-note";
-    panel.setAttribute("data-section-id", sid);
-
-    const hdr = document.createElement("div");
-    hdr.style.display = "flex";
-    hdr.style.alignItems = "center";
-    hdr.style.justifyContent = "space-between";
-    hdr.style.gap = "10px";
-
-    const left = document.createElement("div");
-    left.style.fontWeight = "900";
-    left.textContent = "Admin flags for this section";
-
-    const badge = document.createElement("div");
-    badge.className = "admin-badge";
-    badge.id = "admin-badge-" + sid;
-    badge.textContent = "No flags";
-
-    hdr.appendChild(left);
-    hdr.appendChild(badge);
-
-    const row = document.createElement("div");
-    row.className = "admin-row";
-
-    function makeCheck(labelText, key){
-      const lab = document.createElement("label");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = !!state[key];
-      cb.onchange = () => {
-        state[key] = cb.checked;
-        updateAdminBadge(sid);
-        updateAdminStatus();
-        persistAdminFlags();
-      };
-      const t = document.createElement("span");
-      t.textContent = labelText;
-      lab.appendChild(cb);
-      lab.appendChild(t);
-      return lab;
-    }
-
-    row.appendChild(makeCheck("Flag HTML", "flag_html"));
-    row.appendChild(makeCheck("Flag phone #", "flag_phone"));
-    row.appendChild(makeCheck("Flag map", "flag_map"));
-
-    const ta = document.createElement("textarea");
-    ta.placeholder = "Admin comments (what is wrong / what to fix)…";
-    ta.value = safeText(state.comments || "");
-    ta.oninput = () => {
-      state.comments = ta.value;
-      updateAdminBadge(sid);
-      updateAdminStatus();
-      persistAdminFlags();
-    };
-
-    panel.appendChild(hdr);
-    panel.appendChild(row);
-    panel.appendChild(ta);
-
-    // initial badge
-    updateAdminBadge(sid);
-
-    return panel;
-  }
-
-  function updateAdminBadge(sectionId){
-    const st = ensureAdminShape(sectionId);
-    const badge = document.getElementById("admin-badge-" + sectionId);
-    if(!badge) return;
-
-    const flags = [];
-    if(st.flag_html) flags.push("HTML");
-    if(st.flag_phone) flags.push("Phone");
-    if(st.flag_map) flags.push("Map");
-    if((st.comments || "").trim().length) flags.push("Comment");
-
-    badge.textContent = flags.length ? ("Flagged: " + flags.join(", ")) : "No flags";
   }
 
   function buildSection(section){
@@ -1066,11 +877,6 @@
       inner.appendChild(buildItemCard(item));
     });
 
-    // Admin panel under section (only in admin mode)
-    if(MODE === "admin"){
-      inner.appendChild(buildAdminSectionPanel(section));
-    }
-
     container.appendChild(inner);
     return container;
   }
@@ -1086,8 +892,6 @@
     sections.forEach(sec=>{
       root.appendChild(buildSection(sec));
     });
-
-    updateAdminStatus();
   }
 
   function fillHeader(){
@@ -1111,19 +915,14 @@
 
       const pillHost = document.getElementById("primaryPills");
       pillHost.innerHTML = "";
-
-      if(MODE === "admin"){
-        pillHost.appendChild(makePills(["Admin review mode", "Flag issues", "Send summary email"]));
-      } else {
-        pillHost.appendChild(makePills(DATA_AUDIENCE === "staff"
-          ? ["Referrals", "Coordination", "Wraparound services"]
-          : ["Home health intake", "Skilled care", "Support services"]
-        ));
-      }
+      pillHost.appendChild(makePills(AUDIENCE === "staff"
+        ? ["Referrals", "Coordination", "Wraparound services"]
+        : ["Home health intake", "Skilled care", "Support services"]
+      ));
     }
   }
 
-  // ===== User feedback flow =====
+  // ===== Feedback flow =====
   function rate(val){
     CURRENT_RATING = val;
     document.getElementById("whyBox").style.display = "grid";
@@ -1134,11 +933,11 @@
   function sendFeedbackEmail(){
     const why = (document.getElementById("whyText").value || "").trim();
 
-    const subject = `JAA Home Health Help Finder feedback — ${CURRENT_RATING || "UNSET"} (${DATA_AUDIENCE})`;
+    const subject = `JAA Home Health Help Finder feedback — ${CURRENT_RATING || "UNSET"} (${AUDIENCE})`;
     const bodyLines = [
       "Feedback on the JAA Home Health Help Finder tool",
       "",
-      "Dataset: " + DATA_AUDIENCE,
+      "Audience tab: " + AUDIENCE,
       "Rating: " + (CURRENT_RATING || "UNSET"),
       "",
       "Why / Notes:",
@@ -1215,16 +1014,15 @@
 
   // ===== QR Modal Toggle =====
   function getShareUrl(){
-    // Share only patient/staff view; if Admin is active, share the underlying dataset view
     const u = new URL(SHARE_BASE_URL);
-    u.searchParams.set("audience", DATA_AUDIENCE);
+    u.searchParams.set("audience", AUDIENCE);
     return u.toString();
   }
 
   function updateQR(){
     const shareUrl = getShareUrl();
     document.getElementById("qrTitle").textContent =
-      (DATA_AUDIENCE === "staff") ? "Share JAA Home Health (Staff)" : "Share JAA Home Health (Patients)";
+      AUDIENCE === "staff" ? "Share JAA Home Health (Staff)" : "Share JAA Home Health (Patients)";
     document.getElementById("qrImg").src =
       "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(shareUrl);
   }
@@ -1235,171 +1033,44 @@
     m.classList.toggle("active");
   }
 
-  // ===== Tabs / Mode =====
+  // ===== Audience Tabs =====
   function setTabUI(){
     const p = document.getElementById("tab-patient");
     const s = document.getElementById("tab-staff");
-    const a = document.getElementById("tab-admin");
+    const isStaff = AUDIENCE === "staff";
 
-    p.classList.toggle("active", MODE === "patient");
-    s.classList.toggle("active", MODE === "staff");
-    a.classList.toggle("active", MODE === "admin");
+    p.classList.toggle("active", !isStaff);
+    s.classList.toggle("active", isStaff);
 
-    p.setAttribute("aria-selected", (MODE === "patient").toString());
-    s.setAttribute("aria-selected", (MODE === "staff").toString());
-    a.setAttribute("aria-selected", (MODE === "admin").toString());
-
-    // Toggle admin footer and user feedback card visibility
-    document.getElementById("adminFooter").style.display = (MODE === "admin") ? "block" : "none";
-    document.getElementById("userFeedbackCard").style.display = (MODE === "admin") ? "none" : "block";
+    p.setAttribute("aria-selected", (!isStaff).toString());
+    s.setAttribute("aria-selected", (isStaff).toString());
   }
 
-  function setMode(m){
-    // patient/staff switch dataset + mode
-    // admin keeps the current dataset (DATA_AUDIENCE) but shows admin panels
-    if(m === "patient"){
-      MODE = "patient";
-      DATA_AUDIENCE = "patient";
-    } else if(m === "staff"){
-      MODE = "staff";
-      DATA_AUDIENCE = "staff";
-    } else {
-      MODE = "admin";
-      // dataset remains whatever DATA_AUDIENCE currently is (default patient)
-    }
+  function setAudience(a){
+    AUDIENCE = (a === "staff") ? "staff" : "patient";
+    localStorage.setItem("jaa_audience", AUDIENCE);
 
-    localStorage.setItem("jaa_mode", MODE);
-    localStorage.setItem("jaa_audience", DATA_AUDIENCE);
-
-    // Update URL params (audience only; mode not shared by QR)
     const url = new URL(window.location.href);
-    url.searchParams.set("audience", DATA_AUDIENCE);
-    url.searchParams.set("mode", MODE);
+    url.searchParams.set("audience", AUDIENCE);
     history.replaceState({}, "", url.toString());
 
     setTabUI();
     load();
   }
 
-  function getInitial(){
+  function getInitialAudience(){
     const url = new URL(window.location.href);
-    const qpAudience = (url.searchParams.get("audience") || "").toLowerCase().trim();
-    const qpMode = (url.searchParams.get("mode") || "").toLowerCase().trim();
-
-    let audience = (qpAudience === "staff" || qpAudience === "patient") ? qpAudience : null;
-    let mode = (qpMode === "admin" || qpMode === "staff" || qpMode === "patient") ? qpMode : null;
-
-    const savedAudience = (localStorage.getItem("jaa_audience") || "").toLowerCase();
-    const savedMode = (localStorage.getItem("jaa_mode") || "").toLowerCase();
-
-    if(!audience && (savedAudience === "staff" || savedAudience === "patient")) audience = savedAudience;
-    if(!mode && (savedMode === "admin" || savedMode === "staff" || savedMode === "patient")) mode = savedMode;
-
-    if(!audience) audience = "patient";
-    if(!mode) mode = audience; // default mode matches dataset
-
-    return { audience, mode };
-  }
-
-  // ===== Admin persistence + email =====
-  function persistAdminFlags(){
-    try{
-      const key = "jaa_admin_flags_" + DATA_AUDIENCE;
-      localStorage.setItem(key, JSON.stringify(ADMIN_FLAGS));
-    }catch(e){}
-  }
-
-  function loadAdminFlags(){
-    try{
-      const key = "jaa_admin_flags_" + DATA_AUDIENCE;
-      const raw = localStorage.getItem(key);
-      if(raw){
-        const obj = JSON.parse(raw);
-        if(obj && typeof obj === "object") ADMIN_FLAGS = obj;
-      } else {
-        ADMIN_FLAGS = {};
-      }
-    }catch(e){
-      ADMIN_FLAGS = {};
-    }
-  }
-
-  function countAdminFlags(){
-    let n = 0;
-    for(const sid of Object.keys(ADMIN_FLAGS || {})){
-      const st = ADMIN_FLAGS[sid] || {};
-      const has = !!st.flag_html || !!st.flag_phone || !!st.flag_map || ((st.comments || "").trim().length > 0);
-      if(has) n += 1;
-    }
-    return n;
-  }
-
-  function updateAdminStatus(){
-    const el = document.getElementById("adminStatus");
-    if(!el) return;
-    const n = countAdminFlags();
-    el.textContent = "Flags: " + n + " section(s)";
-  }
-
-  function sendAdminEmail(){
-    // Compose a compact per-section summary
-    const sections = (APP_DATA?.sections || []).slice().sort((a,b)=>(a.importance||999)-(b.importance||999));
-    const now = new Date();
-
-    const lines = [];
-    lines.push("JAA Help Finder — Admin flags");
-    lines.push("");
-    lines.push("Dataset: " + DATA_AUDIENCE);
-    lines.push("Mode: Admin");
-    lines.push("When: " + now.toISOString());
-    lines.push("Page: " + window.location.href);
-    lines.push("");
-
-    let any = false;
-
-    for(const sec of sections){
-      const sid = sec.id;
-      const st = ADMIN_FLAGS[sid] || {};
-      const flags = [];
-      if(st.flag_html) flags.push("HTML");
-      if(st.flag_phone) flags.push("Phone");
-      if(st.flag_map) flags.push("Map");
-      const comm = (st.comments || "").trim();
-
-      if(flags.length || comm.length){
-        any = true;
-        lines.push("SECTION: " + sec.title + " (" + sid + ")");
-        lines.push("Flags: " + (flags.length ? flags.join(", ") : "—"));
-        if(comm.length){
-          lines.push("Comments:");
-          lines.push(comm);
-        }
-        lines.push("");
-      }
-    }
-
-    if(!any){
-      lines.push("No flags were set.");
-      lines.push("");
-    }
-
-    const subject = "JAA Help Finder admin flags (" + DATA_AUDIENCE + ")";
-    const body = lines.join("\\n");
-
-    const mailto = "mailto:jaadoc@gmail.com"
-      + "?subject=" + encodeURIComponent(subject)
-      + "&body=" + encodeURIComponent(body);
-
-    window.location.href = mailto;
+    const qp = (url.searchParams.get("audience") || "").toLowerCase().trim();
+    if(qp === "staff" || qp === "patient") return qp;
+    const saved = (localStorage.getItem("jaa_audience") || "").toLowerCase();
+    if(saved === "staff" || saved === "patient") return saved;
+    return "patient";
   }
 
   // ===== Load JSON =====
   async function load(){
     try{
-      // Reload admin flags for this dataset
-      loadAdminFlags();
-
-      const file = DATA_FILES[DATA_AUDIENCE] || DATA_FILES.patient;
+      const file = DATA_FILES[AUDIENCE] || DATA_FILES.patient;
       const resp = await fetch(file, {cache: "no-store"});
       if(!resp.ok) throw new Error("Could not load " + file);
       APP_DATA = await resp.json();
@@ -1407,13 +1078,6 @@
       fillHeader();
       renderAll();
       renderIconNav();
-
-      // Admin panels need badges updated after render
-      if(MODE === "admin"){
-        for(const sec of (APP_DATA.sections || [])){
-          updateAdminBadge(sec.id);
-        }
-      }
     } catch(err){
       console.error(err);
       document.getElementById("primaryName").textContent = "Could not load data file";
@@ -1422,23 +1086,9 @@
     }
   }
 
-  // Boot
-  (function boot(){
-    const init = getInitial();
-    DATA_AUDIENCE = init.audience;
-    MODE = init.mode;
-
-    // If URL said admin but dataset wasn't set, default patient
-    if(MODE === "admin" && (DATA_AUDIENCE !== "patient" && DATA_AUDIENCE !== "staff")){
-      DATA_AUDIENCE = "patient";
-    }
-    // If mode is patient/staff, align mode and dataset
-    if(MODE === "patient") DATA_AUDIENCE = "patient";
-    if(MODE === "staff") DATA_AUDIENCE = "staff";
-
-    setTabUI();
-    load();
-  })();
+  AUDIENCE = getInitialAudience();
+  setTabUI();
+  load();
 </script>
 </body>
 </html>
