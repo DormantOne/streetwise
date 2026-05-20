@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0d0e0a">
-<title>FIELD RECEIVER MK-II · CIVILIZATION SEEKER</title>
+<title>FIELD RECEIVER MK-II · SHELTER BEACON</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=JetBrains+Mono:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
@@ -297,7 +297,7 @@
   .tick.minor{stroke-width:1;opacity:.45}
   .tick.cardinal{stroke-width:2.5;opacity:1}
 
-  /* radar sweep */
+  /* radar sweep (shown while waiting for beacon lock) */
   .sweep{
     transform-origin:0 0;
     animation: sweep 6s linear infinite;
@@ -316,16 +316,22 @@
   .trail-dot{fill:var(--amber);opacity:.6}
   .trail-dot.recent{fill:var(--amber-hot);opacity:1}
 
-  /* directional sector blips - persistent, fed by real walked-sample pairs */
-  .dir-blip{
-    transition:
-      cx .55s cubic-bezier(.2,.6,.3,1),
-      cy .55s cubic-bezier(.2,.6,.3,1),
-      r  .55s cubic-bezier(.2,.6,.3,1),
-      opacity .5s ease-out,
-      fill .5s linear;
-    filter: drop-shadow(0 0 4px rgba(255,184,77,.55));
-    pointer-events: none;
+  /* shelter marker ring in dial frame (faint, all geocoded shelters) */
+  .shelter-marker{
+    fill:none;
+    stroke:var(--amber-dim);
+    stroke-width:1.2;
+    opacity:.55;
+    transition: cx .55s cubic-bezier(.2,.6,.3,1),
+                cy .55s cubic-bezier(.2,.6,.3,1),
+                opacity .4s ease-out;
+    pointer-events:none;
+  }
+  .shelter-marker.beacon{
+    stroke:var(--amber-hot);
+    stroke-width:2;
+    opacity:1;
+    filter:drop-shadow(0 0 6px rgba(255,208,122,.7));
   }
 
   /* OVERLAY (pre-activation) */
@@ -412,6 +418,100 @@
   .panel-sub .red{color:var(--red)}
   .panel-sub .green{color:var(--green)}
 
+  /* BEACON PANEL — the headline */
+  .panel.beacon-headline{
+    border:1px solid var(--amber-dim);
+    box-shadow:
+      inset 0 1px 0 #2c301f,
+      0 0 14px rgba(255,184,77,.12),
+      0 1px 0 #000;
+  }
+  .panel.beacon-headline.locked{
+    border-color:var(--amber);
+    box-shadow:
+      inset 0 1px 0 #3a3220,
+      0 0 22px rgba(255,184,77,.28),
+      0 1px 0 #000;
+  }
+  .beacon-row{
+    display:flex;
+    gap:10px;
+    align-items:stretch;
+  }
+  .beacon-info{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+  }
+  .beacon-name{
+    font-size:16px;
+    line-height:1.2;
+    color:var(--amber-hot);
+    text-shadow:0 0 8px rgba(255,208,122,.45);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .beacon-meta{
+    font-family:'JetBrains Mono';
+    font-size:11px;
+    color:var(--text-dim);
+    letter-spacing:.05em;
+  }
+  .beacon-meta .dist{
+    color:var(--amber);
+    font-weight:700;
+    text-shadow:0 0 4px rgba(255,184,77,.3);
+  }
+  .beacon-meta .dir{
+    color:var(--amber-hot);
+    font-weight:700;
+  }
+  .beacon-btn{
+    flex:0 0 auto;
+    width:96px;
+    border:1px solid var(--amber);
+    background:linear-gradient(180deg, rgba(255,184,77,.18), rgba(255,184,77,.04));
+    color:var(--amber);
+    font-family:'Black Ops One',sans-serif;
+    text-decoration:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:8px 4px;
+    gap:4px;
+    text-align:center;
+    box-shadow:
+      inset 0 1px 0 rgba(255,184,77,.2),
+      0 0 10px rgba(255,184,77,.15);
+    transition:all .15s ease;
+  }
+  .beacon-btn:active{
+    transform:translateY(1px);
+    background:linear-gradient(180deg, rgba(255,184,77,.08), rgba(255,184,77,.02));
+  }
+  .beacon-btn.disabled{
+    opacity:.35;
+    pointer-events:none;
+    border-color:var(--amber-faint);
+    color:var(--amber-dim);
+  }
+  .beacon-btn-icon{
+    font-size:18px;
+    line-height:1;
+    filter:drop-shadow(0 0 4px rgba(255,184,77,.4));
+  }
+  .beacon-btn-label{
+    font-size:9px;
+    letter-spacing:.15em;
+    line-height:1.1;
+    text-shadow:0 0 4px rgba(255,184,77,.4);
+  }
+
   /* BARS */
   .bar{
     height:10px;
@@ -492,6 +592,7 @@
   .state-readout.seeking{color:var(--cyan);text-shadow:0 0 6px rgba(95,212,232,.4)}
   .state-readout.lock{animation:lockflash 1.4s ease-in-out infinite}
   .state-readout.warn{color:var(--red);text-shadow:0 0 6px rgba(255,80,48,.4)}
+  .state-readout.arrived{color:var(--green);text-shadow:0 0 8px rgba(142,214,112,.5);animation:lockflash 1.4s ease-in-out infinite}
   @keyframes lockflash{0%,100%{text-shadow:0 0 6px rgba(255,184,77,.4)}50%{text-shadow:0 0 14px rgba(255,184,77,.8)}}
 
   /* DENSITY */
@@ -513,6 +614,7 @@
   @media (max-width:340px){
     .panel-val{font-size:15px}
     .title-main{font-size:13px}
+    .beacon-btn{width:80px}
   }
 </style>
 </head>
@@ -548,11 +650,11 @@
   <div class="led" id="led"></div>
   <div class="title-group">
     <div class="title-main">FIELD RECEIVER MK-II</div>
-    <div class="title-sub">CIVILIZATION SEEKER</div>
+    <div class="title-sub">SHELTER BEACON</div>
   </div>
   <div class="ser">
     SN-7741<br>
-    REV.<span id="rev">A</span>
+    REV.<span id="rev">B</span>
   </div>
 </div>
 
@@ -599,25 +701,22 @@
       <text class="dial-text intercardinal" x="83" y="83" text-anchor="middle" dominant-baseline="central">SE</text>
       <text class="dial-text intercardinal" x="-83" y="83" text-anchor="middle" dominant-baseline="central">SW</text>
       <text class="dial-text intercardinal" x="-83" y="-83" text-anchor="middle" dominant-baseline="central">NW</text>
-      <!-- directional sector blips (in dial frame = world bearings) -->
-      <g id="directional"></g>
+      <!-- shelter markers (faint rings for each geocoded shelter, bright for beacon) -->
+      <g id="shelterMarkers"></g>
     </g>
 
     <!-- trail layer (in dial frame so it rotates with world) -->
     <g id="trail"></g>
 
-    <!-- radar sweep (only shown when seeking) -->
+    <!-- radar sweep (shown until beacon locks) -->
     <g id="sweep" class="sweep">
       <path d="M 0 0 L 140 0 A 140 140 0 0 0 99 -99 Z" fill="url(#sweepGrad)" opacity="0.4"/>
     </g>
 
     <!-- needle (rotates by bearing-heading) -->
     <g id="needle" style="opacity:0">
-      <!-- tail -->
       <path class="needle-tail" d="M -5 0 L 0 36 L 5 0 Z"/>
-      <!-- body -->
       <path class="needle-body" d="M -7 0 L 0 -130 L 7 0 Z"/>
-      <!-- tip glow -->
       <circle cx="0" cy="-128" r="4" fill="#ffd07a" opacity=".9"/>
     </g>
 
@@ -625,7 +724,7 @@
     <circle cx="0" cy="0" r="10" fill="url(#hubGrad)"/>
     <circle cx="0" cy="0" r="3" fill="#0a0b08"/>
 
-    <!-- top index marker (always points to where phone is facing) -->
+    <!-- top index marker (points to where phone is facing) -->
     <path d="M 0 -174 L -6 -162 L 6 -162 Z" fill="#ff5030"/>
   </svg>
 
@@ -634,21 +733,36 @@
     <button class="activate-btn" id="activateBtn">⚡ ACTIVATE RECEIVER</button>
     <div class="activate-note">
       REQUIRES LOCATION + ORIENTATION<br>
-      <span class="activate-warn">WALK 20m TO ACQUIRE LOCK</span>
+      <span class="activate-warn">LOCKS ONTO NEAREST SHELTER</span>
     </div>
   </div>
 </div>
 
 <div class="grid">
+  <!-- BEACON HEADLINE -->
+  <div class="panel full beacon-headline" id="beaconPanel">
+    <div class="panel-label">⌖ NEAREST SHELTER</div>
+    <div class="beacon-row">
+      <div class="beacon-info">
+        <div class="beacon-name panel-val" id="beaconName">— STANDBY —</div>
+        <div class="beacon-meta" id="beaconMeta">awaiting activation</div>
+      </div>
+      <a class="beacon-btn disabled" id="openMapsBtn" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="beacon-btn-icon">🗺️</span>
+        <span class="beacon-btn-label">OPEN IN<br>MAPS</span>
+      </a>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-label">⌖ STATUS</div>
     <div class="panel-val state-readout" id="stateText">OFFLINE</div>
     <div class="panel-sub" id="stateSub">awaiting activation</div>
   </div>
   <div class="panel">
-    <div class="panel-label">◉ LOCK STRENGTH</div>
-    <div class="panel-val small" id="lockVal">— —</div>
-    <div class="bar" id="lockBar"></div>
+    <div class="panel-label">◉ CLOSENESS</div>
+    <div class="panel-val small" id="distVal">— —</div>
+    <div class="bar" id="distBar"></div>
   </div>
 
   <div class="panel">
@@ -657,19 +771,19 @@
     <div class="panel-sub" id="headingDir">— —</div>
   </div>
   <div class="panel">
-    <div class="panel-label">→ BEARING TO CIV</div>
+    <div class="panel-label">→ BEARING</div>
     <div class="panel-val" id="bearingVal">— — —°</div>
     <div class="panel-sub" id="bearingDir">SEEKING</div>
   </div>
 
   <div class="panel full">
-    <div class="panel-label">⛁ INFRASTRUCTURE DENSITY</div>
+    <div class="panel-label">⛁ GPS ACCURACY</div>
     <div class="density-row">
       <div class="panel-val" id="densityVal">±  —m</div>
       <div class="density-tag" id="densityTag">UNKNOWN</div>
     </div>
     <div class="bar" id="densityBar"></div>
-    <div class="panel-sub" id="densitySub">derived from GPS accuracy · lower ± = more mapped APs nearby</div>
+    <div class="panel-sub" id="densitySub">lower ± = tighter position fix</div>
   </div>
 
   <div class="panel">
@@ -678,16 +792,16 @@
     <div class="panel-sub" id="linkSub">no carrier</div>
   </div>
   <div class="panel">
-    <div class="panel-label">⌚ SAMPLES</div>
-    <div class="panel-val small" id="samplesVal">0 / 0m</div>
-    <div class="panel-sub" id="samplesSub">collected · distance walked</div>
+    <div class="panel-label">⌚ SHELTERS</div>
+    <div class="panel-val small" id="samplesVal">— / —</div>
+    <div class="panel-sub" id="samplesSub">geocoded · total</div>
   </div>
 </div>
 
 <div class="log" id="log"></div>
 
 <div class="controls">
-  <button class="btn" id="resetBtn">↻ RESET SAMPLES</button>
+  <button class="btn" id="resetBtn">↻ RECHECK NEAREST</button>
   <button class="btn" id="diagBtn">⌬ DIAGNOSTICS</button>
 </div>
 
@@ -697,13 +811,10 @@
 </div>
 
 <!-- ============================================================
-     RESOURCES VIEW — Pittsburgh Help Finder (light, hopeful)
-     Sits over the compass when activated. Loads ./resources.json
-     at first open.
+     RESOURCES VIEW — unchanged from MK-II original
      ============================================================ -->
 <style>
   .res-app{
-    /* scoped vars - light, hopeful palette */
     --rb:#f8fafc; --rp:#ffffff; --rp2:#f1f5f9;
     --rt:#0f172a; --rm:#64748b;
     --ra:#0284c7; --ra2:#7c3aed;
@@ -736,7 +847,6 @@
   .res-app *{ box-sizing:border-box; }
   .res-wrap{ max-width:920px; margin:0 auto; padding:14px 0 40px; }
 
-  /* BACK button */
   .res-back{
     display:flex; align-items:center; gap:10px;
     background:#1e293b; color:#fff;
@@ -810,7 +920,6 @@
   }
   .res-muted-note{ color:rgba(255,255,255,.7); font-size:.9rem; line-height:1.35; margin:10px 0 0; }
 
-  /* Icon nav */
   .res-icon-nav{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
   @media (min-width:600px){ .res-icon-nav{ grid-template-columns:repeat(5,1fr); } }
   .res-icon-btn{
@@ -824,7 +933,6 @@
   .res-icon-emoji{ font-size:2.2rem; margin-bottom:8px; filter:drop-shadow(0 2px 4px rgba(0,0,0,.15)); }
   .res-icon-label{ font-size:.8rem; font-weight:700; line-height:1.1; }
 
-  /* Primary call */
   .res-card{
     border:1px solid var(--rstr);
     background:var(--rp);
@@ -860,7 +968,6 @@
     font-weight:600;
   }
 
-  /* Section list */
   .res-section{ margin-top:14px; scroll-margin-top:20px; }
   .res-section h2{ margin:16px 2px 10px; font-size:1.05rem; }
   .res-item{ margin:10px 0; border-top:1px solid var(--rstr); }
@@ -892,7 +999,6 @@
     white-space:pre-wrap;
   }
 
-  /* Feedback */
   .res-feedback h3{ margin:0; font-size:1.0rem; }
   .res-feedback p{ margin:6px 0 10px; color:var(--rm); font-size:.92rem; line-height:1.35; }
   .res-rate-row{ display:flex; flex-wrap:wrap; gap:10px; }
@@ -933,7 +1039,6 @@
     .res-mini-btn{ flex:1 1 auto; }
   }
 
-  /* QR modal (cover-themed: dark + amber) */
   .qr-overlay{
     position:fixed; inset:0; z-index:1000;
     background:rgba(5,6,3,.92);
@@ -1079,15 +1184,13 @@
 
 <script>
 /* ============================================================
-   FIELD RECEIVER MK-II — Civilization Seeker
-   Real signals only:
+   FIELD RECEIVER MK-II · SHELTER BEACON
+   Points compass needle at the nearest shelter from
+   resources.json. Real signals only:
      - device orientation (compass heading)
      - geolocation (lat/lon/accuracy)
-     - navigator.connection (downlink/rtt/effectiveType)
-   Civilization vector = -gradient of accuracy field fit to
-   recent positions via least-squares plane. The needle points
-   in the direction where GPS accuracy *improves*, which is the
-   direction of denser mapped WiFi infrastructure.
+     - Nominatim geocoding (cached in localStorage)
+     - haversine distance + initial bearing per shelter
    ============================================================ */
 
 const $ = id => document.getElementById(id);
@@ -1102,6 +1205,19 @@ const log = (msg, cls='') => {
   while (el.children.length > 6) el.removeChild(el.lastChild);
 };
 
+/* --- WHICH SECTIONS COUNT AS SHELTERS? ---
+   The compass triangulates the nearest item that could give
+   someone a roof tonight. Drop or add IDs to taste. */
+const SHELTER_SECTION_IDS = ['shelters', 'youth', 'veterans'];
+
+/* --- VERIFIED COORDS LAYER ---
+   Optional GeoJSON file with human-verified shelter coordinates
+   and current addresses/phones. When present, the compass uses
+   these directly instead of geocoding through Nominatim.
+   Anything in resources.json without a match in the geojson
+   still falls back to Nominatim. */
+const SHELTERS_GEOJSON_PATH = './shelters.geojson';
+
 /* --- BUILD TICK MARKS --- */
 (function buildTicks(){
   const g = $('ticks');
@@ -1109,7 +1225,7 @@ const log = (msg, cls='') => {
   for (let deg = 0; deg < 360; deg += 5) {
     const isCardinal = deg % 90 === 0;
     const isMajor = deg % 30 === 0;
-    const rad = (deg - 90) * Math.PI / 180; // 0deg = up
+    const rad = (deg - 90) * Math.PI / 180;
     const o = isCardinal ? outerCard : isMajor ? outerMaj : outerMin;
     const x1 = Math.cos(rad) * inner, y1 = Math.sin(rad) * inner;
     const x2 = Math.cos(rad) * o, y2 = Math.sin(rad) * o;
@@ -1126,52 +1242,54 @@ const log = (msg, cls='') => {
 /* --- STATE --- */
 const state = {
   active: false,
-  heading: null,         // degrees, 0=N, clockwise
+  heading: null,
   hasHeading: false,
+  curLat: null,
+  curLon: null,
+  curAcc: null,
   refLat: null,
   refLon: null,
-  samples: [],           // {x, y, acc, t}
+  samples: [],
   walked: 0,
   lastPos: null,
-  bearing: null,         // degrees, 0=N, clockwise
-  confidence: 0,         // 0..1
-  density: null,         // current accuracy in meters
-  lastFixTime: null,     // ms timestamp of last real GPS fix
+  shelters: [],        // {name, address, queryAddress, item, lat, lon, distance, bearing, geocodeFailed, coordsSource, verifiedAddress, geoProps}
+  beacon: null,        // pointer into shelters array
+  geocoding: false,
+  resourcesError: null,// non-null when resources.json fetch failed
+  geojson: null,       // parsed shelters.geojson (or null if absent)
+  geojsonError: null,  // non-null when shelters.geojson fetch failed
+  density: null,
+  lastFixTime: null,
   connectionInfo: null,
   watchId: null,
   orientHandler: null,
-  // pre-compute bar cells
   densityBarCells: [],
-  lockBarCells: [],
+  distBarCells: [],
 };
 
 /* build bar cells */
-function buildBar(el, n, accentClass=''){
+function buildBar(el, n){
   el.innerHTML = '';
   const cells = [];
   for (let i = 0; i < n; i++){
     const c = document.createElement('div');
     c.className = 'bar-cell';
-    if (accentClass) c.dataset.accent = accentClass;
     el.appendChild(c);
     cells.push(c);
   }
   return cells;
 }
 state.densityBarCells = buildBar($('densityBar'), 16);
-state.lockBarCells = buildBar($('lockBar'), 10);
+state.distBarCells = buildBar($('distBar'), 10);
 
-/* --- UTILITY: compass heading from event --- */
+/* --- HEADING from event --- */
 function getHeadingFromEvent(e){
-  // iOS Safari
   if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
     return e.webkitCompassHeading;
   }
-  // Android Chrome absolute
   if (e.absolute === true && typeof e.alpha === 'number') {
     return (360 - e.alpha) % 360;
   }
-  // Fallback: relative alpha (won't be true north but at least gives rotation)
   if (typeof e.alpha === 'number') {
     return (360 - e.alpha) % 360;
   }
@@ -1191,90 +1309,251 @@ function densityClass(acc){
   return ['WILDERNESS','none'];
 }
 
-/* --- GRADIENT COMPUTATION ---
-   Least squares plane: z = a*x + b*y + c
-   where (x,y) = local meters east/north, z = accuracy.
-   The gradient (a,b) points toward INCREASING accuracy
-   (worse GPS). Negate to get direction toward
-   denser infrastructure.                                 */
-function computeGradient(){
-  const pts = state.samples;
-  if (pts.length < 5) {
-    state.bearing = null;
-    state.confidence = 0;
-    return { reason: 'need ≥5 samples' };
-  }
-
-  // require spatial spread
-  const xs = pts.map(p => p.x);
-  const ys = pts.map(p => p.y);
-  const xrange = Math.max(...xs) - Math.min(...xs);
-  const yrange = Math.max(...ys) - Math.min(...ys);
-  const spread = Math.hypot(xrange, yrange);
-  if (spread < 15) {
-    state.bearing = null;
-    state.confidence = 0;
-    return { reason: `walk further (${spread.toFixed(0)}m / 15m)` };
-  }
-
-  // require accuracy variance
-  const accs = pts.map(p => p.acc);
-  const accRange = Math.max(...accs) - Math.min(...accs);
-  if (accRange < 5) {
-    state.bearing = null;
-    state.confidence = 0;
-    return { reason: 'signal field flat' };
-  }
-
-  // means
-  const n = pts.length;
-  let mx=0, my=0, mz=0;
-  for (const p of pts){ mx+=p.x; my+=p.y; mz+=p.acc; }
-  mx/=n; my/=n; mz/=n;
-
-  // centered moments
-  let Sxx=0, Syy=0, Sxy=0, Sxz=0, Syz=0;
-  for (const p of pts){
-    const dx=p.x-mx, dy=p.y-my, dz=p.acc-mz;
-    Sxx+=dx*dx; Syy+=dy*dy; Sxy+=dx*dy;
-    Sxz+=dx*dz; Syz+=dy*dz;
-  }
-  const det = Sxx*Syy - Sxy*Sxy;
-  if (Math.abs(det) < 0.5) {
-    state.bearing = null;
-    state.confidence = 0;
-    return { reason: 'samples too colinear' };
-  }
-  const a = (Syy*Sxz - Sxy*Syz) / det; // ∂acc/∂east
-  const b = (Sxx*Syz - Sxy*Sxz) / det; // ∂acc/∂north
-
-  // bearing toward DECREASING accuracy
-  // compass bearing = atan2(east, north), east+ is +x, north+ is +y
-  const bearing = (Math.atan2(-a, -b) * 180 / Math.PI + 360) % 360;
-
-  // R^2 for confidence
-  const c = mz - a*mx - b*my;
-  let ssRes=0, ssTot=0;
-  for (const p of pts){
-    const pred = a*p.x + b*p.y + c;
-    ssRes += (p.acc - pred)**2;
-    ssTot += (p.acc - mz)**2;
-  }
-  const r2 = ssTot > 0 ? Math.max(0, 1 - ssRes/ssTot) : 0;
-
-  // gradient magnitude in (m accuracy change) per (m walked)
-  const gradMag = Math.hypot(a, b);
-  // confidence = r2 weighted by gradient strength (saturating)
-  const conf = Math.max(0, Math.min(1, r2 * Math.min(1, gradMag * 8)));
-
-  state.bearing = bearing;
-  state.confidence = conf;
-  return { ok: true, r2, gradMag, bearing, conf };
+/* --- HAVERSINE + INITIAL BEARING --- */
+function haversine(lat1, lon1, lat2, lon2){
+  const R = 6371000;
+  const toRad = d => d * Math.PI / 180;
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  const dphi = toRad(lat2 - lat1);
+  const dlam = toRad(lon2 - lon1);
+  const a = Math.sin(dphi/2)**2 + Math.cos(phi1)*Math.cos(phi2)*Math.sin(dlam/2)**2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
 }
 
-/* --- SAMPLE INGEST --- */
+function initialBearing(lat1, lon1, lat2, lon2){
+  const toRad = d => d * Math.PI / 180;
+  const phi1 = toRad(lat1), phi2 = toRad(lat2);
+  const dlam = toRad(lon2 - lon1);
+  const y = Math.sin(dlam) * Math.cos(phi2);
+  const x = Math.cos(phi1)*Math.sin(phi2) - Math.sin(phi1)*Math.cos(phi2)*Math.cos(dlam);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function fmtDistance(m){
+  if (m == null) return '— —';
+  const mi = m / 1609.344;
+  if (mi >= 0.1) return mi.toFixed(mi < 1 ? 2 : 1) + ' mi';
+  const ft = m * 3.28084;
+  return Math.round(ft) + ' ft';
+}
+
+function mapsUrl(s){
+  // Prefer verified address from shelters.geojson when present.
+  // Google Maps' geocoder handles the text fine and the user sees a
+  // recognizable destination card (not raw coordinates).
+  const addr = s.verifiedAddress || s.address;
+  const q = encodeURIComponent(`${s.name}, ${addr}`);
+  return `https://www.google.com/maps/dir/?api=1&destination=${q}&travelmode=walking`;
+}
+
+/* --- GEOCODING CACHE (localStorage) --- */
+const GEOCACHE_KEY = 'fr_shelter_geocache_v1';
+function geoCacheGet(){
+  try { return JSON.parse(localStorage.getItem(GEOCACHE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function geoCachePut(addr, val){
+  try {
+    const c = geoCacheGet();
+    c[addr] = { ...val, ts: Date.now() };
+    localStorage.setItem(GEOCACHE_KEY, JSON.stringify(c));
+  } catch {}
+}
+
+/* --- NOMINATIM GEOCODER ---
+   Free, no API key. Rate limit: 1 req/sec, polite User-Agent.
+   We can't set User-Agent from a browser, but we use the Referer
+   automatically + a low rate, which is within their usage policy
+   for low-volume client apps. */
+async function geocodeAddress(addr){
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1&addressdetails=0`;
+  const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const data = await resp.json();
+  if (!data || !data.length) return null;
+  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+}
+
+/* --- GEO INDEX from shelters.geojson ---
+   Strip punctuation and lowercase for matching, then fuzzy-fall-back
+   to substring so "412 Youth Zone" matches
+   "412 Youth Zone (Drop-In + Housing Referrals 16–23)". */
+function normalizeName(name){
+  return (name || '')
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')   // strip ALL punctuation incl. curly quotes, em-dash
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function buildGeoIndex(geojson){
+  const idx = new Map();
+  if (!geojson || !Array.isArray(geojson.features)) return idx;
+  for (const f of geojson.features){
+    if (!f || f.geometry?.type !== 'Point') continue;
+    const c = f.geometry.coordinates;
+    if (!Array.isArray(c) || typeof c[0] !== 'number' || typeof c[1] !== 'number') continue;
+    const props = f.properties || {};
+    if (!props.name) continue;
+    const key = normalizeName(props.name);
+    idx.set(key, {
+      lat: c[1],
+      lon: c[0],
+      name: props.name,
+      address: props.address || null,
+      properties: props,
+    });
+  }
+  return idx;
+}
+
+function findGeoMatch(name, geoIndex){
+  if (!geoIndex || !geoIndex.size) return null;
+  const key = normalizeName(name);
+  if (geoIndex.has(key)) return geoIndex.get(key);
+  // Prefix match either direction (handles parenthetical name variants)
+  for (const [gkey, gval] of geoIndex){
+    if (key.startsWith(gkey + ' ') || gkey.startsWith(key + ' ')) return gval;
+  }
+  // Last resort: substring
+  for (const [gkey, gval] of geoIndex){
+    if (key.includes(gkey) || gkey.includes(key)) return gval;
+  }
+  return null;
+}
+
+/* --- EXTRACT SHELTERS FROM RES_DATA ---
+   Skip items we can't physically point to:
+     - no address at all
+     - "confidential" addresses (DV shelters, by design)
+   Only append "Pittsburgh, PA" if the address has NO state at all —
+   never override an existing city like McKeesport.
+   When a geoIndex is provided, apply verified coords directly. */
+function extractShelters(data, geoIndex){
+  if (!data || !data.sections) return [];
+  const out = [];
+  let skipped = 0;
+  let verified = 0;
+  for (const sec of data.sections){
+    if (!SHELTER_SECTION_IDS.includes(sec.id)) continue;
+    for (const item of (sec.items || [])){
+      const addr = (item.address || '').trim();
+      if (!addr){ skipped++; continue; }
+      if (/confidential/i.test(addr)){ skipped++; continue; }
+      const hasState = /\b(pa|pennsylvania)\b/i.test(addr);
+      const q = hasState ? addr : addr.replace(/\.$/, '') + ', Pittsburgh, PA';
+      const shelter = {
+        name: item.name,
+        address: addr,
+        verifiedAddress: null,
+        queryAddress: q,
+        item: item,
+        sectionId: sec.id,
+        lat: null,
+        lon: null,
+        distance: null,
+        bearing: null,
+        coordsSource: null,    // 'verified' | 'geocoded' | null
+        geoProps: null,
+        geocodeFailed: false,
+      };
+      // Apply verified coords from shelters.geojson if available
+      const geo = findGeoMatch(item.name, geoIndex);
+      if (geo){
+        shelter.lat = geo.lat;
+        shelter.lon = geo.lon;
+        shelter.coordsSource = 'verified';
+        shelter.verifiedAddress = geo.address;
+        shelter.geoProps = geo.properties;
+        verified++;
+      }
+      out.push(shelter);
+    }
+  }
+  if (skipped) log(`skipped ${skipped} entr${skipped===1?'y':'ies'} (no address or confidential)`, 'warn');
+  if (verified) log(`✓ ${verified} verified from shelters.geojson`, 'ok');
+  return out;
+}
+
+/* --- GEOCODING PIPELINE ---
+   First pass: apply cache instantly.
+   Second pass: hit Nominatim for the rest, ~1/sec, cache results. */
+async function runGeocoding(){
+  if (state.geocoding) return;
+  if (!state.shelters.length) return;
+  state.geocoding = true;
+
+  const cache = geoCacheGet();
+  let cachedHits = 0;
+  for (const s of state.shelters){
+    if (s.lat != null) continue;  // already verified from geojson
+    const c = cache[s.queryAddress];
+    if (c && typeof c.lat === 'number' && typeof c.lon === 'number'){
+      s.lat = c.lat; s.lon = c.lon;
+      s.coordsSource = 'geocoded';
+      cachedHits++;
+    } else if (c && c.failed){
+      s.geocodeFailed = true;
+    }
+  }
+  if (cachedHits) log(`cache: ${cachedHits} shelter${cachedHits===1?'':'s'} preloaded`, 'ok');
+  recomputeBeacon();
+  render();
+
+  // Geocode the uncached ones
+  for (const s of state.shelters){
+    if (s.lat != null || s.geocodeFailed) continue;
+    try {
+      log(`geocoding: ${s.name}`, 'info');
+      const r = await geocodeAddress(s.queryAddress);
+      if (r){
+        s.lat = r.lat; s.lon = r.lon;
+        s.coordsSource = 'geocoded';
+        geoCachePut(s.queryAddress, { lat: r.lat, lon: r.lon });
+        log(`✓ ${s.name}`, 'ok');
+      } else {
+        s.geocodeFailed = true;
+        geoCachePut(s.queryAddress, { failed: true });
+        log(`✗ no match: ${s.name}`, 'warn');
+      }
+    } catch (err){
+      log(`geocode error: ${err.message}`, 'err');
+    }
+    recomputeBeacon();
+    render();
+    await new Promise(r => setTimeout(r, 1100));
+  }
+
+  state.geocoding = false;
+  const ok = state.shelters.filter(s => s.lat != null).length;
+  log(`geocoding done: ${ok}/${state.shelters.length} located`, 'ok');
+}
+
+/* --- RECOMPUTE NEAREST BEACON --- */
+function recomputeBeacon(){
+  if (state.curLat == null){
+    state.beacon = null;
+    return;
+  }
+  let best = null, bestDist = Infinity;
+  for (const s of state.shelters){
+    if (s.lat == null) continue;
+    const d = haversine(state.curLat, state.curLon, s.lat, s.lon);
+    const b = initialBearing(state.curLat, state.curLon, s.lat, s.lon);
+    s.distance = d;
+    s.bearing = b;
+    if (d < bestDist){ bestDist = d; best = s; }
+  }
+  state.beacon = best;
+}
+
+/* --- SAMPLE INGEST (current pos + trail) --- */
 function pushSample(lat, lon, acc){
-  if (state.refLat == null) {
+  state.curLat = lat;
+  state.curLon = lon;
+  state.curAcc = acc;
+
+  if (state.refLat == null){
     state.refLat = lat;
     state.refLon = lon;
   }
@@ -1283,11 +1562,10 @@ function pushSample(lat, lon, acc){
   const y = (lat - state.refLat) * 111320;
   const t = Date.now();
 
-  // distance walked
+  // walked distance with jitter filter
   if (state.lastPos){
     const dx = x - state.lastPos.x, dy = y - state.lastPos.y;
     const d = Math.hypot(dx, dy);
-    // only count meaningful steps (filter GPS jitter)
     if (d > Math.max(3, acc * 0.3)){
       state.walked += d;
       state.lastPos = {x, y};
@@ -1296,192 +1574,142 @@ function pushSample(lat, lon, acc){
     state.lastPos = {x, y};
   }
 
-  // drop near-duplicates (no movement)
-  const last = state.samples[state.samples.length-1];
-  if (last && Math.hypot(x-last.x, y-last.y) < 2 && Math.abs(acc-last.acc) < 2){
-    // update timestamp only
-    last.t = t;
-    last.acc = (last.acc * 0.7 + acc * 0.3);
-  } else {
-    state.samples.push({x, y, acc, t});
-    if (state.samples.length > 40) state.samples.shift();
+  // sample for trail
+  const last = state.samples[state.samples.length - 1];
+  if (!last || Math.hypot(x - last.x, y - last.y) >= 2){
+    state.samples.push({x, y, t});
+    if (state.samples.length > 30) state.samples.shift();
   }
 
   state.density = acc;
-  const result = computeGradient();
   state.lastFixTime = t;
+
+  recomputeBeacon();
   render();
-  return result;
-}
-
-/* --- DIRECTIONAL SECTOR FIELD ---
-   Triangulation from walked samples. For every pair of samples (a,b)
-   we compute the bearing from a to b (real walking direction) and
-   bin it into one of 16 sectors. Each sector accumulates:
-     - mean accuracy of "destination" samples reached going that way
-     - total walked distance contributing
-     - sample-pair count
-   These power the persistent directional blips. A sector you've never
-   walked toward stays empty - no fake data.
-*/
-function computeDirectionalField(){
-  const pts = state.samples;
-  if (pts.length < 3) return null;
-  const N = 16;
-  const sw = 360 / N;
-  const buckets = Array.from({length: N}, () => ({
-    accSum:0, accCount:0, dist:0, samples:0
-  }));
-  for (let i = 0; i < pts.length; i++){
-    for (let j = i + 1; j < pts.length; j++){
-      const a = pts[i], b = pts[j];
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const d = Math.hypot(dx, dy);
-      if (d < 4) continue;
-      const bearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
-      const idx = Math.floor(bearing / sw) % N;
-      const bu = buckets[idx];
-      bu.accSum += b.acc;
-      bu.accCount += 1;
-      bu.dist += d;
-      bu.samples += 1;
-    }
-  }
-  return buckets.map((b, i) => ({
-    bearing: i * sw + sw/2,
-    meanAcc: b.accCount ? b.accSum / b.accCount : null,
-    walkedDist: b.dist,
-    samples: b.samples
-  }));
-}
-
-/* one stable circle per sector (16 total) so CSS can transition them */
-function initDirectional(){
-  const g = $('directional');
-  if (g.children.length) return;
-  for (let i = 0; i < 16; i++){
-    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('class','dir-blip');
-    dot.setAttribute('cx','0');
-    dot.setAttribute('cy','0');
-    dot.setAttribute('r','0');
-    dot.setAttribute('opacity','0');
-    dot.setAttribute('fill','#ffb84d');
-    g.appendChild(dot);
-  }
-}
-initDirectional();
-
-function renderDirectional(){
-  const dots = $('directional').children;
-  const field = computeDirectionalField();
-  if (!field){
-    for (let i = 0; i < dots.length; i++){
-      dots[i].setAttribute('opacity','0');
-      dots[i].setAttribute('r','0');
-    }
-    return;
-  }
-  for (let i = 0; i < 16; i++){
-    const dot = dots[i];
-    const s = field[i];
-    if (!s || s.samples < 2 || s.walkedDist < 5){
-      dot.setAttribute('opacity','0');
-      dot.setAttribute('r','0');
-      continue;
-    }
-    // log-map mean accuracy -> radius (close to center = good signal)
-    const t = Math.log(Math.max(5, Math.min(2000, s.meanAcc)));
-    const lo = Math.log(5), hi = Math.log(2000);
-    const norm = (t - lo) / (hi - lo);  // 0=tight, 1=loose
-    const r = 35 + norm * 110;
-    // angle: bearing in dial frame (dial rotation glues to world N)
-    const ang = (s.bearing - 90) * Math.PI / 180;
-    const x = Math.cos(ang) * r;
-    const y = Math.sin(ang) * r;
-    // size: log of walked distance contributing (confidence in space)
-    const size = 2.2 + Math.min(4.5, Math.log(1 + s.walkedDist) * 0.7);
-    // brightness: log of sample-pair count (confidence in repetition)
-    const opacity = Math.min(1, 0.4 + Math.log(1 + s.samples) * 0.18);
-    // color: bright amber tight -> warm brown loose
-    const fill = norm < 0.35 ? '#ffd07a'
-               : norm < 0.65 ? '#ffb84d'
-               :               '#9a6e22';
-    dot.setAttribute('cx', x.toFixed(1));
-    dot.setAttribute('cy', y.toFixed(1));
-    dot.setAttribute('r', size.toFixed(1));
-    dot.setAttribute('opacity', opacity.toFixed(2));
-    dot.setAttribute('fill', fill);
-  }
 }
 
 /* --- RENDER --- */
 function render(){
-  // dial rotates by -heading so N glues to true north
   const h = state.heading || 0;
   $('dial').setAttribute('transform', `rotate(${-h})`);
 
-  // needle rotates by (bearing - heading)
+  // NEEDLE: point to beacon
   const needle = $('needle');
-  if (state.bearing != null && state.confidence > 0.1){
-    needle.style.opacity = String(0.4 + 0.6 * state.confidence);
-    needle.setAttribute('transform', `rotate(${state.bearing - h})`);
+  if (state.beacon && state.beacon.bearing != null){
+    needle.style.opacity = '1';
+    needle.setAttribute('transform', `rotate(${state.beacon.bearing - h})`);
     $('sweep').classList.add('hidden');
   } else {
     needle.style.opacity = '0';
     if (state.active) $('sweep').classList.remove('hidden');
+    else $('sweep').classList.add('hidden');
   }
 
-  // directional sector blips - persistent triangulation from walked samples
-  renderDirectional();
+  // SHELTER MARKERS in dial frame
+  renderShelterMarkers();
 
-  // trail (in dial coordinate frame -> rotates with dial, stays aligned with world)
+  // TRAIL
   const trail = $('trail');
   trail.innerHTML = '';
   if (state.samples.length > 1){
-    // find latest sample, draw others relative to it (newest at center)
     const last = state.samples[state.samples.length - 1];
-    // scale: fit all samples within radius 100
     let maxR = 1;
     for (const p of state.samples){
       maxR = Math.max(maxR, Math.hypot(p.x - last.x, p.y - last.y));
     }
-    const scale = Math.min(100 / maxR, 5);
+    const scale = Math.min(60 / maxR, 5);
     for (let i = 0; i < state.samples.length; i++){
       const p = state.samples[i];
-      // world: +x east, +y north. SVG: +x right, +y DOWN. So flip y.
       const sx = (p.x - last.x) * scale;
       const sy = -(p.y - last.y) * scale;
       const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
       dot.setAttribute('cx', sx.toFixed(1));
       dot.setAttribute('cy', sy.toFixed(1));
       const ageBin = (state.samples.length - 1 - i);
-      const r = ageBin === 0 ? 3 : 1.6;
+      const r = ageBin === 0 ? 3 : 1.4;
       dot.setAttribute('r', r);
       dot.setAttribute('class', `trail-dot${ageBin === 0 ? ' recent' : ''}`);
-      dot.style.opacity = Math.max(0.15, 1 - ageBin * 0.06);
+      dot.style.opacity = Math.max(0.12, 1 - ageBin * 0.06);
       trail.appendChild(dot);
     }
   }
 
-  // STATUS panel
+  // STATE machine
+  const geocoded = state.shelters.filter(s => s.lat != null).length;
+  const totalShelters = state.shelters.length;
+
   if (!state.active){
-    $('stateText').textContent = 'OFFLINE';
-    $('stateText').className = 'panel-val state-readout warn';
-    $('stateSub').textContent = 'awaiting activation';
-    $('led').className = 'led';
-  } else if (state.bearing != null && state.confidence > 0.25){
-    $('stateText').textContent = 'LOCK';
-    $('stateText').className = 'panel-val state-readout lock';
-    $('stateSub').textContent = 'civilization vector resolved';
-    $('led').className = 'led lock';
+    setState('OFFLINE', 'warn', 'awaiting activation', 'led');
+  } else if (state.resourcesError){
+    setState('FETCH FAIL', 'warn', 'resources.json missing', 'led on');
+  } else if (totalShelters === 0 && !state.geocoding && RES_DATA){
+    setState('NO TARGETS', 'warn', 'no shelters in resources.json', 'led on');
+  } else if (totalShelters === 0){
+    setState('LOADING', 'seeking', 'fetching resources…', 'led on');
+  } else if (state.curLat == null){
+    const sub = state.geocoding
+      ? `geocoding (${geocoded}/${totalShelters})…`
+      : 'waiting for GPS fix';
+    setState('SEEKING', 'seeking', sub, 'led on');
+  } else if (geocoded === 0){
+    setState(state.geocoding ? 'GEOCODING' : 'NO TARGETS', state.geocoding ? 'seeking' : 'warn',
+             state.geocoding ? `${geocoded}/${totalShelters} located` : 'no shelters could be located',
+             'led on');
+  } else if (state.beacon && state.beacon.distance != null && state.beacon.distance < 30){
+    setState('ARRIVED', 'arrived', 'you are at the shelter', 'led lock');
   } else {
-    $('stateText').textContent = 'SEEKING';
-    $('stateText').className = 'panel-val state-readout seeking';
-    $('stateSub').textContent = state.samples.length < 5
-      ? `collecting samples (${state.samples.length}/5)`
-      : `walk further to lock`;
-    $('led').className = 'led on';
+    setState('BEACONING', 'lock', `tracking ${geocoded} shelter${geocoded===1?'':'s'}`, 'led lock');
+  }
+
+  // BEACON HEADLINE
+  const beaconPanel = $('beaconPanel');
+  const beaconName = $('beaconName');
+  const beaconMeta = $('beaconMeta');
+  const mapsBtn = $('openMapsBtn');
+
+  if (state.beacon && state.beacon.lat != null){
+    const s = state.beacon;
+    beaconName.textContent = s.name;
+    const distStr = fmtDistance(s.distance);
+    const dir = cardinal(s.bearing);
+    const arrived = s.distance < 30;
+    const verifiedTag = s.coordsSource === 'verified' ? ' · <span class="dir">✓ verified</span>' : '';
+    if (arrived){
+      beaconMeta.innerHTML = `<span class="dir">✓ ARRIVED</span> · <span class="dist">${distStr}</span>${verifiedTag}`;
+    } else {
+      beaconMeta.innerHTML = `<span class="dist">${distStr}</span> · heading <span class="dir">${dir}</span>${verifiedTag}`;
+    }
+    beaconPanel.classList.add('locked');
+    mapsBtn.classList.remove('disabled');
+    mapsBtn.href = mapsUrl(s);
+  } else {
+    beaconPanel.classList.remove('locked');
+    mapsBtn.classList.add('disabled');
+    mapsBtn.href = '#';
+    if (!state.active){
+      beaconName.textContent = '— STANDBY —';
+      beaconMeta.textContent = 'awaiting activation';
+    } else if (state.resourcesError){
+      beaconName.textContent = 'RESOURCES.JSON NOT FOUND';
+      beaconMeta.textContent = state.resourcesError + ' · upload it next to compass.html';
+    } else if (totalShelters === 0 && !RES_DATA){
+      beaconName.textContent = '— FETCHING DATA —';
+      beaconMeta.textContent = 'loading resources.json…';
+    } else if (totalShelters === 0){
+      beaconName.textContent = 'NO SHELTERS IN DATA';
+      beaconMeta.textContent = 'check sections in resources.json';
+    } else if (state.curLat == null){
+      beaconName.textContent = '— ACQUIRING GPS —';
+      beaconMeta.textContent = state.geocoding
+        ? `geocoding ${geocoded}/${totalShelters}…`
+        : 'waiting for first fix';
+    } else if (geocoded === 0){
+      beaconName.textContent = state.geocoding ? '— LOCATING SHELTERS —' : 'NO TARGETS GEOCODED';
+      beaconMeta.textContent = `${geocoded}/${totalShelters} located`;
+    } else {
+      beaconName.textContent = '— RESOLVING —';
+      beaconMeta.textContent = 'computing nearest';
+    }
   }
 
   // HEADING
@@ -1494,27 +1722,29 @@ function render(){
   }
 
   // BEARING
-  if (state.bearing != null){
-    $('bearingVal').textContent = `${String(Math.round(state.bearing)).padStart(3,'0')}°`;
-    const conf = state.confidence;
-    let tag;
-    if (conf > 0.55) tag = `<span class="hot">LOCKED · ${cardinal(state.bearing)}</span>`;
-    else if (conf > 0.25) tag = `${cardinal(state.bearing)} <span class="warn">partial</span>`;
-    else tag = `${cardinal(state.bearing)} <span class="red">weak</span>`;
-    $('bearingDir').innerHTML = tag;
+  if (state.beacon && state.beacon.bearing != null){
+    $('bearingVal').textContent = `${String(Math.round(state.beacon.bearing)).padStart(3,'0')}°`;
+    $('bearingDir').innerHTML = `to <span class="hot">${cardinal(state.beacon.bearing)}</span>`;
   } else {
     $('bearingVal').textContent = '— — —°';
     $('bearingDir').textContent = 'SEEKING';
   }
 
-  // LOCK BAR
-  const lockN = Math.round(state.confidence * 10);
-  state.lockBarCells.forEach((c, i) => {
-    c.className = 'bar-cell' + (i < lockN ? ' on' : '');
-  });
-  $('lockVal').textContent = state.confidence > 0
-    ? `${Math.round(state.confidence * 100)}%`
-    : '— —';
+  // CLOSENESS bar (gets fuller as you get closer)
+  // log scale: 5000m = empty, 30m = full
+  if (state.beacon && state.beacon.distance != null){
+    $('distVal').textContent = fmtDistance(state.beacon.distance);
+    const d = Math.max(30, Math.min(5000, state.beacon.distance));
+    const t = Math.log(d), lo = Math.log(30), hi = Math.log(5000);
+    const closeness = 1 - (t - lo) / (hi - lo);  // 1=close, 0=far
+    const filled = Math.round(closeness * 10);
+    state.distBarCells.forEach((c, i) => {
+      c.className = 'bar-cell' + (i < filled ? ' on' : '');
+    });
+  } else {
+    $('distVal').textContent = '— —';
+    state.distBarCells.forEach(c => c.className = 'bar-cell');
+  }
 
   // DENSITY
   if (state.density != null){
@@ -1524,7 +1754,6 @@ function render(){
     tag.textContent = tagText;
     tag.className = 'density-tag ' + tagClass;
 
-    // bar: log scale, 5m=full, 2000m=empty
     const v = Math.log(Math.max(5, Math.min(2000, state.density)));
     const lo = Math.log(5), hi = Math.log(2000);
     const filled = 16 - Math.round((v - lo) / (hi - lo) * 16);
@@ -1532,12 +1761,11 @@ function render(){
       c.className = 'bar-cell' + (i < filled ? ' on' : '');
     });
 
-    // live last-fix readout
     const ageMs = state.lastFixTime ? (Date.now() - state.lastFixTime) : null;
     const ageStr = ageMs != null
       ? (ageMs < 2000 ? 'just now' : `${(ageMs/1000).toFixed(0)}s ago`)
       : '—';
-    $('densitySub').innerHTML = `<span class="hot">⊹ last fix: ${ageStr}</span> · sector dots = surveyed bearings`;
+    $('densitySub').innerHTML = `<span class="hot">⊹ last fix: ${ageStr}</span>`;
   }
 
   // LINK
@@ -1554,8 +1782,56 @@ function render(){
     $('linkSub').textContent = 'navigator.connection not exposed';
   }
 
-  // SAMPLES
-  $('samplesVal').textContent = `${state.samples.length} / ${Math.round(state.walked)}m`;
+  // SHELTERS COUNT
+  const located = state.shelters.filter(s => s.lat != null).length;
+  const verifiedCount = state.shelters.filter(s => s.coordsSource === 'verified').length;
+  const geocodedCount = located - verifiedCount;
+  $('samplesVal').textContent = `${located} / ${totalShelters}`;
+  if (state.geocoding){
+    $('samplesSub').innerHTML = `<span class="hot">geocoding…</span> · ${verifiedCount} verified`;
+  } else if (totalShelters === 0){
+    $('samplesSub').textContent = 'load resources.json';
+  } else if (verifiedCount > 0 && geocodedCount > 0){
+    $('samplesSub').innerHTML = `<span class="green">${verifiedCount} verified</span> · ${geocodedCount} geocoded`;
+  } else if (verifiedCount > 0){
+    $('samplesSub').innerHTML = `<span class="green">all verified</span>`;
+  } else if (located === totalShelters){
+    $('samplesSub').textContent = 'all geocoded';
+  } else {
+    $('samplesSub').textContent = `${located} / ${totalShelters} located`;
+  }
+}
+
+function setState(text, cls, sub, ledCls){
+  $('stateText').textContent = text;
+  $('stateText').className = 'panel-val state-readout ' + cls;
+  $('stateSub').textContent = sub;
+  $('led').className = ledCls;
+}
+
+/* --- SHELTER MARKERS on the dial ---
+   Faint rings showing all geocoded shelters by bearing+distance.
+   The current beacon glows brighter. */
+function renderShelterMarkers(){
+  const g = $('shelterMarkers');
+  g.innerHTML = '';
+  if (state.curLat == null) return;
+  for (const s of state.shelters){
+    if (s.lat == null || s.distance == null) continue;
+    // log-scale distance to dial radius (30m=close,5000m=far edge)
+    const d = Math.max(30, Math.min(5000, s.distance));
+    const t = Math.log(d), lo = Math.log(30), hi = Math.log(5000);
+    const r = 40 + (t - lo) / (hi - lo) * 100;  // 40..140
+    const ang = (s.bearing - 90) * Math.PI / 180;
+    const x = Math.cos(ang) * r;
+    const y = Math.sin(ang) * r;
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', x.toFixed(1));
+    c.setAttribute('cy', y.toFixed(1));
+    c.setAttribute('r', s === state.beacon ? '5' : '3');
+    c.setAttribute('class', 'shelter-marker' + (s === state.beacon ? ' beacon' : ''));
+    g.appendChild(c);
+  }
 }
 
 /* --- ORIENTATION --- */
@@ -1563,10 +1839,8 @@ function attachOrientation(){
   state.orientHandler = (e) => {
     const h = getHeadingFromEvent(e);
     if (h != null && !isNaN(h)){
-      // smooth the heading slightly
       if (state.heading == null) state.heading = h;
       else {
-        // shortest angle diff
         let d = h - state.heading;
         if (d > 180) d -= 360;
         if (d < -180) d += 360;
@@ -1579,7 +1853,6 @@ function attachOrientation(){
       render();
     }
   };
-  // Prefer absolute
   window.addEventListener('deviceorientationabsolute', state.orientHandler, true);
   window.addEventListener('deviceorientation', state.orientHandler, true);
 }
@@ -1590,7 +1863,7 @@ async function activate(){
   $('activateBtn').textContent = 'INITIALIZING...';
   log('boot sequence initiated', 'info');
 
-  // 1. Orientation permission (iOS)
+  // Orientation permission (iOS)
   try {
     if (typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -1608,7 +1881,7 @@ async function activate(){
     log('orientation: <span class="err">' + err.message + '</span>', '');
   }
 
-  // 2. Geolocation
+  // Geolocation
   if (!('geolocation' in navigator)){
     log('geolocation: <span class="err">unsupported</span>', '');
     $('activateBtn').textContent = 'GEOLOCATION UNAVAILABLE';
@@ -1618,14 +1891,18 @@ async function activate(){
   state.watchId = navigator.geolocation.watchPosition(
     (pos) => {
       const {latitude, longitude, accuracy} = pos.coords;
-      const result = pushSample(latitude, longitude, accuracy);
+      pushSample(latitude, longitude, accuracy);
       if (!state.active){
         state.active = true;
         $('activate').classList.add('hidden');
         log(`geo: <span class="ok">lock</span> ±${Math.round(accuracy)}m`, '');
+        // Make sure both resources.json and shelters.geojson are loading
+        bootShelters().catch(err => log(`boot: ${err.message}`, 'err'));
       }
-      if (result && result.ok){
-        log(`fit: r²=${result.r2.toFixed(2)} grad=${result.gradMag.toFixed(2)} → ${Math.round(result.bearing)}°`, 'info');
+      if (state.beacon){
+        const d = fmtDistance(state.beacon.distance);
+        const dir = cardinal(state.beacon.bearing);
+        log(`beacon → ${state.beacon.name} · ${d} ${dir}`, 'info');
       }
     },
     (err) => {
@@ -1638,7 +1915,7 @@ async function activate(){
     { enableHighAccuracy: true, maximumAge: 0, timeout: 27000 }
   );
 
-  // 3. Connection info
+  // Connection info
   function pollConnection(){
     if ('connection' in navigator){
       const c = navigator.connection;
@@ -1661,84 +1938,181 @@ async function activate(){
 
 $('activateBtn').addEventListener('click', activate);
 $('resetBtn').addEventListener('click', () => {
-  state.samples = [];
-  state.walked = 0;
-  state.lastPos = null;
-  state.refLat = null;
-  state.refLon = null;
-  state.bearing = null;
-  state.confidence = 0;
-  log('samples cleared', 'warn');
+  // Re-run beacon search (in case resources were updated)
+  recomputeBeacon();
   render();
+  log('rechecked nearest beacon', 'warn');
 });
 $('diagBtn').addEventListener('click', () => {
+  const verified = state.shelters.filter(s => s.coordsSource === 'verified').length;
+  const geocoded = state.shelters.filter(s => s.coordsSource === 'geocoded').length;
+  const failed = state.shelters.filter(s => s.geocodeFailed).length;
+  const pending = state.shelters.length - verified - geocoded - failed;
   const lines = [
-    `samples: ${state.samples.length}`,
-    `walked: ${state.walked.toFixed(1)}m`,
+    `pos: ${state.curLat != null ? state.curLat.toFixed(5)+','+state.curLon.toFixed(5) : 'null'}`,
     `heading: ${state.heading != null ? state.heading.toFixed(1)+'°' : 'null'}`,
-    `bearing: ${state.bearing != null ? state.bearing.toFixed(1)+'°' : 'null'}`,
-    `conf: ${(state.confidence*100).toFixed(0)}%`,
+    `shelters: ${state.shelters.length} total`,
+    `  verified: ${verified} · geocoded: ${geocoded} · pending: ${pending} · failed: ${failed}`,
+    `geojson: ${state.geojson ? state.geojson.features?.length + ' features' : (state.geojsonError || 'not loaded')}`,
+    `beacon: ${state.beacon ? state.beacon.name : 'none'}`,
+    state.beacon ? `  source: ${state.beacon.coordsSource || '?'}` : null,
+    state.beacon ? `  dist: ${fmtDistance(state.beacon.distance)} bearing ${Math.round(state.beacon.bearing)}°` : null,
     `density: ${state.density != null ? '±'+state.density.toFixed(1)+'m' : 'null'}`,
-  ];
+  ].filter(Boolean);
   for (const l of lines) log(l, 'info');
 });
 
 // initial render
 render();
-log('FIELD RECEIVER MK-II ready', 'ok');
+log('FIELD RECEIVER MK-II · SHELTER BEACON ready', 'ok');
 log('tap ACTIVATE to begin', 'info');
 
-// keep "last fix: Xs ago" current between GPS callbacks
+// keep "last fix" age live
 setInterval(() => { if (state.active && state.lastFixTime) render(); }, 1000);
 
-/* --- VIEW NAVIGATION + QR SHARE + RESOURCES LOADER --- */
+/* --- RESOURCES LOADING (eager) --- */
 
 let RES_DATA = null;
+let RES_PROMISE = null;
+let GEOJSON_PROMISE = null;
 let RES_RATING = null;
-let RES_LOADED = false;
+let RES_UI_BUILT = false;
+
+async function ensureResources(){
+  if (RES_DATA) return RES_DATA;
+  if (RES_PROMISE) return RES_PROMISE;
+  RES_PROMISE = (async () => {
+    log('fetching resources.json', 'info');
+    let resp;
+    try {
+      resp = await fetch('./resources.json', { cache: 'no-store' });
+    } catch (err) {
+      state.resourcesError = 'network error (' + err.message + ')';
+      render();
+      throw err;
+    }
+    if (!resp.ok){
+      state.resourcesError = 'HTTP ' + resp.status + ' — file not found at ./resources.json';
+      render();
+      throw new Error('HTTP ' + resp.status);
+    }
+    try {
+      RES_DATA = await resp.json();
+    } catch (err) {
+      state.resourcesError = 'invalid JSON in resources.json';
+      render();
+      throw err;
+    }
+    state.resourcesError = null;
+    log(`loaded ${RES_DATA.sections?.length || 0} sections`, 'ok');
+    render();
+    return RES_DATA;
+  })();
+  return RES_PROMISE;
+}
+
+async function ensureGeojson(){
+  if (state.geojson) return state.geojson;
+  if (GEOJSON_PROMISE) return GEOJSON_PROMISE;
+  GEOJSON_PROMISE = (async () => {
+    log('fetching shelters.geojson', 'info');
+    let resp;
+    try {
+      resp = await fetch(SHELTERS_GEOJSON_PATH, { cache: 'no-store' });
+    } catch (err) {
+      state.geojsonError = err.message;
+      log(`geojson: ${err.message} (falling back to geocoding)`, 'warn');
+      return null;
+    }
+    if (!resp.ok){
+      state.geojsonError = 'HTTP ' + resp.status;
+      log(`geojson: HTTP ${resp.status} (falling back to geocoding)`, 'warn');
+      return null;
+    }
+    try {
+      state.geojson = await resp.json();
+      const n = state.geojson?.features?.length || 0;
+      log(`loaded shelters.geojson: ${n} verified feature${n===1?'':'s'}`, 'ok');
+      return state.geojson;
+    } catch (err){
+      state.geojsonError = 'invalid JSON';
+      log('geojson: invalid JSON (falling back to geocoding)', 'warn');
+      return null;
+    }
+  })();
+  return GEOJSON_PROMISE;
+}
+
+/* --- BOOT PIPELINE ---
+   Fetch resources.json and shelters.geojson in parallel.
+   Once both settle, extract shelters (applying verified coords)
+   and kick off geocoding for any unmatched entries. Cached so
+   re-calls (e.g. from the activate handler) are no-ops. */
+let BOOT_PROMISE = null;
+function bootShelters(){
+  if (BOOT_PROMISE) return BOOT_PROMISE;
+  BOOT_PROMISE = (async () => {
+    const [resData, gj] = await Promise.all([
+      ensureResources().catch(err => { log(`resources load failed: ${err.message}`, 'err'); return null; }),
+      ensureGeojson(),
+    ]);
+    if (!resData) return;
+    const geoIndex = buildGeoIndex(gj);
+    state.shelters = extractShelters(resData, geoIndex);
+    log(`extracted ${state.shelters.length} shelter${state.shelters.length===1?'':'s'}`, 'ok');
+    render();
+    // Geocoding fills in anything not verified from the geojson
+    runGeocoding().catch(err => log(`geocoding pipeline: ${err.message}`, 'err'));
+  })();
+  return BOOT_PROMISE;
+}
+
+// Start loading both files immediately at boot
+bootShelters();
+
+/* --- VIEW NAVIGATION + QR SHARE --- */
 
 function showResources(){
-  const v = document.getElementById('resourcesView');
+  const v = $('resourcesView');
   v.classList.add('active');
   v.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
   window.scrollTo(0, 0);
-  if (!RES_LOADED) {
-    RES_LOADED = true;
+  if (!RES_UI_BUILT){
     resBuildLights();
     resLoad();
   }
 }
 function hideResources(){
-  const v = document.getElementById('resourcesView');
+  const v = $('resourcesView');
   v.classList.remove('active');
   v.setAttribute('aria-hidden','true');
   document.body.style.overflow = '';
 }
 function toggleQR(force){
-  const o = document.getElementById('qrOverlay');
+  const o = $('qrOverlay');
   const want = (force === undefined) ? !o.classList.contains('active') : !!force;
   o.classList.toggle('active', want);
   o.setAttribute('aria-hidden', want ? 'false' : 'true');
 }
 
-document.getElementById('resourcesBtn').addEventListener('click', showResources);
-document.getElementById('shareBtn').addEventListener('click', () => toggleQR());
-document.getElementById('backBtn').addEventListener('click', hideResources);
-document.getElementById('qrOverlay').addEventListener('click', (e) => {
+$('resourcesBtn').addEventListener('click', showResources);
+$('shareBtn').addEventListener('click', () => toggleQR());
+$('backBtn').addEventListener('click', hideResources);
+$('qrOverlay').addEventListener('click', (e) => {
   if (e.target.id === 'qrOverlay') toggleQR(false);
 });
-document.getElementById('qrCloseBtn').addEventListener('click', () => toggleQR(false));
+$('qrCloseBtn').addEventListener('click', () => toggleQR(false));
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    if (document.getElementById('qrOverlay').classList.contains('active')) toggleQR(false);
-    else if (document.getElementById('resourcesView').classList.contains('active')) hideResources();
+    if ($('qrOverlay').classList.contains('active')) toggleQR(false);
+    else if ($('resourcesView').classList.contains('active')) hideResources();
   }
 });
 
 /* --- Hope banner floating lights --- */
 function resBuildLights(){
-  const holder = document.getElementById('resLights');
+  const holder = $('resLights');
   if (!holder || holder.children.length) return;
   for (let i = 0; i < 16; i++){
     const d = document.createElement('div');
@@ -1755,7 +2129,6 @@ function resBuildLights(){
   }
 }
 
-/* --- Help finder utilities --- */
 function resSafe(s){ return (s ?? '').toString(); }
 function resFmtTel(p){ return p ? p.replace(/\s+/g,'') : ''; }
 
@@ -1878,7 +2251,7 @@ function resBuildSection(section){
 }
 
 function resRenderSections(){
-  const root = document.getElementById('resSectionsRoot');
+  const root = $('resSectionsRoot');
   root.innerHTML = '';
   if (!RES_DATA) return;
   const secs = [...(RES_DATA.sections || [])].sort((a,b) => (a.importance||999)-(b.importance||999));
@@ -1886,23 +2259,23 @@ function resRenderSections(){
 }
 
 function resFillHeader(){
-  document.getElementById('resAppTitle').textContent = resSafe(RES_DATA?.meta?.title || 'Pittsburgh Help Finder');
-  document.getElementById('resAppSubtitle').textContent = resSafe(RES_DATA?.meta?.subtitle || '');
-  document.getElementById('resUpdatedDate').textContent = resSafe(RES_DATA?.meta?.updated || '—');
+  $('resAppTitle').textContent = resSafe(RES_DATA?.meta?.title || 'Pittsburgh Help Finder');
+  $('resAppSubtitle').textContent = resSafe(RES_DATA?.meta?.subtitle || '');
+  $('resUpdatedDate').textContent = resSafe(RES_DATA?.meta?.updated || '—');
 
   const notes = (RES_DATA?.meta?.notes || []).map(x => '• ' + x).join('  ');
-  document.getElementById('resMetaNotes').textContent = notes;
+  $('resMetaNotes').textContent = notes;
 
   const pc = RES_DATA?.primary_contact;
   if (pc){
-    document.getElementById('resPrimaryName').textContent = resSafe(pc.name);
-    document.getElementById('resPrimaryShort').textContent = resSafe(pc.short);
+    $('resPrimaryName').textContent = resSafe(pc.name);
+    $('resPrimaryShort').textContent = resSafe(pc.short);
     const phone = resSafe(pc.display_phone || '');
     const tel = resFmtTel(pc.phone || '');
-    const btn = document.getElementById('resPrimaryCallBtn');
+    const btn = $('resPrimaryCallBtn');
     btn.href = tel ? ('tel:' + tel) : '#';
-    document.getElementById('resPrimaryPhone').textContent = phone || 'Call';
-    const ph = document.getElementById('resPrimaryPills');
+    $('resPrimaryPhone').textContent = phone || 'Call';
+    const ph = $('resPrimaryPills');
     ph.innerHTML = '';
     ph.appendChild(resMakePills(['Shelter coordination','Start here','Up-to-date referrals']));
   }
@@ -1910,7 +2283,7 @@ function resFillHeader(){
 
 function resRenderIconNav(){
   if (!RES_DATA || !RES_DATA.sections) return;
-  const nav = document.getElementById('resIconNav');
+  const nav = $('resIconNav');
   nav.innerHTML = '';
   RES_DATA.sections.forEach(sec => {
     const btn = document.createElement('div');
@@ -1931,7 +2304,7 @@ function resRenderIconNav(){
 
     btn.addEventListener('click', () => {
       resSpeak(sec.title);
-      const t = document.getElementById('res-sec-' + sec.id);
+      const t = $('res-sec-' + sec.id);
       if (t) t.scrollIntoView({behavior:'smooth', block:'start'});
     });
     nav.appendChild(btn);
@@ -1940,16 +2313,15 @@ function resRenderIconNav(){
 
 async function resLoad(){
   try{
-    const resp = await fetch('./resources.json', {cache:'no-store'});
-    if (!resp.ok) throw new Error('Could not load resources.json');
-    RES_DATA = await resp.json();
+    await ensureResources();
     resFillHeader();
     resRenderSections();
     resRenderIconNav();
+    RES_UI_BUILT = true;
   } catch(err){
     console.error(err);
-    document.getElementById('resPrimaryName').textContent = 'Could not load resources.json';
-    document.getElementById('resPrimaryShort').textContent = 'Make sure resources.json is in the same folder as compass.html.';
+    $('resPrimaryName').textContent = 'Could not load resources.json';
+    $('resPrimaryShort').textContent = 'Make sure resources.json is in the same folder as compass.html.';
   }
 }
 
@@ -1957,14 +2329,14 @@ async function resLoad(){
 document.querySelectorAll('.res-rate-btn').forEach(b => {
   b.addEventListener('click', () => {
     RES_RATING = b.dataset.rate;
-    const why = document.getElementById('resWhyBox');
+    const why = $('resWhyBox');
     why.style.display = 'grid';
-    document.getElementById('resRatingStatus').textContent = 'Rating: ' + RES_RATING;
-    setTimeout(() => document.getElementById('resWhyText').focus(), 50);
+    $('resRatingStatus').textContent = 'Rating: ' + RES_RATING;
+    setTimeout(() => $('resWhyText').focus(), 50);
   });
 });
-document.getElementById('resSendBtn').addEventListener('click', () => {
-  const why = (document.getElementById('resWhyText').value || '').trim();
+$('resSendBtn').addEventListener('click', () => {
+  const why = ($('resWhyText').value || '').trim();
   const subject = `Pittsburgh Help Finder feedback — ${RES_RATING || 'UNSET'}`;
   const body = [
     'Feedback on the Pittsburgh Help Finder tool',
