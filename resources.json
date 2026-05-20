@@ -2,11 +2,12 @@
   "meta": {
     "title": "Pittsburgh Help Finder",
     "subtitle": "Quick help for housing, food, healthcare, and safety",
-    "updated": "2026-01-20",
+    "updated": "2026-05-20",
     "notes": [
       "Information may change. If a phone number is busy or a shelter is full, try another option.",
       "If this is a medical emergency, call 911.",
-      "If you feel unsafe or in crisis, call/text 988."
+      "If you feel unsafe or in crisis, call/text 988.",
+      "Compass routing should use shelters.geojson for verified coordinates; entries with confidential/blank addresses should not be geocoded."
     ]
   },
   "primary_contact": {
@@ -27,7 +28,11 @@
           "display_phone": "1-866-730-2368",
           "address": "",
           "hours": "24/7 hotline",
-          "tags": ["Shelter coordination", "Families", "Adults"],
+          "tags": [
+            "Shelter coordination",
+            "Families",
+            "Adults"
+          ],
           "summary": "Best first call to access shelter placement and coordinated support.",
           "details": "Families with children are especially urged to call."
         },
@@ -37,7 +42,10 @@
           "display_phone": "2-1-1",
           "address": "",
           "hours": "24/7",
-          "tags": ["Resources", "Referrals"],
+          "tags": [
+            "Resources",
+            "Referrals"
+          ],
           "summary": "Helps find nearby food, housing, hygiene, and services by zip code.",
           "details": "Good for up-to-date schedules, pantry locations, and where to go today."
         },
@@ -47,7 +55,10 @@
           "display_phone": "988",
           "address": "",
           "hours": "24/7 call or text",
-          "tags": ["Crisis", "Mental health"],
+          "tags": [
+            "Crisis",
+            "Mental health"
+          ],
           "summary": "For emotional crisis, feeling overwhelmed, or needing support right now.",
           "details": "Free, confidential. Connects to local resources."
         },
@@ -57,7 +68,10 @@
           "display_phone": "1-888-796-8226",
           "address": "333 N Braddock Ave, Pittsburgh, PA 15208",
           "hours": "24/7 hotline; walk-in anytime",
-          "tags": ["Mental health crisis", "Mobile crisis"],
+          "tags": [
+            "Mental health crisis",
+            "Mobile crisis"
+          ],
           "summary": "24/7 crisis hotline & mobile crisis team in Allegheny County.",
           "details": "Walk-in center available day or night for stabilization and support."
         }
@@ -74,7 +88,12 @@
           "display_phone": "412-775-9001",
           "address": "700 Second Ave, Pittsburgh, PA 15219",
           "hours": "Open 24/7",
-          "tags": ["Adults", "Low-barrier", "Couples ok", "Pets ok"],
+          "tags": [
+            "Adults",
+            "Low-barrier",
+            "Couples ok",
+            "Pets ok"
+          ],
           "summary": "Low-barrier shelter open 24/7 with showers, laundry, storage, meals.",
           "details": "No curfew. Adds overflow beds in winter. Not for minors/families with children."
         },
@@ -84,7 +103,11 @@
           "display_phone": "412-345-7135",
           "address": "6140 Station St, Pittsburgh, PA 15206",
           "hours": "Open nightly",
-          "tags": ["Men", "Women", "Walk-in"],
+          "tags": [
+            "Men",
+            "Women",
+            "Walk-in"
+          ],
           "summary": "Nightly shelter with hot meal and safe place to sleep; walk-ins accepted.",
           "details": "Separate facilities for men and women. Handicap accessible."
         },
@@ -94,29 +117,43 @@
           "display_phone": "412-664-9168",
           "address": "523 Sinclair St, McKeesport, PA 15132",
           "hours": "Intakes Mon–Fri 9:00 AM–1:00 PM",
-          "tags": ["Adults", "Co-ed"],
+          "tags": [
+            "Adults",
+            "Co-ed"
+          ],
           "summary": "Co-ed shelter with weekday intake. Severe weather shelter during cold nights.",
           "details": "Former YMCA facility. Handicap accessible."
         },
         {
-          "name": "Light of Life Rescue Mission (Men)",
-          "phone": "+14128034120",
-          "display_phone": "412-803-4120",
-          "address": "10 E North Ave, Pittsburgh, PA 15212",
-          "hours": "Arrive by ~6:30 PM",
-          "tags": ["Men"],
-          "summary": "Nightly shelter for adult men with dinner and breakfast.",
-          "details": "Walk-ins may be allowed after roll call if space. Not handicap accessible."
+          "name": "Light of Life Voeghtly Street Shelter",
+          "phone": "+14128034100",
+          "display_phone": "412-803-4100",
+          "address": "234 Voeghtly St, Pittsburgh, PA 15212",
+          "hours": "Call for current shelter intake and bed availability; day-service/meal times may vary.",
+          "tags": [
+            "Men",
+            "Women",
+            "Children",
+            "Meals",
+            "Call first"
+          ],
+          "summary": "Emergency shelter and services at Light of Life’s current Voeghtly Street Shelter.",
+          "details": "Current official Light of Life materials list the shelter at 234 Voeghtly St, not the older 10 E North Ave listing. Call before sending someone on foot."
         },
         {
           "name": "Pleasant Valley Men’s Shelter (Northside Common Ministries)",
-          "phone": "+14123214272",
-          "display_phone": "412-321-4272",
+          "phone": "+14123231163",
+          "display_phone": "412-323-1163",
           "address": "1601 Brighton Rd, Pittsburgh, PA 15212",
-          "hours": "Call 10:00–11:00 AM to reserve; intake 3:00–4:30 PM",
-          "tags": ["Men", "Case management"],
+          "hours": "Call Mon–Fri 8:00 AM–2:00 PM for bed request; first-time intake 3:00–4:00 PM; shelter opens 4:30 PM.",
+          "tags": [
+            "Men",
+            "Male-identifying",
+            "Case management",
+            "Call first"
+          ],
           "summary": "Year-round nightly shelter for men with meals, showers, case management.",
-          "details": "Handicap accessible."
+          "details": "Year-round nightly shelter for adult men and male-identifying individuals. Call to confirm availability; handicap accessible per shelter listings."
         },
         {
           "name": "Bethlehem Haven (Women)",
@@ -124,7 +161,10 @@
           "display_phone": "412-391-1348",
           "address": "905 Watson St, Pittsburgh, PA 15219",
           "hours": "7 nights/week",
-          "tags": ["Women", "Trans women welcome"],
+          "tags": [
+            "Women",
+            "Trans women welcome"
+          ],
           "summary": "Emergency shelter for adult women with meals, health clinic, case management.",
           "details": "Handicap accessible."
         },
@@ -132,31 +172,45 @@
           "name": "Women’s Center & Shelter (Domestic Violence Safe Shelter)",
           "phone": "+14126878005",
           "display_phone": "412-687-8005",
-          "address": "Confidential location (Oakland)",
+          "address": "",
           "hours": "24/7 hotline",
-          "tags": ["DV", "Women", "Children"],
-          "summary": "Emergency DV shelter with legal advocacy and counseling.",
-          "details": "Location is confidential for safety. Call hotline anytime."
+          "tags": [
+            "DV",
+            "Women",
+            "Children",
+            "Confidential location"
+          ],
+          "summary": "Emergency domestic-violence shelter and support; location is confidential.",
+          "details": "Do not map or geocode this shelter. Call the 24/7 hotline for safe connection to shelter and services."
         },
         {
           "name": "Womanspace East (Women w/ children)",
           "phone": "+14127652661",
           "display_phone": "412-765-2661",
-          "address": "Confidential (Uptown area)",
+          "address": "",
           "hours": "Call for intake",
-          "tags": ["Women", "Families"],
-          "summary": "30–60 day emergency shelter for women with dependent children.",
-          "details": "Free of charge."
+          "tags": [
+            "Women",
+            "Families",
+            "Confidential/non-public location",
+            "Call first"
+          ],
+          "summary": "Emergency shelter and bridge housing for women and families; location is not public.",
+          "details": "Do not map or geocode this shelter. Call for intake and location instructions."
         },
         {
           "name": "Genesis House (Pregnant women)",
           "phone": "+14127662693",
           "display_phone": "412-766-2693",
-          "address": "185 Dakota Ave, Pittsburgh, PA 15202",
-          "hours": "Call for intake",
-          "tags": ["Pregnancy"],
-          "summary": "Shelter for pregnant women with support services.",
-          "details": "Not handicap accessible."
+          "address": "550 California Ave, Pittsburgh, PA 15202",
+          "hours": "Residential program operates 24/7; call for intake and address confirmation.",
+          "tags": [
+            "Pregnancy",
+            "Maternity home",
+            "Call first"
+          ],
+          "summary": "Residential maternity-care program for pregnant adults in need of shelter.",
+          "details": "Public sources conflict between the older 185 Dakota Ave listing and current Genesis/Diocese materials listing 550 California Ave. Do not treat as walk-in; call first."
         },
         {
           "name": "Salvation Army Family Caring Center",
@@ -164,7 +218,10 @@
           "display_phone": "412-362-0891",
           "address": "6017 Broad St, Pittsburgh, PA 15206",
           "hours": "Call for availability",
-          "tags": ["Families", "Fathers welcome"],
+          "tags": [
+            "Families",
+            "Fathers welcome"
+          ],
           "summary": "Family shelter that accepts entire families, including fathers and couples.",
           "details": "Private family rooms, meals, and case management."
         },
@@ -173,10 +230,14 @@
           "phone": "+14129212916",
           "display_phone": "412-921-2916",
           "address": "7 Oregon Ave, Crafton, PA 15205",
-          "hours": "Call to inquire",
-          "tags": ["Families"],
-          "summary": "Network-based shelter for families with meals and support toward housing.",
-          "details": "No cost."
+          "hours": "Call for current services; overnight shelter availability not guaranteed.",
+          "tags": [
+            "Families",
+            "Housing support",
+            "Call first"
+          ],
+          "summary": "Family homelessness and housing-support organization in Crafton.",
+          "details": "Treat as call-first family housing support, not guaranteed immediate walk-in shelter."
         }
       ]
     },
@@ -191,7 +252,10 @@
           "display_phone": "412-471-6160",
           "address": "1601 Fifth Ave, Pittsburgh, PA 15219",
           "hours": "24/7 call or walk-in",
-          "tags": ["Youth", "18–24"],
+          "tags": [
+            "Youth",
+            "18–24"
+          ],
           "summary": "Emergency shelter for young adults with counseling and referrals.",
           "details": "Handicap accessible."
         },
@@ -199,11 +263,14 @@
           "name": "412 Youth Zone (Drop-In + Housing Referrals 16–23)",
           "phone": "+14129024068",
           "display_phone": "412-902-4068",
-          "address": "304 Wood St, 5th Floor, Pittsburgh, PA 15222",
-          "hours": "Tues/Thurs 10:30–6:30; Wed 10:30–3:00",
-          "tags": ["Youth", "16–23"],
+          "address": "304 Wood St, 5th and 6th Floor, Pittsburgh, PA 15222",
+          "hours": "Tues/Thurs 10:30 AM–6:30 PM; Wed 10:30 AM–3:00 PM; call to confirm.",
+          "tags": [
+            "Youth",
+            "16–23"
+          ],
           "summary": "Drop-in center connecting youth to services and emergency housing help.",
-          "details": "Operated by Auberle."
+          "details": "This is a youth drop-in/resource center, not an overnight shelter. Operated by Auberle."
         }
       ]
     },
@@ -218,7 +285,9 @@
           "display_phone": "1-877-424-3838",
           "address": "",
           "hours": "24/7",
-          "tags": ["Veterans"],
+          "tags": [
+            "Veterans"
+          ],
           "summary": "Connects veterans to local VA housing/shelter resources.",
           "details": "National call center."
         },
@@ -228,7 +297,10 @@
           "display_phone": "412-363-0500",
           "address": "945 Washington Blvd, Pittsburgh, PA 15206",
           "hours": "Mon–Fri ~8:00 AM–4:00 PM (call to confirm)",
-          "tags": ["Veterans", "Pets ok"],
+          "tags": [
+            "Veterans",
+            "Pets ok"
+          ],
           "summary": "Drop-in center and transitional housing support for veterans.",
           "details": "Showers, laundry, food pantry, job help, and benefits support."
         },
@@ -238,7 +310,9 @@
           "display_phone": "412-281-1305",
           "address": "13 Pride St, Pittsburgh, PA 15219",
           "hours": "Call for info",
-          "tags": ["Veterans"],
+          "tags": [
+            "Veterans"
+          ],
           "summary": "Transitional beds + case management and connection to services.",
           "details": "Also runs a morning drop-in program."
         }
@@ -255,7 +329,12 @@
           "display_phone": "412-775-9001",
           "address": "700 Second Ave, Pittsburgh, PA 15219",
           "hours": "Mon–Fri 9:00 AM–5:00 PM",
-          "tags": ["Adults", "Showers", "Laundry", "Charging"],
+          "tags": [
+            "Adults",
+            "Showers",
+            "Laundry",
+            "Charging"
+          ],
           "summary": "Daytime drop-in: showers, laundry, Wi-Fi, computers, charging, case managers.",
           "details": "Free. You do not need to stay overnight to use the engagement center."
         },
@@ -265,7 +344,10 @@
           "display_phone": "412-263-2545",
           "address": "903 Watson St, Pittsburgh, PA 15219",
           "hours": "Weekdays 10:00 AM–4:00 PM",
-          "tags": ["Drop-in", "Mental health support"],
+          "tags": [
+            "Drop-in",
+            "Mental health support"
+          ],
           "summary": "Safe indoor space, lunch, coffee, peer support, referrals.",
           "details": "All are welcome; focus on mental health recovery."
         },
@@ -275,7 +357,11 @@
           "display_phone": "412-634-6964",
           "address": "135 First Ave, Pittsburgh, PA 15222",
           "hours": "Mon–Fri 9:00 AM–11:30 AM",
-          "tags": ["Women", "Showers", "Laundry"],
+          "tags": [
+            "Women",
+            "Showers",
+            "Laundry"
+          ],
           "summary": "Women-only day center with showers, laundry, meals/snacks, hygiene items.",
           "details": "Walk-ins welcome during open hours."
         },
@@ -285,7 +371,11 @@
           "display_phone": "412-281-1305",
           "address": "13 Pride St, Pittsburgh, PA 15219",
           "hours": "Mon–Fri ~7:30 AM–10:00 AM",
-          "tags": ["Breakfast", "Showers", "Laundry"],
+          "tags": [
+            "Breakfast",
+            "Showers",
+            "Laundry"
+          ],
           "summary": "Morning drop-in with breakfast and basic services.",
           "details": "Free hot breakfast usually 7:30–8:30 AM."
         },
@@ -295,7 +385,10 @@
           "display_phone": "412-346-1234",
           "address": "525 E Ohio St, Pittsburgh, PA 15212",
           "hours": "Hours vary (call first)",
-          "tags": ["LGBTQ+", "Youth 18–25"],
+          "tags": [
+            "LGBTQ+",
+            "Youth 18–25"
+          ],
           "summary": "Safe space, meals/snacks, hygiene supplies, referrals, housing support.",
           "details": "Call to confirm drop-in hours."
         }
@@ -312,7 +405,10 @@
           "display_phone": "412-261-5417",
           "address": "2005 Wyandotte St, Pittsburgh, PA 15219",
           "hours": "Daily 9:00 AM–1:00 PM",
-          "tags": ["Meals", "Daily"],
+          "tags": [
+            "Meals",
+            "Daily"
+          ],
           "summary": "Hot meals 7 days/week; place to sit and connect to services.",
           "details": "Serving time often ~11 AM–1 PM."
         },
@@ -322,7 +418,9 @@
           "display_phone": "412-261-0110",
           "address": "202 Stanwix St, Pittsburgh, PA 15222",
           "hours": "Mon–Sat 10:30 AM–11:30 AM",
-          "tags": ["Lunch"],
+          "tags": [
+            "Lunch"
+          ],
           "summary": "Bagged lunch distribution downtown.",
           "details": "No sign-up needed—just line up during distribution time."
         },
@@ -332,7 +430,10 @@
           "display_phone": "412-258-6100",
           "address": "913 Western Ave, Pittsburgh, PA 15233",
           "hours": "Daily",
-          "tags": ["Breakfast", "Dinner"],
+          "tags": [
+            "Breakfast",
+            "Dinner"
+          ],
           "summary": "Serves breakfast and dinner daily to anyone.",
           "details": "No requirements; all are welcome."
         },
@@ -342,7 +443,9 @@
           "display_phone": "412-361-5549",
           "address": "6140 Station St, Pittsburgh, PA 15206",
           "hours": "Mon–Fri 12:15 PM–1:15 PM",
-          "tags": ["Lunch"],
+          "tags": [
+            "Lunch"
+          ],
           "summary": "Free hot weekday lunch in East Liberty.",
           "details": "Open to all."
         },
@@ -352,7 +455,9 @@
           "display_phone": "412-600-9916",
           "address": "320 Sixth Ave, Pittsburgh, PA 15222",
           "hours": "Tuesdays 5:00 PM",
-          "tags": ["Dinner"],
+          "tags": [
+            "Dinner"
+          ],
           "summary": "Free dinner every Tuesday downtown.",
           "details": "No sign-up needed; show up."
         },
@@ -362,7 +467,10 @@
           "display_phone": "412-460-3663",
           "address": "",
           "hours": "Call for referrals",
-          "tags": ["Food pantry", "Groceries"],
+          "tags": [
+            "Food pantry",
+            "Groceries"
+          ],
           "summary": "Directs you to the nearest food pantry by zip code.",
           "details": "Also try calling 2-1-1 for pantry referrals."
         }
@@ -379,7 +487,11 @@
           "display_phone": "412-456-6911",
           "address": "212 Ninth St, Pittsburgh, PA 15222",
           "hours": "Mon–Fri 9:00 AM–4:00 PM (by appointment)",
-          "tags": ["Medical", "Dental", "Free"],
+          "tags": [
+            "Medical",
+            "Dental",
+            "Free"
+          ],
           "summary": "Free primary care + dental for uninsured/low-income individuals.",
           "details": "Call to schedule intake. Homeless individuals qualify."
         },
@@ -389,7 +501,9 @@
           "display_phone": "412-481-7900",
           "address": "2100 Jane St, Pittsburgh, PA 15203",
           "hours": "Walk-in hours vary (call first)",
-          "tags": ["Free clinic"],
+          "tags": [
+            "Free clinic"
+          ],
           "summary": "Free clinic with rotating services; call to confirm walk-in times.",
           "details": "Often serves people without insurance and those experiencing homelessness."
         },
@@ -399,7 +513,10 @@
           "display_phone": "412-232-5739",
           "address": "",
           "hours": "Call for mobile location schedule",
-          "tags": ["Street medicine", "Mobile clinic"],
+          "tags": [
+            "Street medicine",
+            "Mobile clinic"
+          ],
           "summary": "Medical outreach for people living outside or in shelters.",
           "details": "Can help with wounds, basic care, and connecting to services."
         }
@@ -416,7 +533,10 @@
           "display_phone": "1-800-662-HELP (4357)",
           "address": "",
           "hours": "24/7",
-          "tags": ["Detox", "Treatment"],
+          "tags": [
+            "Detox",
+            "Treatment"
+          ],
           "summary": "24/7 referral line for detox and treatment openings in Pennsylvania.",
           "details": "They help regardless of ability to pay."
         },
@@ -426,7 +546,9 @@
           "display_phone": "412-661-9222",
           "address": "",
           "hours": "Call for referral help",
-          "tags": ["Addiction services"],
+          "tags": [
+            "Addiction services"
+          ],
           "summary": "Referrals to detox, medication-assisted treatment, recovery housing.",
           "details": ""
         },
@@ -436,7 +558,11 @@
           "display_phone": "412-247-3404",
           "address": "460 Melwood Ave, Pittsburgh, PA 15213",
           "hours": "Multiple sites; schedule varies",
-          "tags": ["Naloxone", "Wound care", "Supplies"],
+          "tags": [
+            "Naloxone",
+            "Wound care",
+            "Supplies"
+          ],
           "summary": "Free harm reduction services including naloxone, supplies, and some wound care.",
           "details": "Call or check schedule for mobile van locations."
         },
@@ -446,7 +572,10 @@
           "display_phone": "412-471-7472",
           "address": "",
           "hours": "Daily meetings (varies)",
-          "tags": ["Recovery", "Meetings"],
+          "tags": [
+            "Recovery",
+            "Meetings"
+          ],
           "summary": "Find nearby Alcoholics Anonymous meetings.",
           "details": "Free and open to anyone seeking help."
         },
@@ -456,7 +585,10 @@
           "display_phone": "412-391-5247",
           "address": "",
           "hours": "Daily meetings (varies)",
-          "tags": ["Recovery", "Meetings"],
+          "tags": [
+            "Recovery",
+            "Meetings"
+          ],
           "summary": "Find nearby Narcotics Anonymous meetings.",
           "details": "Free and open to anyone seeking help."
         }
@@ -473,7 +605,11 @@
           "display_phone": "",
           "address": "612 Smithfield St, Pittsburgh, PA",
           "hours": "Typically Mon–Sat 10 AM–5 PM (varies)",
-          "tags": ["Restrooms", "Charging", "Wi-Fi"],
+          "tags": [
+            "Restrooms",
+            "Charging",
+            "Wi-Fi"
+          ],
           "summary": "Free entry, bathrooms, outlets, and Wi-Fi.",
           "details": "No library card needed to sit indoors or use restrooms."
         },
@@ -483,7 +619,9 @@
           "display_phone": "",
           "address": "Market Square / Forbes Ave area, Downtown",
           "hours": "Daytime hours (varies)",
-          "tags": ["Restroom"],
+          "tags": [
+            "Restroom"
+          ],
           "summary": "Staffed public restroom and wash-up facility (when open).",
           "details": "Availability may vary."
         }
