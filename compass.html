@@ -300,7 +300,8 @@
   /* radar sweep */
   .sweep{
     transform-origin:0 0;
-    animation: sweep 3.5s linear infinite;
+    animation: sweep 6s linear infinite;
+    opacity:.55;
   }
   @keyframes sweep{from{transform:rotate(0)}to{transform:rotate(360deg)}}
   .sweep.hidden{display:none}
@@ -315,22 +316,17 @@
   .trail-dot{fill:var(--amber);opacity:.6}
   .trail-dot.recent{fill:var(--amber-hot);opacity:1}
 
-  /* density blips */
-  @keyframes blipflash{
-    0%   { opacity: 0; transform: scale(0.3); }
-    18%  { opacity: 1; transform: scale(1.4); }
-    40%  { opacity: 0.8; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.8); }
+  /* directional sector blips - persistent, fed by real walked-sample pairs */
+  .dir-blip{
+    transition:
+      cx .55s cubic-bezier(.2,.6,.3,1),
+      cy .55s cubic-bezier(.2,.6,.3,1),
+      r  .55s cubic-bezier(.2,.6,.3,1),
+      opacity .5s ease-out,
+      fill .5s linear;
+    filter: drop-shadow(0 0 4px rgba(255,184,77,.55));
+    pointer-events: none;
   }
-  .blip{
-    fill:#ffd07a;
-    filter:drop-shadow(0 0 4px #ffb84d);
-    transform-box:fill-box;
-    transform-origin:center;
-    animation:blipflash 0.65s ease-out forwards;
-    pointer-events:none;
-  }
-  .blip.dim{fill:#ffb84d;filter:drop-shadow(0 0 2px #8a6a2a)}
 
   /* OVERLAY (pre-activation) */
   .activate{
@@ -603,13 +599,12 @@
       <text class="dial-text intercardinal" x="83" y="83" text-anchor="middle" dominant-baseline="central">SE</text>
       <text class="dial-text intercardinal" x="-83" y="83" text-anchor="middle" dominant-baseline="central">SW</text>
       <text class="dial-text intercardinal" x="-83" y="-83" text-anchor="middle" dominant-baseline="central">NW</text>
+      <!-- directional sector blips (in dial frame = world bearings) -->
+      <g id="directional"></g>
     </g>
 
     <!-- trail layer (in dial frame so it rotates with world) -->
     <g id="trail"></g>
-
-    <!-- density blips (screen frame - flash rate matches WiFi density) -->
-    <g id="blips"></g>
 
     <!-- radar sweep (only shown when seeking) -->
     <g id="sweep" class="sweep">
@@ -1141,6 +1136,7 @@ const state = {
   bearing: null,         // degrees, 0=N, clockwise
   confidence: 0,         // 0..1
   density: null,         // current accuracy in meters
+  lastFixTime: null,     // ms timestamp of last real GPS fix
   connectionInfo: null,
   watchId: null,
   orientHandler: null,
@@ -1313,8 +1309,110 @@ function pushSample(lat, lon, acc){
 
   state.density = acc;
   const result = computeGradient();
+  state.lastFixTime = t;
   render();
   return result;
+}
+
+/* --- DIRECTIONAL SECTOR FIELD ---
+   Triangulation from walked samples. For every pair of samples (a,b)
+   we compute the bearing from a to b (real walking direction) and
+   bin it into one of 16 sectors. Each sector accumulates:
+     - mean accuracy of "destination" samples reached going that way
+     - total walked distance contributing
+     - sample-pair count
+   These power the persistent directional blips. A sector you've never
+   walked toward stays empty - no fake data.
+*/
+function computeDirectionalField(){
+  const pts = state.samples;
+  if (pts.length < 3) return null;
+  const N = 16;
+  const sw = 360 / N;
+  const buckets = Array.from({length: N}, () => ({
+    accSum:0, accCount:0, dist:0, samples:0
+  }));
+  for (let i = 0; i < pts.length; i++){
+    for (let j = i + 1; j < pts.length; j++){
+      const a = pts[i], b = pts[j];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 4) continue;
+      const bearing = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+      const idx = Math.floor(bearing / sw) % N;
+      const bu = buckets[idx];
+      bu.accSum += b.acc;
+      bu.accCount += 1;
+      bu.dist += d;
+      bu.samples += 1;
+    }
+  }
+  return buckets.map((b, i) => ({
+    bearing: i * sw + sw/2,
+    meanAcc: b.accCount ? b.accSum / b.accCount : null,
+    walkedDist: b.dist,
+    samples: b.samples
+  }));
+}
+
+/* one stable circle per sector (16 total) so CSS can transition them */
+function initDirectional(){
+  const g = $('directional');
+  if (g.children.length) return;
+  for (let i = 0; i < 16; i++){
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('class','dir-blip');
+    dot.setAttribute('cx','0');
+    dot.setAttribute('cy','0');
+    dot.setAttribute('r','0');
+    dot.setAttribute('opacity','0');
+    dot.setAttribute('fill','#ffb84d');
+    g.appendChild(dot);
+  }
+}
+initDirectional();
+
+function renderDirectional(){
+  const dots = $('directional').children;
+  const field = computeDirectionalField();
+  if (!field){
+    for (let i = 0; i < dots.length; i++){
+      dots[i].setAttribute('opacity','0');
+      dots[i].setAttribute('r','0');
+    }
+    return;
+  }
+  for (let i = 0; i < 16; i++){
+    const dot = dots[i];
+    const s = field[i];
+    if (!s || s.samples < 2 || s.walkedDist < 5){
+      dot.setAttribute('opacity','0');
+      dot.setAttribute('r','0');
+      continue;
+    }
+    // log-map mean accuracy -> radius (close to center = good signal)
+    const t = Math.log(Math.max(5, Math.min(2000, s.meanAcc)));
+    const lo = Math.log(5), hi = Math.log(2000);
+    const norm = (t - lo) / (hi - lo);  // 0=tight, 1=loose
+    const r = 35 + norm * 110;
+    // angle: bearing in dial frame (dial rotation glues to world N)
+    const ang = (s.bearing - 90) * Math.PI / 180;
+    const x = Math.cos(ang) * r;
+    const y = Math.sin(ang) * r;
+    // size: log of walked distance contributing (confidence in space)
+    const size = 2.2 + Math.min(4.5, Math.log(1 + s.walkedDist) * 0.7);
+    // brightness: log of sample-pair count (confidence in repetition)
+    const opacity = Math.min(1, 0.4 + Math.log(1 + s.samples) * 0.18);
+    // color: bright amber tight -> warm brown loose
+    const fill = norm < 0.35 ? '#ffd07a'
+               : norm < 0.65 ? '#ffb84d'
+               :               '#9a6e22';
+    dot.setAttribute('cx', x.toFixed(1));
+    dot.setAttribute('cy', y.toFixed(1));
+    dot.setAttribute('r', size.toFixed(1));
+    dot.setAttribute('opacity', opacity.toFixed(2));
+    dot.setAttribute('fill', fill);
+  }
 }
 
 /* --- RENDER --- */
@@ -1333,6 +1431,9 @@ function render(){
     needle.style.opacity = '0';
     if (state.active) $('sweep').classList.remove('hidden');
   }
+
+  // directional sector blips - persistent triangulation from walked samples
+  renderDirectional();
 
   // trail (in dial coordinate frame -> rotates with dial, stays aligned with world)
   const trail = $('trail');
@@ -1431,10 +1532,12 @@ function render(){
       c.className = 'bar-cell' + (i < filled ? ' on' : '');
     });
 
-    // live blip rate readout
-    const rate = blipRate();
-    const rateStr = rate >= 1 ? `${rate.toFixed(1)}/s` : `1 per ${(1/rate).toFixed(1)}s`;
-    $('densitySub').innerHTML = `<span class="hot">⊹ ${rateStr}</span> · GPS accuracy → AP density proxy`;
+    // live last-fix readout
+    const ageMs = state.lastFixTime ? (Date.now() - state.lastFixTime) : null;
+    const ageStr = ageMs != null
+      ? (ageMs < 2000 ? 'just now' : `${(ageMs/1000).toFixed(0)}s ago`)
+      : '—';
+    $('densitySub').innerHTML = `<span class="hot">⊹ last fix: ${ageStr}</span> · sector dots = surveyed bearings`;
   }
 
   // LINK
@@ -1585,57 +1688,10 @@ render();
 log('FIELD RECEIVER MK-II ready', 'ok');
 log('tap ACTIVATE to begin', 'info');
 
-/* --- DENSITY BLIPS ---
-   Flash rate is a Poisson process keyed to current GPS accuracy.
-   Tighter accuracy = more mapped APs nearby = more blips/sec.
-     ~8m   -> ~12 blips/s   (urban storm)
-     ~30m  -> ~3 blips/s
-     ~100m -> ~1 blip/s
-     ~500m -> ~0.2 blips/s
-     ~2km  -> ~0.05 blips/s (lonely wilderness)
-*/
-function blipRate(){
-  if (!state.active || state.density == null) return 0;
-  // rate = 100 / accuracy, clamped
-  return Math.max(0.04, Math.min(15, 100 / state.density));
-}
+// keep "last fix: Xs ago" current between GPS callbacks
+setInterval(() => { if (state.active && state.lastFixTime) render(); }, 1000);
 
-function spawnBlip(){
-  if (!state.active) return;
-  // random position on the dial face, biased to the outer ring
-  const ang = Math.random() * 2 * Math.PI;
-  const r = 35 + Math.pow(Math.random(), 0.6) * 115; // outer-biased
-  const x = Math.cos(ang) * r;
-  const y = Math.sin(ang) * r;
-  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  dot.setAttribute('cx', x.toFixed(1));
-  dot.setAttribute('cy', y.toFixed(1));
-  // size varies a bit
-  const size = 2 + Math.random() * 1.8;
-  dot.setAttribute('r', size.toFixed(1));
-  // dimmer blips occasionally for variety
-  dot.setAttribute('class', Math.random() < 0.25 ? 'blip dim' : 'blip');
-  $('blips').appendChild(dot);
-  setTimeout(() => { if (dot.parentNode) dot.parentNode.removeChild(dot); }, 700);
-}
-
-function scheduleNextBlip(){
-  const rate = blipRate();
-  let delay;
-  if (rate <= 0){
-    delay = 1500; // poll while inactive
-  } else {
-    // exponential interarrival for Poisson process
-    delay = (-Math.log(1 - Math.random()) / rate) * 1000;
-    delay = Math.max(40, Math.min(delay, 8000));
-  }
-  setTimeout(() => { spawnBlip(); scheduleNextBlip(); }, delay);
-}
-scheduleNextBlip();
-
-/* ============================================================
-   VIEW NAVIGATION + QR SHARE + RESOURCES LOADER
-   ============================================================ */
+/* --- VIEW NAVIGATION + QR SHARE + RESOURCES LOADER --- */
 
 let RES_DATA = null;
 let RES_RATING = null;
