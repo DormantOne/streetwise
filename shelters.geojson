@@ -1,0 +1,285 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "title": "Pittsburgh Emergency Shelters",
+    "updated": "2026-05-20",
+    "source": "Verified from organization websites, PA 211, Allegheny Connect/HACP and public map/address listings where available.",
+    "notes": "Coordinate order is [longitude, latitude]. Confidential domestic-violence shelter locations intentionally excluded. Several entries include call-first/status-conflict notes; see per-feature research_notes.",
+    "coordinate_order": "[longitude, latitude]"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.9945701, 40.4354999] },
+      "properties": {
+        "id": "second-avenue-commons",
+        "section": "shelters",
+        "name": "Second Avenue Commons (Low-Barrier)",
+        "address": "700 Second Ave, Pittsburgh, PA 15219",
+        "phone": "+14127759001",
+        "display_phone": "412-775-9001",
+        "hours": "Shelter open 24/7, 365 days; engagement-center and clinic hours vary.",
+        "population": ["adults", "couples"],
+        "tags": ["Adults", "Low-barrier", "Couples ok", "Pets ok", "24/7"],
+        "accessibility": { "wheelchair": null, "pets": true },
+        "intake": "Walk in and speak with shelter staff; bed availability varies and the shelter may be at capacity.",
+        "summary": "Low-barrier year-round shelter and engagement center for adults experiencing homelessness.",
+        "details": "Serves adults 18+; partners may stay together and dogs/cats are accepted. Not for minors or families with children; individuals under 18 are referred to youth providers. Includes engagement-center services, meals, storage, laundry and health-care linkage.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address, phone, eligibility, pet policy and 24/7 shelter hours verified from Second Avenue Commons/Pittsburgh Mercy and PA 211. Coordinate from public map listing; field-check entrance before production routing."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.921937, 40.462826] },
+      "properties": {
+        "id": "east-end-cooperative-ministry-shelter",
+        "section": "shelters",
+        "name": "East End Cooperative Ministry (EECM) Shelter",
+        "address": "6140 Station St, Pittsburgh, PA 15206",
+        "phone": "+14123457135",
+        "display_phone": "412-345-7135",
+        "hours": "Call for current openings and intake; office/program hours vary.",
+        "population": ["adults"],
+        "tags": ["Adults", "Any gender", "Case management", "Meals", "Wheelchair accessible"],
+        "accessibility": { "wheelchair": true, "pets": null },
+        "intake": "Call the EECM shelter openings line or Allegheny Link; referrals and availability vary.",
+        "summary": "Emergency shelter and housing-stability services for adults in the East End.",
+        "details": "EECM's shelter meets basic needs with shelter and food and helps guests access benefits, health care and permanent housing. Listings describe time-limited shelter stays and case-management supports. Call to confirm current eligibility, bed availability and family/adult eligibility details.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address and shelter contact verified from EECM; PA 211/HACP confirm the site and HACP lists handicap accessibility. Some public listings conflict on whether families are included; official EECM wording emphasizes individual adults."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.8615292, 40.3504972] },
+      "properties": {
+        "id": "mckeesport-downtown-housing-mon-valley",
+        "section": "shelters",
+        "name": "McKeesport Downtown Housing (Mon Valley)",
+        "address": "523 Sinclair St, McKeesport, PA 15132",
+        "phone": "+14126788622",
+        "display_phone": "412-678-8622",
+        "hours": "Office Monday-Friday 9:00 AM-5:00 PM; drop-in intakes Monday-Thursday 10:00 AM-1:00 PM.",
+        "population": ["adults", "couples"],
+        "tags": ["Adults", "Couples", "Mon Valley", "Cold-weather shelter", "Bridge housing"],
+        "accessibility": { "wheelchair": true, "pets": null },
+        "intake": "Call or visit in person; PA 211 lists drop-in intake Monday-Thursday 10:00 AM-1:00 PM.",
+        "summary": "Mon Valley shelter/housing program with emergency, bridge and supportive housing components.",
+        "details": "ACTION-Housing describes the downtown housing site as including cold-weather shelter, 60-day emergency housing, bridge housing and SRO apartments. PA 211 lists eligibility as unhoused individuals and couples. Call first outside intake hours.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address and program verified from ACTION-Housing and PA 211. Coordinate from public address-level listing; ACTION-Housing notes elevator access, but entrance accessibility should still be field-checked."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.9960612, 40.4507969] },
+      "properties": {
+        "id": "light-of-life-rescue-mission-men",
+        "section": "shelters",
+        "name": "Light of Life Rescue Mission (Men)",
+        "address": "234 Voeghtly St, Pittsburgh, PA 15212",
+        "phone": "+14128034100",
+        "display_phone": "412-803-4100",
+        "hours": "Call for current shelter intake and bed availability; day-service/intake windows vary.",
+        "population": ["men", "adults"],
+        "tags": ["Men", "Shelter", "Meals", "Showers", "Laundry"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call Light of Life or speak with shelter staff; current intake process should be confirmed before routing.",
+        "summary": "North Side rescue mission and shelter services for adults, including men's emergency shelter programming.",
+        "details": "Light of Life's current official location list shows its Voeghtly Street shelter at 234 Voeghtly St. Older directories still list 10 E North Ave for men's programming, so this entry is intentionally updated to the current official shelter address. Call before sending someone on foot.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Original handoff listed 10 E North Ave; current official Light of Life materials list 234 Voeghtly St. Older third-party listings still show 10 E North Ave, so this is a relocation/source-conflict flag. Coordinate from public map listing for 234 Voeghtly St; field-check entrance."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.016323, 40.458054] },
+      "properties": {
+        "id": "pleasant-valley-mens-shelter",
+        "section": "shelters",
+        "name": "Pleasant Valley Men's Shelter (Northside Common Ministries)",
+        "address": "1601 Brighton Rd, Pittsburgh, PA 15212",
+        "phone": "+14123214272",
+        "display_phone": "412-321-4272",
+        "hours": "Bed requests Monday-Friday 8:00 AM-2:00 PM; new guest paperwork often 3:00-4:00 PM; shelter opens evenings.",
+        "population": ["men", "adults"],
+        "tags": ["Men", "Emergency shelter", "Meals", "Clothing", "Counseling"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call for bed request/intake; PA 211 lists weekday bed-request and new-guest paperwork windows.",
+        "summary": "Emergency shelter for adult men on the North Side.",
+        "details": "Pleasant Valley provides nightly shelter for adult men and connects guests with meals, clothing, health-care linkage, counseling and mentoring. PA 211 lists eligibility limits and weekday intake windows; call before arrival when possible.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address/phone/hours verified from PA 211, Network of Care and shelter directories. Coordinate from public map listing; field-check entrance."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.9914906, 40.4384625] },
+      "properties": {
+        "id": "bethlehem-haven-women",
+        "section": "shelters",
+        "name": "Bethlehem Haven (Women)",
+        "address": "905 Watson St, Pittsburgh, PA 15219",
+        "phone": "+14123911443",
+        "display_phone": "412-391-1443",
+        "hours": "Emergency shelter open 24/7; call for bed availability and intake details.",
+        "population": ["women", "adults"],
+        "tags": ["Women", "Trans women", "24/7", "Emergency shelter", "No minors"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call emergency-shelter line or arrive for intake if space is available; PA 211 notes drop-ins may be accepted when beds are available.",
+        "summary": "Emergency shelter for women, including trans women, at Fifth Avenue Commons.",
+        "details": "Serves adult women 18+ without children/minors. PA 211 lists 24/7 shelter operation and an interview/intake process. Call before arrival if possible because bed availability changes.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address verified from Pittsburgh Mercy/Bethlehem Haven and PA 211; phone from Bethlehem Haven official site, with PA 211 also listing a shelter phone. Coordinate from public map listing; field-check entrance."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.0695135, 40.5017495] },
+      "properties": {
+        "id": "genesis-house-pregnant-women",
+        "section": "shelters",
+        "name": "Genesis House (Pregnant women)",
+        "address": "550 California Ave, Pittsburgh, PA 15202",
+        "phone": "+14127665212",
+        "display_phone": "412-766-5212",
+        "hours": "Residential program operates 24/7/365; call for intake.",
+        "population": ["women", "pregnancy", "adults"],
+        "tags": ["Pregnant women", "Maternity home", "Call first", "Residential"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call Genesis House for screening/intake; not a walk-in shelter.",
+        "summary": "Residential maternity home for pregnant adults experiencing homelessness or unstable housing.",
+        "details": "Genesis House is a small residential maternity-care program for pregnant adults who need housing. Public sources conflict between 185 Dakota Ave and 550 California Ave; current PA 211 and Diocese materials list 550 California Ave. Call before routing anyone in person.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Source conflict: original handoff and some older/current directories list 185 Dakota Ave/Bellevue, while PA 211 and Diocese materials list 550 California Ave. Address/phone in this file use the PA 211/Diocese-current listing; coordinate from public map listing for 550 California Ave. Field verification strongly recommended."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.923, 40.4622] },
+      "properties": {
+        "id": "salvation-army-family-caring-center",
+        "section": "shelters",
+        "name": "Salvation Army Family Caring Center",
+        "address": "6017 Broad St, Pittsburgh, PA 15206",
+        "phone": "+14123620891",
+        "display_phone": "412-362-0891",
+        "hours": "Call for admission and current intake; public office/volunteer listings show daytime hours and evening meal service.",
+        "population": ["families"],
+        "tags": ["Families", "Family shelter", "Meals", "Casework", "Emergency shelter"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call for admission; not verified as a walk-up intake site.",
+        "summary": "Emergency temporary housing and supportive services for families experiencing homelessness.",
+        "details": "The Family Caring Center provides shelter, meals and supportive services for families, including family units with children. Listings describe an apartment-style family shelter with meals and programming. Call before arrival to confirm admission process and space.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address and phone verified from Salvation Army location search, PA 211 and shelter listings. Coordinate is address-level/geocoded near 6017 Broad St and needs entrance-level field verification before production routing."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.0668, 40.435] },
+      "properties": {
+        "id": "family-promise-of-southwestern-pa",
+        "section": "shelters",
+        "name": "Family Promise of Southwestern PA",
+        "address": "7 Oregon Ave, Crafton, PA 15205",
+        "phone": "+14129212916",
+        "display_phone": "412-921-2916",
+        "hours": "Call for current services; overnight shelter availability not verified.",
+        "population": ["families"],
+        "tags": ["Families", "Call first", "Housing support", "Shelter status uncertain"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call before going; do not route as immediate walk-in shelter without live confirmation.",
+        "summary": "Family homelessness and housing-support organization in Crafton.",
+        "details": "Family Promise historically connected families with temporary shelter, meals, support and case management. Recent public fundraising material says the organization was not able to shelter families because host churches closed, while it continued supporting families at risk of losing housing. Treat as call-first housing support, not guaranteed immediate shelter.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address/phone verified from Candid/CauseIQ/Charity Navigator/PledgeIt. Current overnight shelter status is uncertain; PledgeIt material says sheltering was paused due to host church closures. Coordinate is address-level/geocoded near 7 Oregon Ave and needs field verification."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.9869, 40.4384] },
+      "properties": {
+        "id": "familylinks-downtown-outreach-youth-shelter",
+        "section": "youth",
+        "name": "Familylinks Downtown Outreach (Youth Shelter 18–24)",
+        "address": "1601 Fifth Ave, Pittsburgh, PA 15219",
+        "phone": "+14129420500",
+        "display_phone": "412-942-0500",
+        "hours": "Open 24/7/365 per PA 211; call to confirm intake.",
+        "population": ["youth"],
+        "tags": ["Youth 18-24", "24/7", "Emergency shelter", "Meals", "Wheelchair accessible"],
+        "accessibility": { "wheelchair": true, "pets": null },
+        "intake": "Call Familylinks/Allegheny Connect or arrive for youth shelter intake; bed availability should be confirmed when possible.",
+        "summary": "Emergency shelter for young adults experiencing homelessness.",
+        "details": "Current PA 211 and Allegheny Connect listings identify the Downtown Outreach/Youth Shelter for ages 18-24 at 1601 Fifth Ave. Older listings show different age ranges, so use the current 18-24 eligibility and verify when calling. HACP lists the site as handicap accessible.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address, eligibility and 24/7 hours verified from PA 211 and Allegheny Connect; HACP confirms address and accessibility. Coordinate is address-level/geocoded near 1601 Fifth Ave and needs entrance-level field verification."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-80.001401, 40.438982] },
+      "properties": {
+        "id": "412-youth-zone",
+        "section": "youth",
+        "name": "412 Youth Zone",
+        "address": "304 Wood St, 5th and 6th Floor, Pittsburgh, PA 15222",
+        "phone": "+14129024068",
+        "display_phone": "412-902-4068",
+        "hours": "Drop-in: Mon/Tue/Thu 10:30 AM-6:30 PM, Wed 10:30 AM-3:00 PM; Fri/Sat appointment only; closed major holidays; hours subject to change.",
+        "population": ["youth"],
+        "tags": ["Youth 16-23", "Drop-in", "Meals", "Laundry", "Housing help", "ADA compliant"],
+        "accessibility": { "wheelchair": true, "pets": null },
+        "intake": "Walk in during drop-in hours or submit a referral/call; this is a drop-in resource, not an overnight shelter.",
+        "summary": "Downtown drop-in center for young people with meals, laundry, coaching and housing-support connections.",
+        "details": "Located in Wood Street Commons; enter the lobby and use the elevator to the 6th floor. The official site says the building has an accessibility elevator and the drop-in center is ADA compliant. This should be shown as youth resource support, not a 24-hour bed site.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address, phone, detailed drop-in hours and ADA access verified from official 412 Youth Zone pages; coordinate from public map listing for 304 Wood St."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.9065746, 40.4611392] },
+      "properties": {
+        "id": "veterans-place",
+        "section": "veterans",
+        "name": "Veterans Place",
+        "address": "945 Washington Blvd, Pittsburgh, PA 15206",
+        "phone": "+14123630500",
+        "display_phone": "412-363-0500",
+        "hours": "Call for current resource-center and housing-intake hours.",
+        "population": ["veterans"],
+        "tags": ["Veterans", "Transitional housing", "Resource center", "Workforce development", "Call first"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call Veterans Place for screening, resource-center services and transitional-housing referral details.",
+        "summary": "Veteran homelessness and transition services organization on Washington Boulevard.",
+        "details": "Veterans Place provides a Veterans Resource Center, transitional housing and workforce-development services for veterans. It is not verified as a walk-up emergency shelter; call before sending someone in person. The organization describes its mission as helping veterans transition from homeless to home.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address, phone, programs and mission verified from official Veterans Place website. Coordinate from public map listing; field-check entrance."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-79.985139, 40.437694] },
+      "properties": {
+        "id": "shepherds-heart-veterans-home",
+        "section": "veterans",
+        "name": "Shepherd's Heart Veteran's Home",
+        "address": "13 Pride St, Pittsburgh, PA 15219",
+        "phone": "+14122811305",
+        "display_phone": "412-281-1305",
+        "hours": "Call for transitional-housing intake; public service/drop-in hours vary.",
+        "population": ["veterans", "men"],
+        "tags": ["Veterans", "Male veterans", "Transitional housing", "GPD", "Call first"],
+        "accessibility": { "wheelchair": null, "pets": null },
+        "intake": "Call Shepherd's Heart or use its application/referral process; not verified as a walk-in emergency shelter.",
+        "summary": "Transitional housing program for male veterans experiencing homelessness.",
+        "details": "Shepherd's Heart Veterans' Home, also known as House of Hope, provides transitional bedrooms, case management, rehabilitation, employment assistance and permanent-housing support. Official materials describe collaboration with VA homeless-veteran services. Call before arrival.",
+        "last_verified": "2026-05-20",
+        "research_notes": "Address, phone and services verified from official Shepherd's Heart page plus public veteran-service listings. Coordinate from public GPS/photo/map listing near 13 Pride St; entrance should be field-checked."
+      }
+    }
+  ]
+}
