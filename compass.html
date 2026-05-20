@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0d0e0a">
+<title>FIELD RECEIVER MK-II · CIVILIZATION SEEKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=JetBrains+Mono:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b08;
+    --bg-2:#13140e;
+    --panel:#181a13;
+    --panel-2:#1f2217;
+    --line:#2a2d20;
+    --line-2:#3a3e2c;
+    --amber:#ffb84d;
+    --amber-hot:#ffd07a;
+    --amber-dim:#8a6a2a;
+    --amber-faint:#4a3a18;
+    --cyan:#5fd4e8;
+    --red:#ff5030;
+    --green:#8ed670;
+    --text:#e8d4a8;
+    --text-dim:#a08c64;
+    --text-faint:#5a4e34;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'JetBrains Mono',ui-monospace,monospace;
+    font-size:13px;
+    overflow-x:hidden;
+    min-height:100vh;
+    min-height:100dvh;
+    overscroll-behavior:none;
+  }
+  body{
+    background:
+      radial-gradient(ellipse at 50% -10%, #1a1c12 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 110%, #14160e 0%, transparent 50%),
+      var(--bg);
+    background-attachment:fixed;
+    position:relative;
+    padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
+    max-width:480px;
+    margin:0 auto;
+  }
+  /* GRAIN OVERLAY */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:100;
+    opacity:.08;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1   0 0 0 0 0.7   0 0 0 0 0.3   0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode:overlay;
+  }
+  /* SCANLINES */
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:101;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0,
+      rgba(0,0,0,0) 2px,
+      rgba(255,184,77,0.025) 3px,
+      rgba(0,0,0,0) 4px
+    );
+  }
+
+  /* TITLE BAR */
+  .titlebar{
+    margin:8px 0 14px;
+    border:1px solid var(--line-2);
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    padding:9px 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position:relative;
+    box-shadow: inset 0 1px 0 #2c301f, 0 1px 0 #000;
+  }
+
+  /* ACCESS BAR — primary path into resource directory */
+  .access-bar{
+    display:block;
+    margin:6px 0 12px;
+    padding:18px 16px 16px;
+    background:linear-gradient(135deg, #ffb84d 0%, #ff9220 60%, #e07010 100%);
+    border:2px solid #ffd07a;
+    color:#1a1108;
+    text-decoration:none;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    box-shadow:
+      0 0 28px rgba(255,184,77,.35),
+      inset 0 2px 0 rgba(255,240,200,.5),
+      inset 0 -2px 0 rgba(120,60,0,.3);
+    animation:beacon 2.6s ease-in-out infinite;
+  }
+  .access-bar:active{
+    transform:translateY(1px);
+    box-shadow:
+      0 0 16px rgba(255,184,77,.25),
+      inset 0 2px 6px rgba(120,60,0,.4);
+  }
+  @keyframes beacon{
+    0%,100%{ box-shadow:0 0 28px rgba(255,184,77,.35), inset 0 2px 0 rgba(255,240,200,.5), inset 0 -2px 0 rgba(120,60,0,.3); }
+    50%   { box-shadow:0 0 44px rgba(255,184,77,.6),  inset 0 2px 0 rgba(255,240,200,.6), inset 0 -2px 0 rgba(120,60,0,.3); }
+  }
+  /* shine sweep */
+  .access-bar::before{
+    content:"";
+    position:absolute;
+    top:0;bottom:0;
+    width:60%;
+    left:-70%;
+    background:linear-gradient(110deg,
+      transparent 0%,
+      rgba(255,255,255,.4) 50%,
+      transparent 100%);
+    animation:sweep-shine 3.4s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep-shine{
+    0%   { left:-70%; }
+    60%  { left:120%; }
+    100% { left:120%; }
+  }
+  .access-bar-main{
+    font-family:'Black Ops One',sans-serif;
+    font-size:22px;
+    letter-spacing:.18em;
+    line-height:1;
+    text-shadow:0 1px 0 rgba(255,240,200,.4), 0 2px 4px rgba(80,40,0,.3);
+    position:relative;
+  }
+  .access-bar-sub{
+    font-family:'Special Elite',serif;
+    font-size:12px;
+    letter-spacing:.18em;
+    margin-top:7px;
+    color:#3a2008;
+    position:relative;
+    text-transform:uppercase;
+  }
+  .access-bar-arrow{
+    display:inline-block;
+    margin:0 8px;
+    transform:translateY(-1px);
+  }
+  .access-bar-corners{
+    position:absolute;
+    inset:5px;
+    pointer-events:none;
+  }
+  .access-bar-corners::before,
+  .access-bar-corners::after{
+    content:"";
+    position:absolute;
+    width:12px;height:12px;
+    border:2px solid #5a2a08;
+  }
+  .access-bar-corners::before{
+    top:0;left:0;border-right:none;border-bottom:none;
+  }
+  .access-bar-corners::after{
+    bottom:0;right:0;border-left:none;border-top:none;
+  }
+  .titlebar::before{
+    content:"";
+    position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber-dim);
+  }
+  .led{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--red);
+    box-shadow:0 0 8px var(--red), inset 0 -1px 2px rgba(0,0,0,.5);
+    flex-shrink:0;
+  }
+  .led.on{background:var(--green);box-shadow:0 0 10px var(--green), inset 0 -1px 2px rgba(0,0,0,.5);animation:pulse 1.8s infinite}
+  .led.lock{background:var(--amber);box-shadow:0 0 12px var(--amber-hot), inset 0 -1px 2px rgba(0,0,0,.5)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .title-group{flex:1;line-height:1.1}
+  .title-main{
+    font-family:'Black Ops One',sans-serif;
+    font-size:15px;
+    letter-spacing:.06em;
+    color:var(--amber);
+    text-shadow:0 0 6px rgba(255,184,77,.4);
+  }
+  .title-sub{
+    font-family:'Special Elite',serif;
+    font-size:10px;
+    color:var(--text-dim);
+    letter-spacing:.18em;
+    margin-top:2px;
+  }
+  .ser{
+    font-family:'JetBrains Mono';
+    font-size:9px;
+    color:var(--text-faint);
+    text-align:right;
+    line-height:1.3;
+  }
+
+  /* COMPASS */
+  .compass-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:1;
+    max-width:380px;
+    margin:0 auto 14px;
+    padding:14px;
+    border:1px solid var(--line-2);
+    background:
+      radial-gradient(circle at 50% 50%, #14160e 0%, #0a0b08 70%),
+      var(--panel);
+    box-shadow:
+      inset 0 0 40px rgba(0,0,0,.6),
+      inset 0 1px 0 #2c301f,
+      0 2px 0 #000;
+  }
+  .compass-wrap::before, .compass-wrap::after{
+    content:"";position:absolute;width:10px;height:10px;border:1px solid var(--amber-dim);
+  }
+  .compass-wrap::before{top:4px;left:4px;border-right:none;border-bottom:none}
+  .compass-wrap::after{bottom:4px;right:4px;border-left:none;border-top:none}
+  .corner-tr,.corner-bl{position:absolute;width:10px;height:10px;border:1px solid var(--amber-dim)}
+  .corner-tr{top:4px;right:4px;border-left:none;border-bottom:none}
+  .corner-bl{bottom:4px;left:4px;border-right:none;border-top:none}
+
+  svg.compass{display:block;width:100%;height:100%;overflow:visible}
+  .dial-text{
+    font-family:'Black Ops One',sans-serif;
+    fill:var(--amber);
+    text-shadow:0 0 4px rgba(255,184,77,.5);
+  }
+  .dial-text.cardinal{font-size:18px}
+  .dial-text.intercardinal{font-size:11px;fill:var(--amber-dim)}
+  .tick{stroke:var(--amber);stroke-linecap:square}
+  .tick.major{stroke-width:2;opacity:.9}
+  .tick.minor{stroke-width:1;opacity:.45}
+  .tick.cardinal{stroke-width:2.5;opacity:1}
+
+  /* radar sweep */
+  .sweep{
+    transform-origin:0 0;
+    animation: sweep 3.5s linear infinite;
+  }
+  @keyframes sweep{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .sweep.hidden{display:none}
+
+  /* needle */
+  #needle{transform-origin:0 0;transition:transform .35s cubic-bezier(.2,.6,.3,1)}
+  #dial{transform-origin:0 0;transition:transform .15s linear}
+  .needle-body{fill:url(#needleGrad)}
+  .needle-tail{fill:#5a3a10;opacity:.55}
+
+  /* trail */
+  .trail-dot{fill:var(--amber);opacity:.6}
+  .trail-dot.recent{fill:var(--amber-hot);opacity:1}
+
+  /* density blips */
+  @keyframes blipflash{
+    0%   { opacity: 0; transform: scale(0.3); }
+    18%  { opacity: 1; transform: scale(1.4); }
+    40%  { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.8); }
+  }
+  .blip{
+    fill:#ffd07a;
+    filter:drop-shadow(0 0 4px #ffb84d);
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:blipflash 0.65s ease-out forwards;
+    pointer-events:none;
+  }
+  .blip.dim{fill:#ffb84d;filter:drop-shadow(0 0 2px #8a6a2a)}
+
+  /* OVERLAY (pre-activation) */
+  .activate{
+    position:absolute;inset:14px;
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:14px;
+    background:radial-gradient(circle at 50% 50%, rgba(20,22,14,.92) 40%, rgba(10,11,8,.98));
+    z-index:5;
+    cursor:pointer;
+  }
+  .activate.hidden{display:none}
+  .activate-btn{
+    font-family:'Black Ops One',sans-serif;
+    font-size:13px;
+    letter-spacing:.15em;
+    padding:14px 20px;
+    border:1px solid var(--amber);
+    color:var(--amber);
+    background:linear-gradient(180deg, rgba(255,184,77,.08), rgba(255,184,77,.02));
+    box-shadow:0 0 16px rgba(255,184,77,.18), inset 0 0 16px rgba(255,184,77,.05);
+    text-shadow:0 0 6px rgba(255,184,77,.5);
+    cursor:pointer;
+    animation:btnpulse 2s infinite ease-in-out;
+  }
+  @keyframes btnpulse{
+    0%,100%{box-shadow:0 0 16px rgba(255,184,77,.18), inset 0 0 16px rgba(255,184,77,.05)}
+    50%{box-shadow:0 0 28px rgba(255,184,77,.35), inset 0 0 16px rgba(255,184,77,.1)}
+  }
+  .activate-note{
+    font-family:'Special Elite',serif;
+    color:var(--text-dim);
+    font-size:11px;
+    text-align:center;
+    max-width:240px;
+    letter-spacing:.06em;
+    line-height:1.5;
+  }
+  .activate-warn{
+    color:var(--red);
+    font-size:10px;
+    letter-spacing:.18em;
+    font-family:'Black Ops One',sans-serif;
+  }
+
+  /* PANELS */
+  .grid{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:10px}
+  .panel{
+    border:1px solid var(--line-2);
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    padding:9px 11px;
+    position:relative;
+    box-shadow:inset 0 1px 0 #2c301f, 0 1px 0 #000;
+    overflow:hidden;
+  }
+  .panel.full{grid-column:1/-1}
+  .panel-label{
+    font-family:'Special Elite',serif;
+    font-size:9px;
+    color:var(--text-faint);
+    letter-spacing:.22em;
+    margin-bottom:5px;
+    text-transform:uppercase;
+  }
+  .panel-val{
+    font-family:'Black Ops One',sans-serif;
+    font-size:18px;
+    color:var(--amber);
+    text-shadow:0 0 6px rgba(255,184,77,.35);
+    letter-spacing:.04em;
+    line-height:1;
+  }
+  .panel-val.cyan{color:var(--cyan);text-shadow:0 0 6px rgba(95,212,232,.4)}
+  .panel-val.dim{color:var(--text-dim);text-shadow:none}
+  .panel-val.small{font-size:14px}
+  .panel-sub{
+    font-family:'JetBrains Mono';
+    font-size:10px;
+    color:var(--text-dim);
+    margin-top:3px;
+    letter-spacing:.05em;
+  }
+  .panel-sub .hot{color:var(--amber-hot)}
+  .panel-sub .red{color:var(--red)}
+  .panel-sub .green{color:var(--green)}
+
+  /* BARS */
+  .bar{
+    height:10px;
+    background:#0a0b08;
+    border:1px solid var(--line);
+    display:flex;
+    gap:1px;
+    padding:1px;
+    margin-top:6px;
+  }
+  .bar-cell{
+    flex:1;
+    background:#1a1c12;
+  }
+  .bar-cell.on{background:var(--amber);box-shadow:0 0 4px rgba(255,184,77,.6)}
+  .bar-cell.on.cyan{background:var(--cyan);box-shadow:0 0 4px rgba(95,212,232,.6)}
+  .bar-cell.on.red{background:var(--red);box-shadow:0 0 4px rgba(255,80,48,.6)}
+
+  /* LOG */
+  .log{
+    border:1px solid var(--line-2);
+    background:var(--bg-2);
+    padding:8px 10px;
+    font-family:'JetBrains Mono';
+    font-size:10px;
+    color:var(--text-dim);
+    height:74px;
+    overflow:hidden;
+    margin-bottom:10px;
+    position:relative;
+    line-height:1.5;
+  }
+  .log-line{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .log-line .ts{color:var(--text-faint)}
+  .log-line .ok{color:var(--green)}
+  .log-line .warn{color:var(--amber)}
+  .log-line .err{color:var(--red)}
+  .log-line .info{color:var(--cyan)}
+
+  /* BTN */
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .btn{
+    font-family:'Black Ops One',sans-serif;
+    font-size:11px;
+    letter-spacing:.12em;
+    padding:11px 8px;
+    border:1px solid var(--line-2);
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    color:var(--amber-dim);
+    cursor:pointer;
+    box-shadow:inset 0 1px 0 #2c301f, 0 1px 0 #000;
+  }
+  .btn:active{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    color:var(--amber);
+    box-shadow:inset 0 1px 4px rgba(0,0,0,.5);
+  }
+  .btn.live{color:var(--amber);text-shadow:0 0 4px rgba(255,184,77,.3)}
+
+  /* FOOTER */
+  .footer{
+    font-family:'Special Elite',serif;
+    font-size:9px;
+    color:var(--text-faint);
+    letter-spacing:.2em;
+    text-align:center;
+    padding:8px 0 20px;
+    line-height:1.7;
+  }
+
+  /* status state */
+  .state-readout{
+    font-family:'Black Ops One',sans-serif;
+    color:var(--amber);
+    text-shadow:0 0 6px rgba(255,184,77,.4);
+    letter-spacing:.08em;
+  }
+  .state-readout.seeking{color:var(--cyan);text-shadow:0 0 6px rgba(95,212,232,.4)}
+  .state-readout.lock{animation:lockflash 1.4s ease-in-out infinite}
+  .state-readout.warn{color:var(--red);text-shadow:0 0 6px rgba(255,80,48,.4)}
+  @keyframes lockflash{0%,100%{text-shadow:0 0 6px rgba(255,184,77,.4)}50%{text-shadow:0 0 14px rgba(255,184,77,.8)}}
+
+  /* DENSITY */
+  .density-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .density-row .panel-val{flex:0}
+  .density-tag{
+    font-family:'Special Elite',serif;
+    font-size:10px;
+    color:var(--text-dim);
+    letter-spacing:.15em;
+    padding:1px 6px;
+    border:1px solid var(--line-2);
+  }
+  .density-tag.high{color:var(--green);border-color:var(--green)}
+  .density-tag.med{color:var(--amber);border-color:var(--amber-dim)}
+  .density-tag.low{color:var(--amber-dim);border-color:var(--amber-faint)}
+  .density-tag.none{color:var(--red);border-color:var(--red)}
+
+  @media (max-width:340px){
+    .panel-val{font-size:15px}
+    .title-main{font-size:13px}
+  }
+</style>
+</head>
+<body>
+
+<a class="access-bar" href="./resources.html">
+  <span class="access-bar-corners"></span>
+  <div class="access-bar-main">
+    <span class="access-bar-arrow">▶</span>RESOURCES<span class="access-bar-arrow">◀</span>
+  </div>
+  <div class="access-bar-sub">SHELTER · FOOD · HEALTH · CARE</div>
+</a>
+
+<div class="titlebar">
+  <div class="led" id="led"></div>
+  <div class="title-group">
+    <div class="title-main">FIELD RECEIVER MK-II</div>
+    <div class="title-sub">CIVILIZATION SEEKER</div>
+  </div>
+  <div class="ser">
+    SN-7741<br>
+    REV.<span id="rev">A</span>
+  </div>
+</div>
+
+<div class="compass-wrap" id="compassWrap">
+  <span class="corner-tr"></span><span class="corner-bl"></span>
+
+  <svg class="compass" viewBox="-180 -180 360 360" id="compassSvg">
+    <defs>
+      <radialGradient id="dialGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#1a1c12"/>
+        <stop offset="70%" stop-color="#0e1009"/>
+        <stop offset="100%" stop-color="#050603"/>
+      </radialGradient>
+      <linearGradient id="needleGrad" x1="0" y1="-1" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffd07a"/>
+        <stop offset="50%" stop-color="#ffb84d"/>
+        <stop offset="100%" stop-color="#8a6a2a"/>
+      </linearGradient>
+      <radialGradient id="hubGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffd07a"/>
+        <stop offset="60%" stop-color="#ffb84d"/>
+        <stop offset="100%" stop-color="#5a3a10"/>
+      </radialGradient>
+      <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#5fd4e8" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#5fd4e8" stop-opacity=".7"/>
+      </linearGradient>
+    </defs>
+
+    <!-- background ring -->
+    <circle cx="0" cy="0" r="168" fill="url(#dialGrad)"/>
+    <circle cx="0" cy="0" r="168" fill="none" stroke="#2a2d20" stroke-width="1"/>
+    <circle cx="0" cy="0" r="158" fill="none" stroke="#3a3e2c" stroke-width="1"/>
+    <circle cx="0" cy="0" r="148" fill="none" stroke="#2a2d20" stroke-width="1"/>
+
+    <!-- rotating dial -->
+    <g id="dial">
+      <g id="ticks"></g>
+      <text class="dial-text cardinal" x="0" y="-115" text-anchor="middle" dominant-baseline="central">N</text>
+      <text class="dial-text cardinal" x="115" y="0" text-anchor="middle" dominant-baseline="central">E</text>
+      <text class="dial-text cardinal" x="0" y="115" text-anchor="middle" dominant-baseline="central">S</text>
+      <text class="dial-text cardinal" x="-115" y="0" text-anchor="middle" dominant-baseline="central">W</text>
+      <text class="dial-text intercardinal" x="83" y="-83" text-anchor="middle" dominant-baseline="central">NE</text>
+      <text class="dial-text intercardinal" x="83" y="83" text-anchor="middle" dominant-baseline="central">SE</text>
+      <text class="dial-text intercardinal" x="-83" y="83" text-anchor="middle" dominant-baseline="central">SW</text>
+      <text class="dial-text intercardinal" x="-83" y="-83" text-anchor="middle" dominant-baseline="central">NW</text>
+    </g>
+
+    <!-- trail layer (in dial frame so it rotates with world) -->
+    <g id="trail"></g>
+
+    <!-- density blips (screen frame - flash rate matches WiFi density) -->
+    <g id="blips"></g>
+
+    <!-- radar sweep (only shown when seeking) -->
+    <g id="sweep" class="sweep">
+      <path d="M 0 0 L 140 0 A 140 140 0 0 0 99 -99 Z" fill="url(#sweepGrad)" opacity="0.4"/>
+    </g>
+
+    <!-- needle (rotates by bearing-heading) -->
+    <g id="needle" style="opacity:0">
+      <!-- tail -->
+      <path class="needle-tail" d="M -5 0 L 0 36 L 5 0 Z"/>
+      <!-- body -->
+      <path class="needle-body" d="M -7 0 L 0 -130 L 7 0 Z"/>
+      <!-- tip glow -->
+      <circle cx="0" cy="-128" r="4" fill="#ffd07a" opacity=".9"/>
+    </g>
+
+    <!-- center hub -->
+    <circle cx="0" cy="0" r="10" fill="url(#hubGrad)"/>
+    <circle cx="0" cy="0" r="3" fill="#0a0b08"/>
+
+    <!-- top index marker (always points to where phone is facing) -->
+    <path d="M 0 -174 L -6 -162 L 6 -162 Z" fill="#ff5030"/>
+  </svg>
+
+  <div class="activate" id="activate">
+    <div class="activate-note">DEVICE OFFLINE</div>
+    <button class="activate-btn" id="activateBtn">⚡ ACTIVATE RECEIVER</button>
+    <div class="activate-note">
+      REQUIRES LOCATION + ORIENTATION<br>
+      <span class="activate-warn">WALK 20m TO ACQUIRE LOCK</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <div class="panel-label">⌖ STATUS</div>
+    <div class="panel-val state-readout" id="stateText">OFFLINE</div>
+    <div class="panel-sub" id="stateSub">awaiting activation</div>
+  </div>
+  <div class="panel">
+    <div class="panel-label">◉ LOCK STRENGTH</div>
+    <div class="panel-val small" id="lockVal">— —</div>
+    <div class="bar" id="lockBar"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">⊙ HEADING</div>
+    <div class="panel-val" id="headingVal">— — —°</div>
+    <div class="panel-sub" id="headingDir">— —</div>
+  </div>
+  <div class="panel">
+    <div class="panel-label">→ BEARING TO CIV</div>
+    <div class="panel-val" id="bearingVal">— — —°</div>
+    <div class="panel-sub" id="bearingDir">SEEKING</div>
+  </div>
+
+  <div class="panel full">
+    <div class="panel-label">⛁ INFRASTRUCTURE DENSITY</div>
+    <div class="density-row">
+      <div class="panel-val" id="densityVal">±  —m</div>
+      <div class="density-tag" id="densityTag">UNKNOWN</div>
+    </div>
+    <div class="bar" id="densityBar"></div>
+    <div class="panel-sub" id="densitySub">derived from GPS accuracy · lower ± = more mapped APs nearby</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">⇆ LINK QUALITY</div>
+    <div class="panel-val cyan small" id="linkVal">— —</div>
+    <div class="panel-sub" id="linkSub">no carrier</div>
+  </div>
+  <div class="panel">
+    <div class="panel-label">⌚ SAMPLES</div>
+    <div class="panel-val small" id="samplesVal">0 / 0m</div>
+    <div class="panel-sub" id="samplesSub">collected · distance walked</div>
+  </div>
+</div>
+
+<div class="log" id="log"></div>
+
+<div class="controls">
+  <button class="btn" id="resetBtn">↻ RESET SAMPLES</button>
+  <button class="btn" id="diagBtn">⌬ DIAGNOSTICS</button>
+</div>
+
+<div class="footer">
+  FIELD RECEIVER MK-II · SERIAL 7741<br>
+  PROPERTY OF [REDACTED] · DO NOT DISCARD
+</div>
+
+<script>
+/* ============================================================
+   FIELD RECEIVER MK-II — Civilization Seeker
+   Real signals only:
+     - device orientation (compass heading)
+     - geolocation (lat/lon/accuracy)
+     - navigator.connection (downlink/rtt/effectiveType)
+   Civilization vector = -gradient of accuracy field fit to
+   recent positions via least-squares plane. The needle points
+   in the direction where GPS accuracy *improves*, which is the
+   direction of denser mapped WiFi infrastructure.
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+const log = (msg, cls='') => {
+  const el = $('log');
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="ts">${ts}</span> <span class="${cls}">${msg}</span>`;
+  el.insertBefore(line, el.firstChild);
+  while (el.children.length > 6) el.removeChild(el.lastChild);
+};
+
+/* --- BUILD TICK MARKS --- */
+(function buildTicks(){
+  const g = $('ticks');
+  const inner = 138, outerMaj = 152, outerMin = 146, outerCard = 156;
+  for (let deg = 0; deg < 360; deg += 5) {
+    const isCardinal = deg % 90 === 0;
+    const isMajor = deg % 30 === 0;
+    const rad = (deg - 90) * Math.PI / 180; // 0deg = up
+    const o = isCardinal ? outerCard : isMajor ? outerMaj : outerMin;
+    const x1 = Math.cos(rad) * inner, y1 = Math.sin(rad) * inner;
+    const x2 = Math.cos(rad) * o, y2 = Math.sin(rad) * o;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', x1.toFixed(2));
+    line.setAttribute('y1', y1.toFixed(2));
+    line.setAttribute('x2', x2.toFixed(2));
+    line.setAttribute('y2', y2.toFixed(2));
+    line.setAttribute('class', `tick ${isCardinal ? 'cardinal' : isMajor ? 'major' : 'minor'}`);
+    g.appendChild(line);
+  }
+})();
+
+/* --- STATE --- */
+const state = {
+  active: false,
+  heading: null,         // degrees, 0=N, clockwise
+  hasHeading: false,
+  refLat: null,
+  refLon: null,
+  samples: [],           // {x, y, acc, t}
+  walked: 0,
+  lastPos: null,
+  bearing: null,         // degrees, 0=N, clockwise
+  confidence: 0,         // 0..1
+  density: null,         // current accuracy in meters
+  connectionInfo: null,
+  watchId: null,
+  orientHandler: null,
+  // pre-compute bar cells
+  densityBarCells: [],
+  lockBarCells: [],
+};
+
+/* build bar cells */
+function buildBar(el, n, accentClass=''){
+  el.innerHTML = '';
+  const cells = [];
+  for (let i = 0; i < n; i++){
+    const c = document.createElement('div');
+    c.className = 'bar-cell';
+    if (accentClass) c.dataset.accent = accentClass;
+    el.appendChild(c);
+    cells.push(c);
+  }
+  return cells;
+}
+state.densityBarCells = buildBar($('densityBar'), 16);
+state.lockBarCells = buildBar($('lockBar'), 10);
+
+/* --- UTILITY: compass heading from event --- */
+function getHeadingFromEvent(e){
+  // iOS Safari
+  if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) {
+    return e.webkitCompassHeading;
+  }
+  // Android Chrome absolute
+  if (e.absolute === true && typeof e.alpha === 'number') {
+    return (360 - e.alpha) % 360;
+  }
+  // Fallback: relative alpha (won't be true north but at least gives rotation)
+  if (typeof e.alpha === 'number') {
+    return (360 - e.alpha) % 360;
+  }
+  return null;
+}
+
+function cardinal(deg){
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(((deg % 360) / 22.5)) % 16];
+}
+
+function densityClass(acc){
+  if (acc == null) return ['UNKNOWN','none'];
+  if (acc <= 25) return ['HIGH','high'];
+  if (acc <= 75) return ['MEDIUM','med'];
+  if (acc <= 300) return ['LOW','low'];
+  return ['WILDERNESS','none'];
+}
+
+/* --- GRADIENT COMPUTATION ---
+   Least squares plane: z = a*x + b*y + c
+   where (x,y) = local meters east/north, z = accuracy.
+   The gradient (a,b) points toward INCREASING accuracy
+   (worse GPS). Negate to get direction toward
+   denser infrastructure.                                 */
+function computeGradient(){
+  const pts = state.samples;
+  if (pts.length < 5) {
+    state.bearing = null;
+    state.confidence = 0;
+    return { reason: 'need ≥5 samples' };
+  }
+
+  // require spatial spread
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  const xrange = Math.max(...xs) - Math.min(...xs);
+  const yrange = Math.max(...ys) - Math.min(...ys);
+  const spread = Math.hypot(xrange, yrange);
+  if (spread < 15) {
+    state.bearing = null;
+    state.confidence = 0;
+    return { reason: `walk further (${spread.toFixed(0)}m / 15m)` };
+  }
+
+  // require accuracy variance
+  const accs = pts.map(p => p.acc);
+  const accRange = Math.max(...accs) - Math.min(...accs);
+  if (accRange < 5) {
+    state.bearing = null;
+    state.confidence = 0;
+    return { reason: 'signal field flat' };
+  }
+
+  // means
+  const n = pts.length;
+  let mx=0, my=0, mz=0;
+  for (const p of pts){ mx+=p.x; my+=p.y; mz+=p.acc; }
+  mx/=n; my/=n; mz/=n;
+
+  // centered moments
+  let Sxx=0, Syy=0, Sxy=0, Sxz=0, Syz=0;
+  for (const p of pts){
+    const dx=p.x-mx, dy=p.y-my, dz=p.acc-mz;
+    Sxx+=dx*dx; Syy+=dy*dy; Sxy+=dx*dy;
+    Sxz+=dx*dz; Syz+=dy*dz;
+  }
+  const det = Sxx*Syy - Sxy*Sxy;
+  if (Math.abs(det) < 0.5) {
+    state.bearing = null;
+    state.confidence = 0;
+    return { reason: 'samples too colinear' };
+  }
+  const a = (Syy*Sxz - Sxy*Syz) / det; // ∂acc/∂east
+  const b = (Sxx*Syz - Sxy*Sxz) / det; // ∂acc/∂north
+
+  // bearing toward DECREASING accuracy
+  // compass bearing = atan2(east, north), east+ is +x, north+ is +y
+  const bearing = (Math.atan2(-a, -b) * 180 / Math.PI + 360) % 360;
+
+  // R^2 for confidence
+  const c = mz - a*mx - b*my;
+  let ssRes=0, ssTot=0;
+  for (const p of pts){
+    const pred = a*p.x + b*p.y + c;
+    ssRes += (p.acc - pred)**2;
+    ssTot += (p.acc - mz)**2;
+  }
+  const r2 = ssTot > 0 ? Math.max(0, 1 - ssRes/ssTot) : 0;
+
+  // gradient magnitude in (m accuracy change) per (m walked)
+  const gradMag = Math.hypot(a, b);
+  // confidence = r2 weighted by gradient strength (saturating)
+  const conf = Math.max(0, Math.min(1, r2 * Math.min(1, gradMag * 8)));
+
+  state.bearing = bearing;
+  state.confidence = conf;
+  return { ok: true, r2, gradMag, bearing, conf };
+}
+
+/* --- SAMPLE INGEST --- */
+function pushSample(lat, lon, acc){
+  if (state.refLat == null) {
+    state.refLat = lat;
+    state.refLon = lon;
+  }
+  const cosRef = Math.cos(state.refLat * Math.PI / 180);
+  const x = (lon - state.refLon) * cosRef * 111320;
+  const y = (lat - state.refLat) * 111320;
+  const t = Date.now();
+
+  // distance walked
+  if (state.lastPos){
+    const dx = x - state.lastPos.x, dy = y - state.lastPos.y;
+    const d = Math.hypot(dx, dy);
+    // only count meaningful steps (filter GPS jitter)
+    if (d > Math.max(3, acc * 0.3)){
+      state.walked += d;
+      state.lastPos = {x, y};
+    }
+  } else {
+    state.lastPos = {x, y};
+  }
+
+  // drop near-duplicates (no movement)
+  const last = state.samples[state.samples.length-1];
+  if (last && Math.hypot(x-last.x, y-last.y) < 2 && Math.abs(acc-last.acc) < 2){
+    // update timestamp only
+    last.t = t;
+    last.acc = (last.acc * 0.7 + acc * 0.3);
+  } else {
+    state.samples.push({x, y, acc, t});
+    if (state.samples.length > 40) state.samples.shift();
+  }
+
+  state.density = acc;
+  const result = computeGradient();
+  render();
+  return result;
+}
+
+/* --- RENDER --- */
+function render(){
+  // dial rotates by -heading so N glues to true north
+  const h = state.heading || 0;
+  $('dial').setAttribute('transform', `rotate(${-h})`);
+
+  // needle rotates by (bearing - heading)
+  const needle = $('needle');
+  if (state.bearing != null && state.confidence > 0.1){
+    needle.style.opacity = String(0.4 + 0.6 * state.confidence);
+    needle.setAttribute('transform', `rotate(${state.bearing - h})`);
+    $('sweep').classList.add('hidden');
+  } else {
+    needle.style.opacity = '0';
+    if (state.active) $('sweep').classList.remove('hidden');
+  }
+
+  // trail (in dial coordinate frame -> rotates with dial, stays aligned with world)
+  const trail = $('trail');
+  trail.innerHTML = '';
+  if (state.samples.length > 1){
+    // find latest sample, draw others relative to it (newest at center)
+    const last = state.samples[state.samples.length - 1];
+    // scale: fit all samples within radius 100
+    let maxR = 1;
+    for (const p of state.samples){
+      maxR = Math.max(maxR, Math.hypot(p.x - last.x, p.y - last.y));
+    }
+    const scale = Math.min(100 / maxR, 5);
+    for (let i = 0; i < state.samples.length; i++){
+      const p = state.samples[i];
+      // world: +x east, +y north. SVG: +x right, +y DOWN. So flip y.
+      const sx = (p.x - last.x) * scale;
+      const sy = -(p.y - last.y) * scale;
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx', sx.toFixed(1));
+      dot.setAttribute('cy', sy.toFixed(1));
+      const ageBin = (state.samples.length - 1 - i);
+      const r = ageBin === 0 ? 3 : 1.6;
+      dot.setAttribute('r', r);
+      dot.setAttribute('class', `trail-dot${ageBin === 0 ? ' recent' : ''}`);
+      dot.style.opacity = Math.max(0.15, 1 - ageBin * 0.06);
+      trail.appendChild(dot);
+    }
+  }
+
+  // STATUS panel
+  if (!state.active){
+    $('stateText').textContent = 'OFFLINE';
+    $('stateText').className = 'panel-val state-readout warn';
+    $('stateSub').textContent = 'awaiting activation';
+    $('led').className = 'led';
+  } else if (state.bearing != null && state.confidence > 0.25){
+    $('stateText').textContent = 'LOCK';
+    $('stateText').className = 'panel-val state-readout lock';
+    $('stateSub').textContent = 'civilization vector resolved';
+    $('led').className = 'led lock';
+  } else {
+    $('stateText').textContent = 'SEEKING';
+    $('stateText').className = 'panel-val state-readout seeking';
+    $('stateSub').textContent = state.samples.length < 5
+      ? `collecting samples (${state.samples.length}/5)`
+      : `walk further to lock`;
+    $('led').className = 'led on';
+  }
+
+  // HEADING
+  if (state.heading != null){
+    $('headingVal').textContent = `${String(Math.round(state.heading)).padStart(3,'0')}°`;
+    $('headingDir').textContent = cardinal(state.heading);
+  } else if (state.active){
+    $('headingVal').textContent = '— — —°';
+    $('headingDir').innerHTML = '<span class="red">no orientation</span>';
+  }
+
+  // BEARING
+  if (state.bearing != null){
+    $('bearingVal').textContent = `${String(Math.round(state.bearing)).padStart(3,'0')}°`;
+    const conf = state.confidence;
+    let tag;
+    if (conf > 0.55) tag = `<span class="hot">LOCKED · ${cardinal(state.bearing)}</span>`;
+    else if (conf > 0.25) tag = `${cardinal(state.bearing)} <span class="warn">partial</span>`;
+    else tag = `${cardinal(state.bearing)} <span class="red">weak</span>`;
+    $('bearingDir').innerHTML = tag;
+  } else {
+    $('bearingVal').textContent = '— — —°';
+    $('bearingDir').textContent = 'SEEKING';
+  }
+
+  // LOCK BAR
+  const lockN = Math.round(state.confidence * 10);
+  state.lockBarCells.forEach((c, i) => {
+    c.className = 'bar-cell' + (i < lockN ? ' on' : '');
+  });
+  $('lockVal').textContent = state.confidence > 0
+    ? `${Math.round(state.confidence * 100)}%`
+    : '— —';
+
+  // DENSITY
+  if (state.density != null){
+    $('densityVal').textContent = `± ${state.density < 10 ? state.density.toFixed(1) : Math.round(state.density)}m`;
+    const [tagText, tagClass] = densityClass(state.density);
+    const tag = $('densityTag');
+    tag.textContent = tagText;
+    tag.className = 'density-tag ' + tagClass;
+
+    // bar: log scale, 5m=full, 2000m=empty
+    const v = Math.log(Math.max(5, Math.min(2000, state.density)));
+    const lo = Math.log(5), hi = Math.log(2000);
+    const filled = 16 - Math.round((v - lo) / (hi - lo) * 16);
+    state.densityBarCells.forEach((c, i) => {
+      c.className = 'bar-cell' + (i < filled ? ' on' : '');
+    });
+
+    // live blip rate readout
+    const rate = blipRate();
+    const rateStr = rate >= 1 ? `${rate.toFixed(1)}/s` : `1 per ${(1/rate).toFixed(1)}s`;
+    $('densitySub').innerHTML = `<span class="hot">⊹ ${rateStr}</span> · GPS accuracy → AP density proxy`;
+  }
+
+  // LINK
+  if (state.connectionInfo){
+    const ci = state.connectionInfo;
+    const t = (ci.effectiveType || ci.type || '—').toUpperCase();
+    const dl = ci.downlink != null ? `${ci.downlink.toFixed(1)} MB/S` : '— MB/S';
+    $('linkVal').textContent = `${t} · ${dl}`;
+    const rtt = ci.rtt != null ? `${ci.rtt}ms ping` : 'no ping';
+    const sd = ci.saveData ? ' · save-data' : '';
+    $('linkSub').textContent = `${rtt}${sd}`;
+  } else if (state.active){
+    $('linkVal').textContent = 'UNAVAIL';
+    $('linkSub').textContent = 'navigator.connection not exposed';
+  }
+
+  // SAMPLES
+  $('samplesVal').textContent = `${state.samples.length} / ${Math.round(state.walked)}m`;
+}
+
+/* --- ORIENTATION --- */
+function attachOrientation(){
+  state.orientHandler = (e) => {
+    const h = getHeadingFromEvent(e);
+    if (h != null && !isNaN(h)){
+      // smooth the heading slightly
+      if (state.heading == null) state.heading = h;
+      else {
+        // shortest angle diff
+        let d = h - state.heading;
+        if (d > 180) d -= 360;
+        if (d < -180) d += 360;
+        state.heading = (state.heading + d * 0.35 + 360) % 360;
+      }
+      if (!state.hasHeading){
+        state.hasHeading = true;
+        log('orientation: <span class="ok">acquired</span>', '');
+      }
+      render();
+    }
+  };
+  // Prefer absolute
+  window.addEventListener('deviceorientationabsolute', state.orientHandler, true);
+  window.addEventListener('deviceorientation', state.orientHandler, true);
+}
+
+/* --- ACTIVATION --- */
+async function activate(){
+  $('activateBtn').disabled = true;
+  $('activateBtn').textContent = 'INITIALIZING...';
+  log('boot sequence initiated', 'info');
+
+  // 1. Orientation permission (iOS)
+  try {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      log('requesting orientation permission', 'info');
+      const r = await DeviceOrientationEvent.requestPermission();
+      if (r !== 'granted'){
+        log('orientation: <span class="err">denied</span>', '');
+      } else {
+        attachOrientation();
+      }
+    } else {
+      attachOrientation();
+    }
+  } catch (err){
+    log('orientation: <span class="err">' + err.message + '</span>', '');
+  }
+
+  // 2. Geolocation
+  if (!('geolocation' in navigator)){
+    log('geolocation: <span class="err">unsupported</span>', '');
+    $('activateBtn').textContent = 'GEOLOCATION UNAVAILABLE';
+    return;
+  }
+  log('requesting geolocation', 'info');
+  state.watchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const {latitude, longitude, accuracy} = pos.coords;
+      const result = pushSample(latitude, longitude, accuracy);
+      if (!state.active){
+        state.active = true;
+        $('activate').classList.add('hidden');
+        log(`geo: <span class="ok">lock</span> ±${Math.round(accuracy)}m`, '');
+      }
+      if (result && result.ok){
+        log(`fit: r²=${result.r2.toFixed(2)} grad=${result.gradMag.toFixed(2)} → ${Math.round(result.bearing)}°`, 'info');
+      }
+    },
+    (err) => {
+      log('geo: <span class="err">' + err.message + '</span>', '');
+      if (!state.active){
+        $('activateBtn').disabled = false;
+        $('activateBtn').textContent = '⚡ ACTIVATE RECEIVER';
+      }
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 27000 }
+  );
+
+  // 3. Connection info
+  function pollConnection(){
+    if ('connection' in navigator){
+      const c = navigator.connection;
+      state.connectionInfo = {
+        effectiveType: c.effectiveType,
+        type: c.type,
+        downlink: c.downlink,
+        rtt: c.rtt,
+        saveData: c.saveData,
+      };
+      render();
+    }
+  }
+  pollConnection();
+  if ('connection' in navigator && navigator.connection.addEventListener){
+    navigator.connection.addEventListener('change', pollConnection);
+  }
+  setInterval(pollConnection, 5000);
+}
+
+$('activateBtn').addEventListener('click', activate);
+$('resetBtn').addEventListener('click', () => {
+  state.samples = [];
+  state.walked = 0;
+  state.lastPos = null;
+  state.refLat = null;
+  state.refLon = null;
+  state.bearing = null;
+  state.confidence = 0;
+  log('samples cleared', 'warn');
+  render();
+});
+$('diagBtn').addEventListener('click', () => {
+  const lines = [
+    `samples: ${state.samples.length}`,
+    `walked: ${state.walked.toFixed(1)}m`,
+    `heading: ${state.heading != null ? state.heading.toFixed(1)+'°' : 'null'}`,
+    `bearing: ${state.bearing != null ? state.bearing.toFixed(1)+'°' : 'null'}`,
+    `conf: ${(state.confidence*100).toFixed(0)}%`,
+    `density: ${state.density != null ? '±'+state.density.toFixed(1)+'m' : 'null'}`,
+  ];
+  for (const l of lines) log(l, 'info');
+});
+
+// initial render
+render();
+log('FIELD RECEIVER MK-II ready', 'ok');
+log('tap ACTIVATE to begin', 'info');
+
+/* --- DENSITY BLIPS ---
+   Flash rate is a Poisson process keyed to current GPS accuracy.
+   Tighter accuracy = more mapped APs nearby = more blips/sec.
+     ~8m   -> ~12 blips/s   (urban storm)
+     ~30m  -> ~3 blips/s
+     ~100m -> ~1 blip/s
+     ~500m -> ~0.2 blips/s
+     ~2km  -> ~0.05 blips/s (lonely wilderness)
+*/
+function blipRate(){
+  if (!state.active || state.density == null) return 0;
+  // rate = 100 / accuracy, clamped
+  return Math.max(0.04, Math.min(15, 100 / state.density));
+}
+
+function spawnBlip(){
+  if (!state.active) return;
+  // random position on the dial face, biased to the outer ring
+  const ang = Math.random() * 2 * Math.PI;
+  const r = 35 + Math.pow(Math.random(), 0.6) * 115; // outer-biased
+  const x = Math.cos(ang) * r;
+  const y = Math.sin(ang) * r;
+  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  dot.setAttribute('cx', x.toFixed(1));
+  dot.setAttribute('cy', y.toFixed(1));
+  // size varies a bit
+  const size = 2 + Math.random() * 1.8;
+  dot.setAttribute('r', size.toFixed(1));
+  // dimmer blips occasionally for variety
+  dot.setAttribute('class', Math.random() < 0.25 ? 'blip dim' : 'blip');
+  $('blips').appendChild(dot);
+  setTimeout(() => { if (dot.parentNode) dot.parentNode.removeChild(dot); }, 700);
+}
+
+function scheduleNextBlip(){
+  const rate = blipRate();
+  let delay;
+  if (rate <= 0){
+    delay = 1500; // poll while inactive
+  } else {
+    // exponential interarrival for Poisson process
+    delay = (-Math.log(1 - Math.random()) / rate) * 1000;
+    delay = Math.max(40, Math.min(delay, 8000));
+  }
+  setTimeout(() => { spawnBlip(); scheduleNextBlip(); }, delay);
+}
+scheduleNextBlip();
+</script>
+
+</body>
+</html>
