@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -89,10 +90,15 @@
     box-shadow: inset 0 1px 0 #2c301f, 0 1px 0 #000;
   }
 
-  /* ACCESS BAR — primary path into resource directory */
-  .access-bar{
-    display:block;
+  /* ACCESS ROW — primary path into resource directory + share */
+  .access-row{
+    display:flex;
+    gap:8px;
     margin:6px 0 12px;
+  }
+  .access-bar{
+    flex:1 1 auto;
+    display:block;
     padding:18px 16px 16px;
     background:linear-gradient(135deg, #ffb84d 0%, #ff9220 60%, #e07010 100%);
     border:2px solid #ffd07a;
@@ -101,6 +107,8 @@
     text-align:center;
     position:relative;
     overflow:hidden;
+    cursor:pointer;
+    font:inherit;
     box-shadow:
       0 0 28px rgba(255,184,77,.35),
       inset 0 2px 0 rgba(255,240,200,.5),
@@ -175,6 +183,44 @@
   }
   .access-bar-corners::after{
     bottom:0;right:0;border-left:none;border-top:none;
+  }
+
+  /* SHARE button (dark/amber to match phosphor theme) */
+  .share-btn{
+    flex:0 0 auto;
+    width:96px;
+    border:2px solid var(--amber);
+    background:linear-gradient(180deg, #1f2217 0%, #14160e 100%);
+    color:var(--amber);
+    font-family:'Black Ops One',sans-serif;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:10px 6px;
+    gap:5px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,184,77,.25),
+      inset 0 -2px 6px rgba(0,0,0,.5),
+      0 0 12px rgba(255,184,77,.18);
+    transition:box-shadow .2s ease;
+  }
+  .share-btn:active{
+    transform:translateY(1px);
+    box-shadow:
+      inset 0 1px 4px rgba(0,0,0,.5),
+      0 0 6px rgba(255,184,77,.1);
+  }
+  .share-btn-icon{
+    color:var(--amber);
+    filter:drop-shadow(0 0 4px rgba(255,184,77,.4));
+  }
+  .share-btn-label{
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--amber);
+    text-shadow:0 0 4px rgba(255,184,77,.4);
   }
   .titlebar::before{
     content:"";
@@ -476,13 +522,31 @@
 </head>
 <body>
 
-<a class="access-bar" href="./resources.html">
-  <span class="access-bar-corners"></span>
-  <div class="access-bar-main">
-    <span class="access-bar-arrow">▶</span>RESOURCES<span class="access-bar-arrow">◀</span>
-  </div>
-  <div class="access-bar-sub">SHELTER · FOOD · HEALTH · CARE</div>
-</a>
+<div class="access-row">
+  <button class="access-bar access-bar-btn" id="resourcesBtn" type="button">
+    <span class="access-bar-corners"></span>
+    <div class="access-bar-main">
+      <span class="access-bar-arrow">▶</span>RESOURCES<span class="access-bar-arrow">◀</span>
+    </div>
+    <div class="access-bar-sub">SHELTER · FOOD · HEALTH · CARE</div>
+  </button>
+  <button class="share-btn" id="shareBtn" type="button" title="Share via QR code">
+    <svg class="share-btn-icon" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+      <rect x="2"  y="2"  width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <rect x="5"  y="5"  width="2" height="2" fill="currentColor"/>
+      <rect x="14" y="2"  width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <rect x="17" y="5"  width="2" height="2" fill="currentColor"/>
+      <rect x="2"  y="14" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <rect x="5"  y="17" width="2" height="2" fill="currentColor"/>
+      <rect x="14" y="14" width="2" height="2" fill="currentColor"/>
+      <rect x="18" y="14" width="2" height="2" fill="currentColor"/>
+      <rect x="14" y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="18" y="20" width="2" height="2" fill="currentColor"/>
+      <rect x="20" y="16" width="2" height="2" fill="currentColor"/>
+    </svg>
+    <div class="share-btn-label">SHARE</div>
+  </button>
+</div>
 
 <div class="titlebar">
   <div class="led" id="led"></div>
@@ -635,6 +699,387 @@
 <div class="footer">
   FIELD RECEIVER MK-II · SERIAL 7741<br>
   PROPERTY OF [REDACTED] · DO NOT DISCARD
+</div>
+
+<!-- ============================================================
+     RESOURCES VIEW — Pittsburgh Help Finder (light, hopeful)
+     Sits over the compass when activated. Loads ./resources.json
+     at first open.
+     ============================================================ -->
+<style>
+  .res-app{
+    /* scoped vars - light, hopeful palette */
+    --rb:#f8fafc; --rp:#ffffff; --rp2:#f1f5f9;
+    --rt:#0f172a; --rm:#64748b;
+    --ra:#0284c7; --ra2:#7c3aed;
+    --rgood:#059669; --rmeh:#d97706; --rbad:#e11d48;
+    --rstr:#e2e8f0;
+    --rshd:0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+    --rradius:18px; --rradius2:14px; --rtap:52px;
+    --rsans:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --rmono:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    position:fixed;
+    inset:0;
+    z-index:200;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    background:
+      radial-gradient(800px 800px at 10% 10%, rgba(14,165,233,.08), transparent 50%),
+      radial-gradient(800px 800px at 90% 90%, rgba(124,58,237,.08), transparent 50%),
+      var(--rb);
+    color:var(--rt);
+    font-family:var(--rsans);
+    padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    display:none;
+    animation:resfadein .25s ease-out;
+  }
+  .res-app.active{ display:block; }
+  @keyframes resfadein{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .res-app *{ box-sizing:border-box; }
+  .res-wrap{ max-width:920px; margin:0 auto; padding:14px 0 40px; }
+
+  /* BACK button */
+  .res-back{
+    display:flex; align-items:center; gap:10px;
+    background:#1e293b; color:#fff;
+    border:none;
+    padding:11px 16px;
+    border-radius:14px;
+    font-weight:800;
+    font-family:'Black Ops One',sans-serif;
+    letter-spacing:.12em;
+    font-size:13px;
+    cursor:pointer;
+    margin-bottom:12px;
+    box-shadow:var(--rshd);
+  }
+  .res-back:active{ transform:translateY(1px); }
+  .res-back-arrow{ font-size:18px; line-height:1; }
+
+  .res-hope{
+    position:relative; overflow:hidden;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:26px;
+    padding:18px 16px 16px;
+    background:linear-gradient(135deg, #0f172a, #1e1b4b);
+    box-shadow:0 10px 25px -5px rgba(0,0,0,.3);
+    margin-bottom:14px;
+    color:#f8fafc;
+  }
+  .res-hope-title{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .res-hope-title h1{ margin:0; font-size:1.28rem; line-height:1.2; color:#fff; }
+  .res-hope-title p{ margin:6px 0 0; color:#cbd5e1; font-size:.95rem; line-height:1.35; }
+  .res-badge{
+    flex:0 0 auto;
+    font-family:var(--rmono); font-size:.78rem;
+    color:#fff;
+    padding:10px 12px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.2);
+    background:rgba(255,255,255,.1);
+    backdrop-filter:blur(8px);
+    white-space:nowrap;
+  }
+  .res-aurora{
+    position:absolute; inset:-40px;
+    background:
+      radial-gradient(520px 280px at 12% 20%, rgba(103,232,249,.28), transparent 60%),
+      radial-gradient(460px 240px at 88% 25%, rgba(167,139,250,.26), transparent 58%),
+      radial-gradient(520px 260px at 40% 90%, rgba(251,191,36,.18), transparent 58%);
+    filter:blur(18px); opacity:.9;
+    animation:resdrift 11s ease-in-out infinite alternate;
+    pointer-events:none;
+  }
+  @keyframes resdrift{
+    from{ transform:translate3d(-18px,-8px,0) scale(1.04); }
+    to{ transform:translate3d(18px,10px,0) scale(1.06); }
+  }
+  .res-lights{
+    position:absolute; inset:0; pointer-events:none; opacity:.85;
+    mask-image:radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+    -webkit-mask-image:radial-gradient(circle at 50% 40%, rgba(0,0,0,1), rgba(0,0,0,.1) 55%, transparent 78%);
+  }
+  .res-light{
+    position:absolute; width:10px; height:10px; border-radius:999px;
+    background:rgba(255,255,255,.4);
+    box-shadow:0 0 22px rgba(103,232,249,.5);
+    animation:resfloat 7s linear infinite;
+  }
+  @keyframes resfloat{
+    from{ transform:translate3d(0,40px,0); opacity:0; }
+    10%{ opacity:.7; } 70%{ opacity:.5; }
+    to{ transform:translate3d(0,-220px,0); opacity:0; }
+  }
+  .res-muted-note{ color:rgba(255,255,255,.7); font-size:.9rem; line-height:1.35; margin:10px 0 0; }
+
+  /* Icon nav */
+  .res-icon-nav{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+  @media (min-width:600px){ .res-icon-nav{ grid-template-columns:repeat(5,1fr); } }
+  .res-icon-btn{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--rp); border:1px solid var(--rstr); border-radius:var(--rradius2);
+    padding:16px 6px; cursor:pointer; text-align:center;
+    box-shadow:var(--rshd); color:var(--rt);
+    transition:all .2s ease;
+  }
+  .res-icon-btn:active{ transform:scale(.96); background:var(--rp2); }
+  .res-icon-emoji{ font-size:2.2rem; margin-bottom:8px; filter:drop-shadow(0 2px 4px rgba(0,0,0,.15)); }
+  .res-icon-label{ font-size:.8rem; font-weight:700; line-height:1.1; }
+
+  /* Primary call */
+  .res-card{
+    border:1px solid var(--rstr);
+    background:var(--rp);
+    border-radius:var(--rradius);
+    box-shadow:var(--rshd);
+    overflow:hidden;
+    margin-top:14px;
+  }
+  .res-card-inner{ padding:14px; }
+  .res-label{ color:var(--rm); font-size:.82rem; font-weight:600; }
+  .res-callbox{ display:flex; gap:12px; align-items:stretch; }
+  .res-call-left{ flex:1 1 auto; min-width:0; }
+  .res-big-name{ margin:5px 0 4px; font-size:1.05rem; font-weight:720; line-height:1.25; }
+  .res-small{ color:var(--rm); font-size:.92rem; line-height:1.35; margin:0; }
+  .res-call-btn{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    min-width:150px; padding:0 14px;
+    border-radius:16px;
+    border:1px solid rgba(0,0,0,.05);
+    background:linear-gradient(135deg, #e0f2fe, #f3e8ff);
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    text-decoration:none; color:var(--ra);
+    height:var(--rtap); font-weight:750; gap:10px; white-space:nowrap;
+  }
+  .res-call-btn:active{ transform:translateY(1px); }
+  .res-call-btn span{ font-family:var(--rmono); font-size:.98rem; }
+
+  .res-pill-row{ margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; }
+  .res-pill{
+    font-size:.78rem; padding:8px 10px; border-radius:999px;
+    border:1px solid var(--rstr); background:var(--rp2); color:var(--rm);
+    font-weight:600;
+  }
+
+  /* Section list */
+  .res-section{ margin-top:14px; scroll-margin-top:20px; }
+  .res-section h2{ margin:16px 2px 10px; font-size:1.05rem; }
+  .res-item{ margin:10px 0; border-top:1px solid var(--rstr); }
+  .res-item:first-child{ border-top:none; }
+  .res-item-head{ display:flex; gap:10px; align-items:flex-start; justify-content:space-between; padding:12px 14px; }
+  .res-item-title{ margin:0; font-size:.98rem; font-weight:720; line-height:1.2; }
+  .res-item-meta{ margin-top:6px; color:var(--rm); font-size:.88rem; line-height:1.35; }
+  .res-item-actions{ flex:0 0 auto; display:flex; gap:8px; align-items:center; }
+  .res-mini-btn{
+    height:44px; padding:0 12px; border-radius:14px;
+    border:1px solid var(--rstr); background:var(--rp2); color:var(--rt);
+    text-decoration:none;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    white-space:nowrap; font-weight:700; font-size:.88rem;
+  }
+  .res-mini-btn:active{ transform:translateY(1px); }
+  .res-mini-btn.primary{
+    background:linear-gradient(135deg, #e0f2fe, #f3e8ff);
+    border-color:rgba(0,0,0,.05); color:var(--ra);
+  }
+  .res-app details{ padding:0 14px 12px; }
+  .res-app details summary{ cursor:pointer; list-style:none; color:var(--ra); font-weight:750; }
+  .res-app details summary::-webkit-details-marker{ display:none; }
+  .res-details-box{
+    margin-top:10px; border-radius:var(--rradius2);
+    border:1px solid var(--rstr); background:var(--rp2);
+    padding:10px 12px; color:var(--rt);
+    line-height:1.4; font-size:.92rem;
+    white-space:pre-wrap;
+  }
+
+  /* Feedback */
+  .res-feedback h3{ margin:0; font-size:1.0rem; }
+  .res-feedback p{ margin:6px 0 10px; color:var(--rm); font-size:.92rem; line-height:1.35; }
+  .res-rate-row{ display:flex; flex-wrap:wrap; gap:10px; }
+  .res-rate-btn{
+    flex:1 1 140px; height:var(--rtap); border-radius:16px;
+    border:1px solid var(--rstr); background:var(--rp2); color:var(--rt);
+    font-weight:800; cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,.05);
+  }
+  .res-rate-btn.good{ background:#dcfce7; border-color:#86efac; color:#166534; }
+  .res-rate-btn.meh{ background:#fef3c7; border-color:#fcd34d; color:#92400e; }
+  .res-rate-btn.bad{ background:#ffe4e6; border-color:#fda4af; color:#9f1239; }
+  .res-rate-btn:active{ transform:translateY(1px); }
+  .res-why{ margin-top:10px; display:none; gap:10px; }
+  .res-app textarea{
+    width:100%; min-height:88px; resize:vertical;
+    border-radius:16px; padding:12px;
+    border:1px solid var(--rstr); background:var(--rb); color:var(--rt);
+    font-size:.95rem; line-height:1.35; outline:none;
+    font-family:inherit;
+  }
+  .res-send-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
+  .res-send-btn{
+    height:var(--rtap); padding:0 14px; border-radius:16px;
+    border:1px solid rgba(0,0,0,.05);
+    background:linear-gradient(135deg, #e0f2fe, #f3e8ff);
+    color:var(--ra); font-weight:850; cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+  }
+  .res-fineprint{ margin:6px 0 0; color:var(--rm); font-size:.82rem; line-height:1.35; }
+  .res-tiny{ font-size:.8rem; color:var(--rm); font-family:var(--rmono); }
+
+  @media (max-width:520px){
+    .res-callbox{ flex-direction:column; }
+    .res-call-btn{ width:100%; min-width:0; }
+    .res-item-head{ flex-direction:column; align-items:stretch; }
+    .res-item-actions{ justify-content:flex-start; }
+    .res-mini-btn{ flex:1 1 auto; }
+  }
+
+  /* QR modal (cover-themed: dark + amber) */
+  .qr-overlay{
+    position:fixed; inset:0; z-index:1000;
+    background:rgba(5,6,3,.92);
+    display:none; align-items:center; justify-content:center;
+    padding:20px;
+    backdrop-filter:blur(6px);
+  }
+  .qr-overlay.active{ display:flex; animation:qrfade .25s ease-out; }
+  @keyframes qrfade{ from{opacity:0} to{opacity:1} }
+  .qr-card{
+    background:linear-gradient(180deg, #1f2217, #14160e);
+    border:2px solid var(--amber);
+    padding:24px; border-radius:18px;
+    text-align:center; max-width:340px; width:100%;
+    box-shadow:0 0 40px rgba(255,184,77,.3), 0 20px 40px rgba(0,0,0,.6);
+    color:var(--text);
+    position:relative;
+  }
+  .qr-card-title{
+    font-family:'Black Ops One',sans-serif;
+    color:var(--amber);
+    text-shadow:0 0 6px rgba(255,184,77,.5);
+    font-size:16px; letter-spacing:.12em;
+    margin:0 0 6px;
+  }
+  .qr-card-sub{
+    font-family:'Special Elite',serif;
+    font-size:11px; color:var(--text-dim);
+    letter-spacing:.15em;
+    margin-bottom:16px;
+  }
+  .qr-card-imgwrap{
+    background:#fff; padding:10px; border-radius:8px;
+    display:inline-block;
+  }
+  .qr-card img{ display:block; width:260px; height:260px; max-width:100%; }
+  .qr-url{
+    margin-top:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px; color:var(--amber-hot);
+    word-break:break-all;
+  }
+  .qr-close{
+    margin-top:16px;
+    width:100%; height:48px;
+    background:#1f2217;
+    border:1px solid var(--amber-dim);
+    border-radius:12px;
+    color:var(--amber);
+    font-family:'Black Ops One',sans-serif;
+    font-size:12px; letter-spacing:.15em;
+    cursor:pointer;
+  }
+  .qr-close:active{ background:#0e1009; }
+</style>
+
+<div class="res-app" id="resourcesView" aria-hidden="true">
+  <div class="res-wrap">
+    <button class="res-back" id="backBtn" type="button">
+      <span class="res-back-arrow">◀</span> BACK TO COMPASS
+    </button>
+
+    <div class="res-hope">
+      <div class="res-aurora"></div>
+      <div class="res-lights" id="resLights"></div>
+      <div class="res-hope-title">
+        <div>
+          <h1 id="resAppTitle">Pittsburgh Help Finder</h1>
+          <p id="resAppSubtitle">Fast, practical resources for housing, food, and care — one tap at a time.</p>
+        </div>
+        <div class="res-badge">
+          <div>Updated</div>
+          <div id="resUpdatedDate">—</div>
+        </div>
+      </div>
+      <p class="res-muted-note" id="resMetaNotes"></p>
+    </div>
+
+    <div id="resIconNav" class="res-icon-nav"></div>
+
+    <div class="res-card">
+      <div class="res-card-inner">
+        <div class="res-label">Most important first step</div>
+        <div class="res-callbox">
+          <div class="res-call-left">
+            <div class="res-big-name" id="resPrimaryName">Loading…</div>
+            <p class="res-small" id="resPrimaryShort"></p>
+            <div class="res-pill-row" id="resPrimaryPills"></div>
+          </div>
+          <a class="res-call-btn" id="resPrimaryCallBtn" href="#">
+            ☎️ <span id="resPrimaryPhone">—</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="resSectionsRoot"></div>
+
+    <div class="res-feedback res-card">
+      <div class="res-card-inner">
+        <h3>Help improve this tool</h3>
+        <p>
+          If something is wrong, outdated, or confusing, you can send feedback.
+          <strong>This inbox is NOT checked for urgent help</strong> — it's only used to improve the system.
+        </p>
+
+        <div class="res-rate-row">
+          <button class="res-rate-btn good" data-rate="GOOD">✅ Helpful</button>
+          <button class="res-rate-btn meh"  data-rate="MEH">🤔 Okay / Meh</button>
+          <button class="res-rate-btn bad"  data-rate="BAD">⚠️ Problematic</button>
+        </div>
+
+        <div class="res-why" id="resWhyBox">
+          <textarea id="resWhyText" placeholder="Optional: what should be fixed? (wrong number, hours changed, not welcoming, unclear instructions, etc.)"></textarea>
+          <div class="res-send-row">
+            <button class="res-send-btn" id="resSendBtn">Send feedback email</button>
+            <div class="res-tiny" id="resRatingStatus">Rating: —</div>
+          </div>
+          <div class="res-fineprint">
+            Sends to: <strong>jaadoc@upmc.edu</strong> (not monitored for urgent help).
+            If someone needs immediate help, use the "Start Here" contacts above.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR modal -->
+<div class="qr-overlay" id="qrOverlay" aria-hidden="true">
+  <div class="qr-card" id="qrCard">
+    <div class="qr-card-title">⌗ FIELD RECEIVER</div>
+    <div class="qr-card-sub">SCAN TO SHARE</div>
+    <div class="qr-card-imgwrap">
+      <img id="qrImg"
+           src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https%3A%2F%2Fdormantone.github.io%2Fstreetwise%2Fcompass.html"
+           alt="QR code for compass.html" />
+    </div>
+    <div class="qr-url">dormantone.github.io/streetwise/compass.html</div>
+    <button class="qr-close" id="qrCloseBtn" type="button">CLOSE</button>
+  </div>
 </div>
 
 <script>
@@ -1187,6 +1632,299 @@ function scheduleNextBlip(){
   setTimeout(() => { spawnBlip(); scheduleNextBlip(); }, delay);
 }
 scheduleNextBlip();
+
+/* ============================================================
+   VIEW NAVIGATION + QR SHARE + RESOURCES LOADER
+   ============================================================ */
+
+let RES_DATA = null;
+let RES_RATING = null;
+let RES_LOADED = false;
+
+function showResources(){
+  const v = document.getElementById('resourcesView');
+  v.classList.add('active');
+  v.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+  window.scrollTo(0, 0);
+  if (!RES_LOADED) {
+    RES_LOADED = true;
+    resBuildLights();
+    resLoad();
+  }
+}
+function hideResources(){
+  const v = document.getElementById('resourcesView');
+  v.classList.remove('active');
+  v.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+function toggleQR(force){
+  const o = document.getElementById('qrOverlay');
+  const want = (force === undefined) ? !o.classList.contains('active') : !!force;
+  o.classList.toggle('active', want);
+  o.setAttribute('aria-hidden', want ? 'false' : 'true');
+}
+
+document.getElementById('resourcesBtn').addEventListener('click', showResources);
+document.getElementById('shareBtn').addEventListener('click', () => toggleQR());
+document.getElementById('backBtn').addEventListener('click', hideResources);
+document.getElementById('qrOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'qrOverlay') toggleQR(false);
+});
+document.getElementById('qrCloseBtn').addEventListener('click', () => toggleQR(false));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('qrOverlay').classList.contains('active')) toggleQR(false);
+    else if (document.getElementById('resourcesView').classList.contains('active')) hideResources();
+  }
+});
+
+/* --- Hope banner floating lights --- */
+function resBuildLights(){
+  const holder = document.getElementById('resLights');
+  if (!holder || holder.children.length) return;
+  for (let i = 0; i < 16; i++){
+    const d = document.createElement('div');
+    d.className = 'res-light';
+    d.style.left = (Math.random()*100) + '%';
+    d.style.top  = (60 + Math.random()*55) + '%';
+    d.style.animationDuration = (5 + Math.random()*7) + 's';
+    d.style.animationDelay = (Math.random()*6) + 's';
+    const size = 6 + Math.random()*10;
+    d.style.width = size + 'px';
+    d.style.height = size + 'px';
+    d.style.opacity = (0.35 + Math.random()*0.35).toString();
+    holder.appendChild(d);
+  }
+}
+
+/* --- Help finder utilities --- */
+function resSafe(s){ return (s ?? '').toString(); }
+function resFmtTel(p){ return p ? p.replace(/\s+/g,'') : ''; }
+
+const RES_ICONS = {
+  immediate:"🆘", shelters:"🏠", youth:"🎒", veterans:"🎖️",
+  dropin:"🚿", food:"🍲", health:"🏥", recovery:"❤️‍🩹", publicspaces:"🚽"
+};
+
+function resSpeak(text){
+  if ('speechSynthesis' in window){
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.1;
+    window.speechSynthesis.speak(u);
+  }
+}
+
+function resMakePills(tags){
+  const w = document.createElement('div');
+  w.className = 'res-pill-row';
+  (tags || []).slice(0,6).forEach(t => {
+    const p = document.createElement('div');
+    p.className = 'res-pill';
+    p.textContent = t;
+    w.appendChild(p);
+  });
+  return w;
+}
+
+function resBuildItem(item){
+  const phone = resSafe(item.display_phone || '');
+  const tel = resFmtTel(item.phone || '');
+
+  const div = document.createElement('div');
+  div.className = 'res-item';
+
+  const head = document.createElement('div');
+  head.className = 'res-item-head';
+
+  const left = document.createElement('div');
+  left.style.flex = '1 1 auto';
+  left.style.minWidth = '0';
+
+  const title = document.createElement('div');
+  title.className = 'res-item-title';
+  title.textContent = resSafe(item.name);
+
+  const meta = document.createElement('div');
+  meta.className = 'res-item-meta';
+
+  const lines = [];
+  if (item.summary) lines.push(item.summary);
+  if (item.address) lines.push('📍 ' + item.address);
+  if (item.hours)   lines.push('🕒 ' + item.hours);
+  if ((item.tags || []).length) lines.push('🏷️ ' + item.tags.join(' • '));
+  meta.textContent = lines.join('  |  ');
+
+  left.appendChild(title);
+  left.appendChild(meta);
+
+  const actions = document.createElement('div');
+  actions.className = 'res-item-actions';
+
+  if (tel){
+    const a = document.createElement('a');
+    a.className = 'res-mini-btn primary';
+    a.href = 'tel:' + tel;
+    a.innerHTML = '☎️ Call';
+    a.title = 'Call ' + phone;
+    actions.appendChild(a);
+  }
+  if (item.address){
+    const a = document.createElement('a');
+    a.className = 'res-mini-btn';
+    a.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.address);
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.innerHTML = '🗺️ Map';
+    actions.appendChild(a);
+  }
+
+  head.appendChild(left);
+  head.appendChild(actions);
+  div.appendChild(head);
+
+  const det = document.createElement('details');
+  const sum = document.createElement('summary');
+  sum.textContent = 'See more';
+  const box = document.createElement('div');
+  box.className = 'res-details-box';
+
+  const bits = [];
+  if (phone) bits.push('Phone: ' + phone);
+  if (item.details) bits.push(item.details);
+  box.textContent = bits.filter(Boolean).join('\n\n');
+
+  det.appendChild(sum);
+  det.appendChild(box);
+  div.appendChild(det);
+
+  return div;
+}
+
+function resBuildSection(section){
+  const c = document.createElement('div');
+  c.className = 'res-section res-card';
+  c.id = 'res-sec-' + section.id;
+
+  const inner = document.createElement('div');
+  inner.className = 'res-card-inner';
+
+  const h = document.createElement('h2');
+  h.textContent = section.title;
+  inner.appendChild(h);
+
+  (section.items || []).forEach(item => inner.appendChild(resBuildItem(item)));
+
+  c.appendChild(inner);
+  return c;
+}
+
+function resRenderSections(){
+  const root = document.getElementById('resSectionsRoot');
+  root.innerHTML = '';
+  if (!RES_DATA) return;
+  const secs = [...(RES_DATA.sections || [])].sort((a,b) => (a.importance||999)-(b.importance||999));
+  secs.forEach(s => root.appendChild(resBuildSection(s)));
+}
+
+function resFillHeader(){
+  document.getElementById('resAppTitle').textContent = resSafe(RES_DATA?.meta?.title || 'Pittsburgh Help Finder');
+  document.getElementById('resAppSubtitle').textContent = resSafe(RES_DATA?.meta?.subtitle || '');
+  document.getElementById('resUpdatedDate').textContent = resSafe(RES_DATA?.meta?.updated || '—');
+
+  const notes = (RES_DATA?.meta?.notes || []).map(x => '• ' + x).join('  ');
+  document.getElementById('resMetaNotes').textContent = notes;
+
+  const pc = RES_DATA?.primary_contact;
+  if (pc){
+    document.getElementById('resPrimaryName').textContent = resSafe(pc.name);
+    document.getElementById('resPrimaryShort').textContent = resSafe(pc.short);
+    const phone = resSafe(pc.display_phone || '');
+    const tel = resFmtTel(pc.phone || '');
+    const btn = document.getElementById('resPrimaryCallBtn');
+    btn.href = tel ? ('tel:' + tel) : '#';
+    document.getElementById('resPrimaryPhone').textContent = phone || 'Call';
+    const ph = document.getElementById('resPrimaryPills');
+    ph.innerHTML = '';
+    ph.appendChild(resMakePills(['Shelter coordination','Start here','Up-to-date referrals']));
+  }
+}
+
+function resRenderIconNav(){
+  if (!RES_DATA || !RES_DATA.sections) return;
+  const nav = document.getElementById('resIconNav');
+  nav.innerHTML = '';
+  RES_DATA.sections.forEach(sec => {
+    const btn = document.createElement('div');
+    btn.className = 'res-icon-btn';
+    btn.setAttribute('role','button');
+    btn.setAttribute('tabindex','0');
+
+    const icon = document.createElement('div');
+    icon.className = 'res-icon-emoji';
+    icon.textContent = RES_ICONS[sec.id] || '📌';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'res-icon-label';
+    lbl.textContent = sec.title.split('(')[0].trim();
+
+    btn.appendChild(icon);
+    btn.appendChild(lbl);
+
+    btn.addEventListener('click', () => {
+      resSpeak(sec.title);
+      const t = document.getElementById('res-sec-' + sec.id);
+      if (t) t.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+    nav.appendChild(btn);
+  });
+}
+
+async function resLoad(){
+  try{
+    const resp = await fetch('./resources.json', {cache:'no-store'});
+    if (!resp.ok) throw new Error('Could not load resources.json');
+    RES_DATA = await resp.json();
+    resFillHeader();
+    resRenderSections();
+    resRenderIconNav();
+  } catch(err){
+    console.error(err);
+    document.getElementById('resPrimaryName').textContent = 'Could not load resources.json';
+    document.getElementById('resPrimaryShort').textContent = 'Make sure resources.json is in the same folder as compass.html.';
+  }
+}
+
+/* --- Feedback flow --- */
+document.querySelectorAll('.res-rate-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    RES_RATING = b.dataset.rate;
+    const why = document.getElementById('resWhyBox');
+    why.style.display = 'grid';
+    document.getElementById('resRatingStatus').textContent = 'Rating: ' + RES_RATING;
+    setTimeout(() => document.getElementById('resWhyText').focus(), 50);
+  });
+});
+document.getElementById('resSendBtn').addEventListener('click', () => {
+  const why = (document.getElementById('resWhyText').value || '').trim();
+  const subject = `Pittsburgh Help Finder feedback — ${RES_RATING || 'UNSET'}`;
+  const body = [
+    'Feedback on the Pittsburgh Help Finder tool',
+    '',
+    'Rating: ' + (RES_RATING || 'UNSET'),
+    '',
+    'Why / Notes:',
+    why || '(no additional details provided)',
+    '',
+    'Reminder: this inbox is NOT monitored for urgent help.',
+    'It is used only to improve the tool.',
+    '',
+    'Sent from the web page.'
+  ].join('\n');
+  window.location.href = `mailto:jaadoc@upmc.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+});
 </script>
 
 </body>
