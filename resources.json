@@ -2,7 +2,7 @@
   "meta": {
     "title": "Pittsburgh Help Finder",
     "subtitle": "Quick help for housing, food, healthcare, and safety",
-    "updated": "2026-05-20",
+    "updated": "2026-05-21",
     "notes": [
       "Information may change. If a phone number is busy or a shelter is full, try another option.",
       "If this is a medical emergency, call 911.",
@@ -481,6 +481,23 @@
       "title": "Healthcare (Free / Low Cost)",
       "importance": 7,
       "items": [
+        {
+          "name": "UPMC Second Avenue Commons Health Center",
+          "phone": "+14122327544",
+          "display_phone": "412-232-7544",
+          "address": "700 Second Ave, Pittsburgh, PA 15219",
+          "hours": "Mon–Fri 9:00 AM–5:00 PM; walk-in and by appointment",
+          "tags": [
+            "Medical",
+            "Behavioral health",
+            "Walk-in",
+            "No insurance required",
+            "Homeless services",
+            "Harm reduction"
+          ],
+          "summary": "Low-barrier health center inside Second Avenue Commons for people experiencing homelessness.",
+          "details": "Walk-ins welcome; no insurance required. Services include acute and chronic illness care, wound/injury care, foot care, substance use disorder treatment including buprenorphine/Suboxone, STD/hepatitis C screening/treatment, gynecologic care, and behavioral health assessment/treatment. Located inside Second Avenue Commons."
+        },
         {
           "name": "Catholic Charities Free Health Care Center (Medical + Dental)",
           "phone": "+14124566911",
