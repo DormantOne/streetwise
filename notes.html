@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Demo Only Street Memory</title>
+  <style>
+    :root {
+      --pink: #ff7eb6;
+      --hot: #ff4f8b;
+      --peach: #ffb86b;
+      --banana: #ffe66d;
+      --mint: #7ee7c8;
+      --sky: #77c8ff;
+      --lav: #b69cff;
+      --ink: #24243a;
+      --soft: rgba(255,255,255,0.78);
+      --white: #ffffff;
+      --muted: #6b6b88;
+      --danger: #ff4f72;
+      --shadow: 0 16px 40px rgba(56, 42, 111, 0.16);
+      --radius: 26px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffe0ef 0, transparent 34%),
+        radial-gradient(circle at top right, #ddf7ff 0, transparent 32%),
+        linear-gradient(135deg, #fff8d8, #f3e8ff 45%, #dcfce7);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .banner {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: calc(10px + env(safe-area-inset-top)) 14px 11px;
+      text-align: center;
+      font-weight: 1000;
+      letter-spacing: .07em;
+      color: white;
+      background: linear-gradient(90deg, var(--danger), var(--lav), var(--sky));
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
+      font-size: .86rem;
+    }
+
+    .app {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 14px 14px calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      margin: 6px 0 12px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 8vw, 2.35rem);
+      line-height: 1.02;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: .95rem;
+    }
+
+    .card {
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      margin: 12px 0;
+      backdrop-filter: blur(14px);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    input, textarea {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      border-radius: 18px;
+      padding: 14px 15px;
+      background: white;
+      color: var(--ink);
+      font-size: 1rem;
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06);
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 68px;
+      resize: none;
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 13px 14px;
+      font-weight: 1000;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: .98rem;
+      box-shadow: 0 8px 16px rgba(0,0,0,.09);
+      transition: transform .08s ease, filter .08s ease, opacity .08s ease;
+      font-family: inherit;
+      min-height: 48px;
+      touch-action: manipulation;
+    }
+
+    button:active { transform: scale(.97); }
+
+    .addBtn {
+      background: linear-gradient(135deg, var(--mint), var(--sky));
+      min-width: 58px;
+      font-size: 1.25rem;
+    }
+
+    .mainBtn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--pink), var(--peach));
+      color: white;
+      font-size: 1.08rem;
+    }
+
+    .ghostBtn {
+      background: white;
+      box-shadow: none;
+      color: var(--muted);
+      min-height: 38px;
+      padding: 8px 12px;
+    }
+
+    .tinyBtn {
+      padding: 8px 11px;
+      font-size: .82rem;
+      border-radius: 999px;
+      background: white;
+      box-shadow: none;
+      min-height: 34px;
+    }
+
+    .sectionTitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 9px;
+      font-weight: 1000;
+      font-size: 1.05rem;
+    }
+
+    .names {
+      max-height: min(34vh, 250px);
+      overflow-y: auto;
+      display: grid;
+      gap: 10px;
+      padding-right: 4px;
+      overscroll-behavior: contain;
+    }
+
+    .nameBtn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      color: var(--ink);
+      text-align: left;
+      box-shadow: 0 8px 18px rgba(101, 78, 163, .11);
+    }
+
+    .nameBtn.selected {
+      background: linear-gradient(135deg, #fff, #ffe1f0);
+      outline: 3px solid rgba(255,126,182,.35);
+    }
+
+    .nameText {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--lav));
+      flex: 0 0 auto;
+      margin-left: 10px;
+    }
+
+    .selectedName {
+      font-size: clamp(1.45rem, 7vw, 1.9rem);
+      font-weight: 1000;
+      padding: 2px 0 11px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .chips {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      background: white;
+      color: var(--ink);
+      box-shadow: none;
+      border: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      line-height: 1;
+      font-size: 1.55rem;
+      padding: 8px;
+    }
+
+    .chip.active {
+      border-color: var(--hot);
+      background: linear-gradient(135deg, #fff0f7, #fff9db);
+      box-shadow: 0 8px 18px rgba(255, 79, 139, .16);
+    }
+
+    .history {
+      max-height: min(28vh, 220px);
+      overflow-y: auto;
+      display: grid;
+      gap: 9px;
+      overscroll-behavior: contain;
+    }
+
+    .historyItem {
+      background: white;
+      border-radius: 18px;
+      padding: 11px 12px;
+      box-shadow: 0 8px 18px rgba(101, 78, 163, .09);
+    }
+
+    .historyTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 1000;
+    }
+
+    .time {
+      color: var(--muted);
+      font-size: .78rem;
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+
+    .did {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: .94rem;
+      line-height: 1.25;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 18px 10px;
+      font-weight: 900;
+    }
+
+    .bottomRow {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 360px) {
+      .app { padding-left: 10px; padding-right: 10px; }
+      .chips { gap: 6px; }
+      .chip { min-height: 44px; font-size: 1.35rem; border-radius: 15px; }
+      button { font-size: .94rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">DEMO ONLY — NO REAL PATIENT DATA</div>
+
+  <main class="app">
+    <div class="hero">
+      <h1>Street Memory</h1>
+      <p>tap a name · tap what happened · save</p>
+    </div>
+
+    <section class="card">
+      <input id="userName" placeholder="Your name" autocomplete="off" />
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <input id="newName" placeholder="Add first name" autocomplete="off" />
+        <button class="addBtn" id="addNameBtn" aria-label="Add name">＋</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <span>Names</span>
+        <button class="tinyBtn" id="demoBtn">demo</button>
+      </div>
+      <div id="names" class="names"></div>
+    </section>
+
+    <section class="card">
+      <div id="selectedName" class="selectedName">Choose a name</div>
+
+      <div class="chips" id="chips">
+        <button class="chip" data-action="Talked" title="Talked" aria-label="Talked">💬</button>
+        <button class="chip" data-action="Gave food" title="Gave food" aria-label="Gave food">🍬</button>
+        <button class="chip" data-action="Gave Narcan" title="Gave Narcan" aria-label="Gave Narcan">🧰</button>
+        <button class="chip" data-action="Treated" title="Treated" aria-label="Treated">🩹</button>
+        <button class="chip" data-action="Gave clothing" title="Gave clothing" aria-label="Gave clothing">🧦</button>
+      </div>
+
+      <textarea id="whatDid" placeholder="Optional note"></textarea>
+      <div style="height: 10px"></div>
+      <button class="mainBtn" id="saveBtn">Save + open form</button>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <span>History</span>
+        <button class="tinyBtn" id="clearHistoryBtn">clear</button>
+      </div>
+      <div id="history" class="history"></div>
+      <div class="bottomRow">
+        <button class="ghostBtn" id="clearNamesBtn">clear names</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const FORM_URL_TEMPLATE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xURUo1RFU4OTNDQkdYR1M4UjBVSVpQMlZESS4u&rc3d6390966a04703a2ac771362d26a07=NAME_TOKEN&rce01c30941744b2dba6f0eef233f6ba7=NOTES_TOKEN&rd259629fa91341ce9852eb14a9b7b891=USER_TOKEN";
+    const NAMES_KEY = "street_memory_demo_names_v3";
+    const HISTORY_KEY = "street_memory_demo_history_v3";
+    const USER_KEY = "street_memory_demo_user_v1";
+
+    let selected = "";
+    let selectedActions = new Set();
+
+    function getNames() {
+      try { return JSON.parse(localStorage.getItem(NAMES_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function saveNames(names) {
+      localStorage.setItem(NAMES_KEY, JSON.stringify(names));
+    }
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function saveHistory(history) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function addName() {
+      const input = document.getElementById("newName");
+      const name = input.value.trim();
+      if (!name) return;
+
+      const names = getNames();
+      if (!names.includes(name)) names.push(name);
+      saveNames(names);
+      input.value = "";
+      selected = name;
+      render();
+    }
+
+    function chooseName(name) {
+      selected = name;
+      render();
+    }
+
+    function toggleAction(action) {
+      if (selectedActions.has(action)) selectedActions.delete(action);
+      else selectedActions.add(action);
+      renderChips();
+    }
+
+    function getUserName() {
+      return document.getElementById("userName").value.trim();
+    }
+
+    function saveUserName() {
+      localStorage.setItem(USER_KEY, getUserName());
+    }
+
+    function loadUserName() {
+      document.getElementById("userName").value = localStorage.getItem(USER_KEY) || "";
+    }
+
+    function formUrl(name, notes = "", user = "") {
+      // When you add the third Microsoft Forms field, generate a new prefill URL
+      // that contains USER_TOKEN. This function is already ready for it.
+      let url = FORM_URL_TEMPLATE
+        .replace("NAME_TOKEN", encodeURIComponent(name))
+        .replace("NOTES_TOKEN", encodeURIComponent(notes));
+
+      if (url.includes("USER_TOKEN")) {
+        url = url.replace("USER_TOKEN", encodeURIComponent(user));
+      }
+
+      return url;
+    }
+
+    function openFormAndLog() {
+      const input = document.getElementById("newName");
+      const typedName = input.value.trim();
+
+      // Outside-the-roster capture: type a new name and press Save.
+      // It is added locally, used for this encounter, and sent to the form.
+      if (typedName && typedName !== selected) {
+        const names = getNames();
+        if (!names.includes(typedName)) {
+          names.push(typedName);
+          saveNames(names);
+        }
+        selected = typedName;
+        input.value = "";
+      }
+
+      if (!selected) {
+        alert("Choose or type a name first.");
+        return;
+      }
+
+      saveUserName();
+      const user = getUserName();
+      const note = document.getElementById("whatDid").value.trim();
+      const actions = Array.from(selectedActions);
+      const what = actions.length && note ? `${actions.join(", ")} — ${note}` :
+                   actions.length ? actions.join(", ") :
+                   note || "Opened form";
+
+      const item = {
+        name: selected,
+        user,
+        actions,
+        note,
+        what,
+        timestamp: new Date().toISOString()
+      };
+
+      const history = getHistory();
+      history.unshift(item);
+      saveHistory(history.slice(0, 150));
+
+      const formNotes = FORM_URL_TEMPLATE.includes("USER_TOKEN") || !user ? what : `${what}
+User: ${user}`;
+      window.open(formUrl(selected, formNotes, user), "_blank", "noopener,noreferrer");
+
+      selectedActions.clear();
+      document.getElementById("whatDid").value = "";
+      render();
+    }
+
+    function loadCandyDemo() {
+      const names = ["Mika", "Sunny", "Jo", "Rae", "Teddy", "Blue", "Sam", "Nina", "Kai", "Lulu"];
+      saveNames(names);
+      selected = names[0];
+      render();
+    }
+
+    function clearNames() {
+      if (!confirm("Clear stored demo names?")) return;
+      localStorage.removeItem(NAMES_KEY);
+      selected = "";
+      render();
+    }
+
+    function clearHistory() {
+      if (!confirm("Clear stored demo history?")) return;
+      localStorage.removeItem(HISTORY_KEY);
+      render();
+    }
+
+    function prettyTime(iso) {
+      return new Date(iso).toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function iconForAction(action) {
+      const icons = {
+        "Talked": "💬",
+        "Gave food": "🍬",
+        "Gave Narcan": "🧰",
+        "Treated": "🩹",
+        "Gave clothing": "🧦"
+      };
+      return icons[action] || "•";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderNames() {
+      const namesEl = document.getElementById("names");
+      const names = getNames();
+      namesEl.innerHTML = "";
+
+      if (!names.length) {
+        namesEl.innerHTML = `<div class="empty">No names yet</div>`;
+        return;
+      }
+
+      names.forEach(name => {
+        const btn = document.createElement("button");
+        btn.className = "nameBtn" + (name === selected ? " selected" : "");
+        btn.type = "button";
+        btn.innerHTML = `<span class="nameText"></span><span class="dot"></span>`;
+        btn.querySelector(".nameText").textContent = name;
+        btn.addEventListener("click", () => chooseName(name));
+        namesEl.appendChild(btn);
+      });
+    }
+
+    function renderChips() {
+      document.querySelectorAll(".chip").forEach(btn => {
+        const action = btn.dataset.action;
+        btn.classList.toggle("active", selectedActions.has(action));
+      });
+    }
+
+    function renderHistory() {
+      const historyEl = document.getElementById("history");
+      const history = getHistory();
+
+      if (!history.length) {
+        historyEl.innerHTML = `<div class="empty">No history yet</div>`;
+        return;
+      }
+
+      historyEl.innerHTML = history.map(item => {
+        const icons = (item.actions || []).map(iconForAction).join(" ");
+        const line = icons ? `${icons} ${item.what}` : item.what;
+        const userLine = item.user ? `<div class="did">👤 ${escapeHtml(item.user)}</div>` : "";
+        return `
+          <div class="historyItem">
+            <div class="historyTop">
+              <span>${escapeHtml(item.name)}</span>
+              <span class="time">${prettyTime(item.timestamp)}</span>
+            </div>
+            <div class="did">${escapeHtml(line)}</div>
+            ${userLine}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function render() {
+      document.getElementById("selectedName").textContent = selected || "Choose a name";
+      renderNames();
+      renderChips();
+      renderHistory();
+    }
+
+    document.getElementById("addNameBtn").addEventListener("click", addName);
+    document.getElementById("demoBtn").addEventListener("click", loadCandyDemo);
+    document.getElementById("saveBtn").addEventListener("click", openFormAndLog);
+    document.getElementById("clearNamesBtn").addEventListener("click", clearNames);
+    document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
+
+    document.getElementById("newName").addEventListener("keydown", e => {
+      if (e.key === "Enter") addName();
+    });
+
+    document.getElementById("userName").addEventListener("input", saveUserName);
+
+    document.querySelectorAll(".chip").forEach(btn => {
+      btn.addEventListener("click", () => toggleAction(btn.dataset.action));
+    });
+
+    loadUserName();
+    render();
+  </script>
+</body>
+</html>
