@@ -62,6 +62,13 @@
       text-align: center;
     }
 
+    .heroTop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
     .hero h1 {
       margin: 0;
       font-size: clamp(1.8rem, 8vw, 2.35rem);
@@ -73,6 +80,19 @@
       color: var(--muted);
       font-weight: 800;
       font-size: .95rem;
+    }
+
+    .qrBtn {
+      width: 50px;
+      min-width: 50px;
+      height: 50px;
+      min-height: 50px;
+      padding: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--banana), var(--mint));
+      color: var(--ink);
+      font-size: 1.35rem;
+      box-shadow: 0 10px 22px rgba(101, 78, 163, .15);
     }
 
     .card {
@@ -290,6 +310,67 @@
       margin-top: 10px;
     }
 
+    .qrOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(36, 36, 58, .46);
+      backdrop-filter: blur(10px);
+    }
+
+    .qrOverlay.active { display: flex; }
+
+    .qrCard {
+      width: min(340px, 100%);
+      background: linear-gradient(135deg, #fff, #fff0f7);
+      border: 1px solid rgba(255,255,255,.95);
+      border-radius: 30px;
+      box-shadow: 0 24px 60px rgba(36, 36, 58, .28);
+      padding: 18px;
+      text-align: center;
+    }
+
+    .qrTitle {
+      font-weight: 1000;
+      font-size: 1.2rem;
+      margin-bottom: 3px;
+    }
+
+    .qrSub {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: .9rem;
+      margin-bottom: 12px;
+    }
+
+    .qrBox {
+      display: inline-block;
+      background: white;
+      padding: 10px;
+      border-radius: 18px;
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06);
+    }
+
+    .qrBox img {
+      display: block;
+      width: min(250px, 72vw);
+      height: min(250px, 72vw);
+    }
+
+    .qrText {
+      margin: 12px 0;
+      color: var(--muted);
+      font-size: .85rem;
+      font-weight: 800;
+      word-break: break-word;
+      max-height: 74px;
+      overflow: auto;
+    }
+
     @media (max-width: 360px) {
       .app { padding-left: 10px; padding-right: 10px; }
       .chips { gap: 6px; }
@@ -303,7 +384,10 @@
 
   <main class="app">
     <div class="hero">
-      <h1>Street Memory</h1>
+      <div class="heroTop">
+        <h1>Street Memory</h1>
+        <button class="qrBtn" id="qrBtn" title="Show QR" aria-label="Show QR">▦</button>
+      </div>
       <p>tap a name · tap what happened · save</p>
     </div>
 
@@ -354,11 +438,25 @@
     </section>
   </main>
 
+  <div class="qrOverlay" id="qrOverlay" aria-hidden="true">
+    <div class="qrCard" role="dialog" aria-modal="true" aria-label="QR share">
+      <div class="qrTitle" id="qrTitle">QR</div>
+      <div class="qrSub" id="qrSub">scan to open</div>
+      <div class="qrBox">
+        <img id="qrImg" alt="QR code" />
+      </div>
+      <div class="qrText" id="qrText"></div>
+      <button class="mainBtn" id="qrCloseBtn">Close</button>
+    </div>
+  </div>
+
   <script>
     const FORM_URL_TEMPLATE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xURUo1RFU4OTNDQkdYR1M4UjBVSVpQMlZESS4u&rc3d6390966a04703a2ac771362d26a07=NAME_TOKEN&rce01c30941744b2dba6f0eef233f6ba7=NOTES_TOKEN&rd259629fa91341ce9852eb14a9b7b891=USER_TOKEN";
     const NAMES_KEY = "street_memory_demo_names_v3";
     const HISTORY_KEY = "street_memory_demo_history_v3";
     const USER_KEY = "street_memory_demo_user_v1";
+    // QR shares the blank app only. It must never include names, notes, actions, or user identity.
+    const APP_SHARE_URL = "";
 
     let selected = "";
     let selectedActions = new Set();
@@ -418,8 +516,7 @@
     }
 
     function formUrl(name, notes = "", user = "") {
-      // When you add the third Microsoft Forms field, generate a new prefill URL
-      // that contains USER_TOKEN. This function is already ready for it.
+      // Microsoft Forms prefilled URL: name + notes + user_name.
       let url = FORM_URL_TEMPLATE
         .replace("NAME_TOKEN", encodeURIComponent(name))
         .replace("NOTES_TOKEN", encodeURIComponent(notes));
@@ -429,6 +526,42 @@
       }
 
       return url;
+    }
+
+    function currentWhatText() {
+      const note = document.getElementById("whatDid").value.trim();
+      const actions = Array.from(selectedActions);
+      return actions.length && note ? `${actions.join(", ")} — ${note}` :
+             actions.length ? actions.join(", ") :
+             note || "Opened form";
+    }
+
+    function currentNameForQr() {
+      return document.getElementById("newName").value.trim() || selected;
+    }
+
+    function blankAppUrl() {
+      if (APP_SHARE_URL) return APP_SHARE_URL;
+      const url = new URL(window.location.href);
+      url.search = "";
+      url.hash = "";
+      return url.toString();
+    }
+
+    function showQr() {
+      const qrData = blankAppUrl();
+
+      document.getElementById("qrTitle").textContent = "Street Memory";
+      document.getElementById("qrSub").textContent = "scan to open blank app";
+      document.getElementById("qrText").textContent = qrData;
+      document.getElementById("qrImg").src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(qrData);
+      document.getElementById("qrOverlay").classList.add("active");
+      document.getElementById("qrOverlay").setAttribute("aria-hidden", "false");
+    }
+
+    function closeQr() {
+      document.getElementById("qrOverlay").classList.remove("active");
+      document.getElementById("qrOverlay").setAttribute("aria-hidden", "true");
     }
 
     function openFormAndLog() {
@@ -597,6 +730,11 @@ User: ${user}`;
     document.getElementById("saveBtn").addEventListener("click", openFormAndLog);
     document.getElementById("clearNamesBtn").addEventListener("click", clearNames);
     document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
+    document.getElementById("qrBtn").addEventListener("click", showQr);
+    document.getElementById("qrCloseBtn").addEventListener("click", closeQr);
+    document.getElementById("qrOverlay").addEventListener("click", e => {
+      if (e.target.id === "qrOverlay") closeQr();
+    });
 
     document.getElementById("newName").addEventListener("keydown", e => {
       if (e.key === "Enter") addName();
