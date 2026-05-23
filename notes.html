@@ -83,16 +83,44 @@
     }
 
     .qrBtn {
-      width: 50px;
-      min-width: 50px;
-      height: 50px;
-      min-height: 50px;
+      width: 54px;
+      min-width: 54px;
+      height: 44px;
+      min-height: 44px;
       padding: 0;
       border-radius: 18px;
       background: linear-gradient(135deg, var(--banana), var(--mint));
       color: var(--ink);
-      font-size: 1.35rem;
+      font-size: .95rem;
       box-shadow: 0 10px 22px rgba(101, 78, 163, .15);
+    }
+
+    .userSetRow {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .userShown {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 38px;
+    }
+
+    .userTiny {
+      min-width: 0;
+      font-size: .86rem;
+      color: var(--muted);
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .userTiny strong {
+      color: var(--ink);
     }
 
     .card {
@@ -273,6 +301,19 @@
       border-radius: 18px;
       padding: 11px 12px;
       box-shadow: 0 8px 18px rgba(101, 78, 163, .09);
+      position: relative;
+    }
+
+    .deleteNoteBtn {
+      min-height: 28px;
+      height: 28px;
+      padding: 0 9px;
+      border-radius: 999px;
+      box-shadow: none;
+      background: #fff0f7;
+      color: var(--hot);
+      font-size: .8rem;
+      flex: 0 0 auto;
     }
 
     .historyTop {
@@ -386,14 +427,23 @@
     <div class="hero">
       <div class="heroTop">
         <h1>Street Memory</h1>
-        <button class="qrBtn" id="qrBtn" title="Show QR" aria-label="Show QR">▦</button>
+        <button class="qrBtn" id="qrBtn" title="Show QR" aria-label="Show QR">QR</button>
       </div>
       <p>tap a name · tap what happened · save</p>
     </div>
 
-    <section class="card">
-      <div class="sectionTitle"><span>My name</span></div>
-      <input id="userName" placeholder="Your name — saved on this phone" autocomplete="off" />
+    <section class="card" id="userCard">
+      <div id="userSet">
+        <div class="sectionTitle"><span>My name</span></div>
+        <div class="userSetRow">
+          <input id="userNameInput" placeholder="Your name" autocomplete="off" />
+          <button class="tinyBtn" id="saveUserBtn">save</button>
+        </div>
+      </div>
+      <div id="userShown" class="userShown" style="display:none;">
+        <div class="userTiny">user: <strong id="userNameSmall"></strong></div>
+        <button class="tinyBtn" id="changeUserBtn">change</button>
+      </div>
     </section>
 
     <section class="card">
@@ -505,15 +555,40 @@
     }
 
     function getUserName() {
-      return document.getElementById("userName").value.trim();
+      return (localStorage.getItem(USER_KEY) || document.getElementById("userNameInput").value || "").trim();
     }
 
     function saveUserName() {
-      localStorage.setItem(USER_KEY, getUserName());
+      const value = document.getElementById("userNameInput").value.trim();
+      if (value) localStorage.setItem(USER_KEY, value);
+      renderUserName();
     }
 
     function loadUserName() {
-      document.getElementById("userName").value = localStorage.getItem(USER_KEY) || "";
+      document.getElementById("userNameInput").value = localStorage.getItem(USER_KEY) || "";
+      renderUserName();
+    }
+
+    function renderUserName(editing = false) {
+      const saved = localStorage.getItem(USER_KEY) || "";
+      const userSet = document.getElementById("userSet");
+      const userShown = document.getElementById("userShown");
+      const userNameSmall = document.getElementById("userNameSmall");
+
+      if (saved && !editing) {
+        userNameSmall.textContent = saved;
+        userSet.style.display = "none";
+        userShown.style.display = "flex";
+      } else {
+        userSet.style.display = "block";
+        userShown.style.display = "none";
+        document.getElementById("userNameInput").value = saved;
+        setTimeout(() => document.getElementById("userNameInput").focus(), 0);
+      }
+    }
+
+    function changeUserName() {
+      renderUserName(true);
     }
 
     function formUrl(name, notes = "", user = "") {
@@ -631,8 +706,15 @@ User: ${user}`;
     }
 
     function clearHistory() {
-      if (!confirm("Clear stored demo history?")) return;
+      if (!confirm("Clear all stored demo history?")) return;
       localStorage.removeItem(HISTORY_KEY);
+      render();
+    }
+
+    function deleteHistoryItem(index) {
+      const history = getHistory();
+      history.splice(index, 1);
+      saveHistory(history);
       render();
     }
 
@@ -702,21 +784,24 @@ User: ${user}`;
         return;
       }
 
-      historyEl.innerHTML = history.map(item => {
+      historyEl.innerHTML = "";
+      history.forEach((item, index) => {
         const icons = (item.actions || []).map(iconForAction).join(" ");
         const line = icons ? `${icons} ${item.what}` : item.what;
-        const userLine = item.user ? `<div class="did">👤 ${escapeHtml(item.user)}</div>` : "";
-        return `
-          <div class="historyItem">
-            <div class="historyTop">
-              <span>${escapeHtml(item.name)}</span>
-              <span class="time">${prettyTime(item.timestamp)}</span>
-            </div>
-            <div class="did">${escapeHtml(line)}</div>
-            ${userLine}
+        const div = document.createElement("div");
+        div.className = "historyItem";
+        div.innerHTML = `
+          <div class="historyTop">
+            <span>${escapeHtml(item.name)}</span>
+            <span class="time">${prettyTime(item.timestamp)}</span>
+            <button class="deleteNoteBtn" type="button" aria-label="Delete note">×</button>
           </div>
+          <div class="did">${escapeHtml(line)}</div>
+          ${item.user ? `<div class="did">👤 ${escapeHtml(item.user)}</div>` : ""}
         `;
-      }).join("");
+        div.querySelector(".deleteNoteBtn").addEventListener("click", () => deleteHistoryItem(index));
+        historyEl.appendChild(div);
+      });
     }
 
     function render() {
@@ -741,7 +826,11 @@ User: ${user}`;
       if (e.key === "Enter") addName();
     });
 
-    document.getElementById("userName").addEventListener("input", saveUserName);
+    document.getElementById("saveUserBtn").addEventListener("click", saveUserName);
+    document.getElementById("changeUserBtn").addEventListener("click", changeUserName);
+    document.getElementById("userNameInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") saveUserName();
+    });
 
     document.querySelectorAll(".chip").forEach(btn => {
       btn.addEventListener("click", () => toggleAction(btn.dataset.action));
