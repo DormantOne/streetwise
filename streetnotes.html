@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -219,6 +220,13 @@
       font-size: 1rem;
     }
 
+    .sectionTitle > span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .miniActions {
       display: flex;
       gap: 6px;
@@ -253,11 +261,34 @@
 
     #map.active { display: block; }
 
+    #map.compact { height: 112px; }
+
+    #map.full { height: 260px; }
+
     .mapHint {
       color: var(--muted);
       font-size: .78rem;
       font-weight: 850;
       line-height: 1.25;
+    }
+
+    .actionWords {
+      min-height: 30px;
+      margin: -2px 0 10px;
+      padding: 7px 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.68);
+      color: var(--muted);
+      font-size: .86rem;
+      font-weight: 950;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .actionWords.active {
+      color: var(--ink);
+      background: linear-gradient(135deg, #fff0f7, #fff9db);
+      box-shadow: inset 0 0 0 2px rgba(255,126,182,.22);
     }
 
     .leaflet-control-attribution {
@@ -526,8 +557,9 @@
 
     <section class="card">
       <div class="sectionTitle">
-        <span>Location</span>
+        <span id="locationTitle">Location</span>
         <div class="miniActions">
+          <button class="tinyBtn" id="toggleMapBtn">bigger</button>
           <button class="tinyBtn" id="gpsOnceBtn">locate</button>
           <button class="tinyBtn" id="gpsTrackBtn">track</button>
           <button class="tinyBtn dangerTinyBtn" id="clearRouteBtn">clear route</button>
@@ -569,6 +601,8 @@
         <button class="chip" data-action="Treated" title="Treated" aria-label="Treated">🩹</button>
         <button class="chip" data-action="Gave clothing" title="Gave clothing" aria-label="Gave clothing">🧦</button>
       </div>
+
+      <div id="actionWords" class="actionWords">No action selected</div>
 
       <textarea id="whatDid" placeholder="Optional note"></textarea>
       <div style="height: 10px"></div>
@@ -627,6 +661,7 @@
     let currentMarker = null;
     let routeLine = null;
     let routePath = getRoutePath();
+    let mapCompact = true;
     let lastGeocodeAt = 0;
     let lastGeocodePoint = null;
     let streetWasAuto = true;
@@ -934,6 +969,14 @@
         const action = btn.dataset.action;
         btn.classList.toggle("active", selectedActions.has(action));
       });
+      renderActionWords();
+    }
+
+    function renderActionWords() {
+      const actionWords = document.getElementById("actionWords");
+      const actions = Array.from(selectedActions);
+      actionWords.textContent = actions.length ? actions.join(", ") : "No action selected";
+      actionWords.classList.toggle("active", actions.length > 0);
     }
 
     function renderHistory() {
@@ -971,6 +1014,7 @@
       renderNames();
       renderChips();
       renderHistory();
+      renderLocationTitle();
       renderRouteMapIfPossible();
     }
 
@@ -980,6 +1024,21 @@
 
     function setLocationStatus(text) {
       locationStatus.textContent = text;
+    }
+
+    function renderLocationTitle() {
+      const street = streetInput.value.trim();
+      const label = street.length > 34 ? street.slice(0, 31) + "…" : street;
+      document.getElementById("locationTitle").textContent = label ? `Location · ${label}` : "Location";
+    }
+
+    function toggleMapSize() {
+      mapCompact = !mapCompact;
+      const mapEl = document.getElementById("map");
+      mapEl.classList.toggle("compact", mapCompact);
+      mapEl.classList.toggle("full", !mapCompact);
+      document.getElementById("toggleMapBtn").textContent = mapCompact ? "bigger" : "smaller";
+      if (map) setTimeout(() => map.invalidateSize(), 0);
     }
 
     function getLastLocation() {
@@ -1075,7 +1134,10 @@
 
     function initMap(lat, lon) {
       if (map) return;
-      document.getElementById("map").classList.add("active");
+            const mapEl = document.getElementById("map");
+      mapEl.classList.add("active");
+      mapEl.classList.toggle("compact", mapCompact);
+      mapEl.classList.toggle("full", !mapCompact);
 
       map = L.map("map", {
         zoomControl: false,
@@ -1125,6 +1187,7 @@
       localStorage.removeItem(LAST_STREET_KEY);
       streetInput.value = "";
       streetWasAuto = true;
+      renderLocationTitle();
       lastGeocodePoint = null;
       lastGeocodeAt = 0;
       if (routeLine) routeLine.setLatLngs([]);
@@ -1156,6 +1219,7 @@
             streetInput.value = estimate;
             streetWasAuto = true;
           }
+          renderLocationTitle();
           setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Street estimate updated.`);
         } else {
           setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. No street estimate found.`);
@@ -1308,6 +1372,7 @@
     document.getElementById("clearHistoryBtn").addEventListener("click", clearHistory);
     document.getElementById("qrBtn").addEventListener("click", showQr);
     document.getElementById("qrCloseBtn").addEventListener("click", closeQr);
+    document.getElementById("toggleMapBtn").addEventListener("click", toggleMapSize);
     document.getElementById("gpsOnceBtn").addEventListener("click", startLocationOnce);
     document.getElementById("gpsTrackBtn").addEventListener("click", toggleTracking);
     document.getElementById("clearRouteBtn").addEventListener("click", clearRoute);
@@ -1328,6 +1393,7 @@
     streetInput.addEventListener("input", () => {
       streetWasAuto = false;
       localStorage.setItem(LAST_STREET_KEY, streetInput.value.trim());
+      renderLocationTitle();
     });
 
     document.querySelectorAll(".chip").forEach(btn => {
