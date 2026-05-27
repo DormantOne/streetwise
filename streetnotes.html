@@ -289,11 +289,14 @@ I2px;
 
 
     .mapHint {
+      display: none;
       color: var(--muted);
       font-size: .78rem;
       font-weight: 850;
       line-height: 1.25;
     }
+
+    .mapHint.active { display: block; }
 
     .actionWords {
       min-height: 30px;
@@ -591,11 +594,12 @@ I2px;
         <div id="locationStatus" class="locationStatus">Location idle.</div>
         <div id="map"></div>
         <div class="mapControls" id="mapControls">
+          <button class="tinyBtn" id="hideMapBtn">hide map</button>
           <button class="tinyBtn" id="gpsOnceBtn">locate</button>
           <button class="tinyBtn" id="gpsTrackBtn">track</button>
           <button class="tinyBtn dangerTinyBtn" id="clearRouteBtn">clear route</button>
         </div>
-        <div class="mapHint">Map uses your browser GPS. Cross-streets are estimated from OpenStreetMap data and should be corrected if wrong.</div>
+        <div class="mapHint" id="mapHint">Map uses your browser GPS. Cross-streets are estimated from OpenStreetMap data and should be corrected if wrong.</div>
       </div>
     </section>
 
@@ -695,6 +699,9 @@ I2px;
 
     const locationStatus = document.getElementById("locationStatus");
     const streetInput = document.getElementById("streetInput");
+
+    const DEFAULT_MAP_LAT = 40.4406;
+    const DEFAULT_MAP_LON = -79.9959;
 
     function getNames() {
       try { return JSON.parse(localStorage.getItem(NAMES_KEY) || "[]"); }
@@ -1059,19 +1066,39 @@ I2px;
       document.getElementById("locationTitle").textContent = label ? `Location · ${label}` : "Location";
     }
 
-    function toggleMapSize() {
-      mapVisible = !mapVisible;
+    function setMapExpanded(expanded) {
+      mapVisible = expanded;
       const mapEl = document.getElementById("map");
       const controls = document.getElementById("mapControls");
+      const hint = document.getElementById("mapHint");
       const btn = document.getElementById("toggleMapBtn");
+
       mapEl.classList.toggle("active", mapVisible);
       controls.classList.toggle("active", mapVisible);
+      hint.classList.toggle("active", mapVisible);
       btn.textContent = mapVisible ? "hide map" : "map";
+
       if (mapVisible) {
-        const last = getLastLocation() || routePath[routePath.length - 1];
-        if (last) updateMap(last, false);
-        if (map) setTimeout(() => map.invalidateSize(), 0);
+        const last = getLastLocation() || routePath[routePath.length - 1] || {
+          lat: DEFAULT_MAP_LAT,
+          lon: DEFAULT_MAP_LON,
+          accuracy: 0,
+          timestamp: new Date().toISOString()
+        };
+        updateMap(last, false);
+        if (map) {
+          setTimeout(() => {
+            map.invalidateSize();
+            const line = routePath.map(p => [p.lat, p.lon]);
+            if (line.length > 1) map.fitBounds(line, { padding: [18, 18], maxZoom: 18 });
+            else map.setView([last.lat, last.lon], 16);
+          }, 80);
+        }
       }
+    }
+
+    function toggleMapSize() {
+      setMapExpanded(!mapVisible);
     }
 
     function showDemoNotice() {
@@ -1413,6 +1440,7 @@ I2px;
     document.getElementById("qrBtn").addEventListener("click", showQr);
     document.getElementById("qrCloseBtn").addEventListener("click", closeQr);
     document.getElementById("toggleMapBtn").addEventListener("click", toggleMapSize);
+    document.getElementById("hideMapBtn").addEventListener("click", () => setMapExpanded(false));
     document.getElementById("gpsOnceBtn").addEventListener("click", startLocationOnce);
     document.getElementById("gpsTrackBtn").addEventListener("click", toggleTracking);
     document.getElementById("clearRouteBtn").addEventListener("click", clearRoute);
