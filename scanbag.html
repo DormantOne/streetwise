@@ -219,10 +219,24 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
-    // ====== CONFIGURE: your form's prefill field tokens ======
-    // Same Microsoft Forms structure as Street Memory. Re-map the field IDs to your own form.
-    // NAME_TOKEN -> bag id / med summary, NOTES_TOKEN -> full contents + GPS, USER_TOKEN -> volunteer, STREET_TOKEN -> cross streets
-    const FORM_URL_TEMPLATE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUOEVZQjREQTREQVEwNjI3U1ZQRk5aOE1GSS4u&refeb9285ea984d15bab0df344691d152=NAME_TOKEN&re19b101523754a4e9cdf48be316ae459=NOTES_TOKEN&rb74e1d20fecd43028ab3d24f3a1754b8=USER_TOKEN&r567e0863cf0e4532b07352930c16dd5c=STREET_TOKEN";
+    // ====== CONFIGURE: your Microsoft Form prefill mapping ======
+    // To point at a different form: replace FORM_BASE (everything up to but not including the first &)
+    // and the field IDs below with values from a fresh "Get pre-filled link".
+    const FORM_BASE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUMExBVkdKUlVSNEJOUEZUSURNUFNOVTdSSi4u";
+    const FORM_FIELDS = {
+      time:    "rc76335fa3e434236afb7a3fe4483e316", // Handout time
+      user:    "r98d2d2567ab3461096a1eafb5efc1f73", // Volunteer
+      bag:     "r1c0dfd1de5774da6bb9776bd797652b7", // Bag / lot ID
+      contents:"r3f07254bf0c04b19b37d6d22f2568c25", // Bag contents
+      street:  "r93dab2d34fbf4032b0aa1a5b2f73c792", // Cross streets
+      gps:     "rd777517dded941c6b70ddd6ebd764b00", // GPS coordinates
+      acc:     "rf86ef4b73628490b82de9ab707ca1913", // GPS accuracy (m)
+      by:      "rddaa70ef16cd42f98b9f164c76a9fa8f", // Prepared by
+      prep:    "ra8efbd4d50f0404db87974f20a41a3c9", // Prep date
+      bagNote: "r90899b7bef8843919b4eca592a10b4a2", // Bag note
+      note:    "rbaa1b1ea92d047e78b40370589a9cc23", // Handout note
+      exp:     "r03f0f7da41044f618499586912694965"  // Expired/expiring item? (Yes/No)
+    };
 
     const HISTORY_KEY = "pillbag_resolver_history_v1";
     const USER_KEY = "pillbag_resolver_user_v1";
@@ -352,12 +366,25 @@
     }
     function changeUserName() { renderUserName(true); }
 
-    function formUrl(name, notes, user, street) {
-      return FORM_URL_TEMPLATE
-        .replace("NAME_TOKEN", encodeURIComponent(name))
-        .replace("NOTES_TOKEN", encodeURIComponent(notes))
-        .replace("USER_TOKEN", encodeURIComponent(user))
-        .replace("STREET_TOKEN", encodeURIComponent(street));
+    function buildFormUrl(values) {
+      const parts = [FORM_BASE];
+      for (const key in FORM_FIELDS) {
+        const v = values[key];
+        if (v === undefined || v === null || v === "") continue; // skip blanks
+        parts.push(FORM_FIELDS[key] + "=" + encodeURIComponent(v));
+      }
+      return parts.join("&");
+    }
+
+    function localStamp(d) {
+      d = d || new Date();
+      const p = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+
+    function bagHasExpiryIssue() {
+      if (!bag || bag === "ERROR" || !bag.items) return false;
+      return bag.items.some(it => { const e = expState(it.exp); return e && (e.cls === "bad" || e.cls === "soon"); });
     }
 
     function blankAppUrl() { const u = new URL(window.location.href); u.search = ""; u.hash = ""; return u.toString(); }
@@ -381,29 +408,34 @@
       const note = $("whatDid").value.trim();
       const street = streetInput.value.trim();
       const last = getLastLocation();
-      const gpsLine = last ? `GPS estimate: ${last.lat.toFixed(5)}, ${last.lon.toFixed(5)} ±${Math.round(last.accuracy || 0)}m` : "";
       const contents = bagSummaryText();
+      const now = new Date();
 
-      const formNotesParts = [];
-      if (contents) formNotesParts.push("Contents: " + contents);
-      if (bag && bag !== "ERROR" && bag.note) formNotesParts.push("Bag note: " + bag.note);
-      if (note) formNotesParts.push("Handout note: " + note);
-      if (gpsLine) formNotesParts.push(gpsLine);
-      const formNotes = formNotesParts.join("\n");
+      const bagId   = (bag && bag !== "ERROR" && bag.bag)  || "";
+      const bagNote = (bag && bag !== "ERROR" && bag.note) || "";
+      const by      = (bag && bag !== "ERROR" && bag.by)   || "";
+      const prep    = (bag && bag !== "ERROR" && bag.made) || "";
+      const gps = last ? `${last.lat.toFixed(5)}, ${last.lon.toFixed(5)}` : "";
+      const acc = last ? String(Math.round(last.accuracy || 0)) : "";
+      const expFlag = (bag && bag !== "ERROR" && bag.items) ? (bagHasExpiryIssue() ? "Yes" : "No") : "";
 
       const item = {
-        bagId: (bag && bag !== "ERROR" && bag.bag) || "",
-        contents,
-        bagNote: (bag && bag !== "ERROR" && bag.note) || "",
+        bagId, contents, bagNote,
         user, note, street,
         location: last,
-        timestamp: new Date().toISOString()
+        timestamp: now.toISOString()
       };
       const history = getHistory();
       history.unshift(item);
       saveHistory(history.slice(0, 200));
 
-      window.open(formUrl(bagShortName(), formNotes, user, street), "_blank", "noopener,noreferrer");
+      const url = buildFormUrl({
+        time: localStamp(now),
+        user, bag: bagId, contents, street,
+        gps, acc, by, prep, bagNote, note,
+        exp: expFlag
+      });
+      window.open(url, "_blank", "noopener,noreferrer");
       $("whatDid").value = "";
       renderHistory();
     }
