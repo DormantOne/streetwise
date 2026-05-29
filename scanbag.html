@@ -1,0 +1,716 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pill Bag Resolver</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --pink: #ff7eb6; --hot: #ff4f8b; --peach: #ffb86b; --banana: #ffe66d;
+      --mint: #7ee7c8; --sky: #77c8ff; --lav: #b69cff; --ink: #24243a;
+      --soft: rgba(255,255,255,0.78); --muted: #6b6b88; --danger: #ff4f72;
+      --shadow: 0 16px 40px rgba(56, 42, 111, 0.16); --radius: 26px;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffe0ef 0, transparent 34%),
+        radial-gradient(circle at top right, #ddf7ff 0, transparent 32%),
+        linear-gradient(135deg, #fff8d8, #f3e8ff 45%, #dcfce7);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .banner {
+      position: sticky; top: 0; z-index: 1500;
+      padding: calc(7px + env(safe-area-inset-top)) 10px 7px;
+      display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px;
+      color: white; background: linear-gradient(90deg, var(--danger), var(--lav), var(--sky));
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    }
+    .banner span { font-weight: 1000; font-size: 1.08rem; letter-spacing: .02em; white-space: nowrap; }
+    .bannerDemoBtn {
+      min-height: 34px; height: 34px; padding: 0 10px; border-radius: 999px;
+      background: rgba(255,255,255,.22); color: white; box-shadow: none;
+      font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .demoToast {
+      position: fixed; top: calc(52px + env(safe-area-inset-top)); left: 50%;
+      transform: translateX(-50%) translateY(-10px); z-index: 1400;
+      width: min(500px, calc(100vw - 24px)); padding: 11px 13px; border-radius: 20px;
+      background: rgba(255,255,255,.96); color: var(--ink);
+      box-shadow: 0 18px 44px rgba(36,36,58,.22); font-size: .86rem; font-weight: 950;
+      line-height: 1.25; opacity: 0; pointer-events: none; transition: opacity .22s ease, transform .22s ease;
+    }
+    .demoToast.active { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .app { max-width: 540px; margin: 0 auto; padding: 14px 14px calc(18px + env(safe-area-inset-bottom)); }
+    .card {
+      background: var(--soft); border: 1px solid rgba(255,255,255,.92);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 12px; margin: 10px 0; backdrop-filter: blur(14px);
+    }
+    .qrBtn {
+      width: 46px; min-width: 46px; height: 34px; min-height: 34px; padding: 0; border-radius: 18px;
+      background: linear-gradient(135deg, var(--banana), var(--mint)); color: var(--ink);
+      font-size: .95rem; box-shadow: 0 10px 22px rgba(101, 78, 163, .15);
+    }
+    .row, .userSetRow { display: flex; gap: 10px; align-items: stretch; }
+    .userSetRow { gap: 8px; }
+    .userShown { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; }
+    .userTiny { min-width: 0; font-size: .86rem; color: var(--muted); font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .userTiny strong { color: var(--ink); }
+    input, textarea {
+      width: 100%; border: 0; outline: 0; border-radius: 18px; padding: 12px 13px;
+      background: white; color: var(--ink); font-size: 1rem;
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); font-family: inherit;
+    }
+    textarea { min-height: 64px; resize: none; }
+    button {
+      border: 0; border-radius: 18px; padding: 11px 12px; font-weight: 1000; color: var(--ink);
+      cursor: pointer; font-size: .98rem; box-shadow: 0 8px 16px rgba(0,0,0,.09);
+      transition: transform .08s ease, filter .08s ease, opacity .08s ease;
+      font-family: inherit; min-height: 44px; touch-action: manipulation;
+    }
+    button:active { transform: scale(.97); }
+    .mainBtn { width: 100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color: white; font-size: 1.08rem; }
+    .ghostBtn { background: white; box-shadow: none; color: var(--muted); min-height: 38px; padding: 8px 12px; }
+    .tinyBtn { padding: 8px 11px; font-size: .82rem; border-radius: 999px; background: white; box-shadow: none; min-height: 34px; white-space: nowrap; }
+    .dangerTinyBtn { color: var(--hot); background: #fff0f7; }
+    .sectionTitle { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-weight: 1000; font-size: 1rem; }
+    .sectionTitle > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .miniActions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .locationGrid { display: grid; gap: 8px; }
+    .mapControls { display: none; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .mapControls.active { display: flex; }
+    .locationStatus { color: var(--muted); font-weight: 900; font-size: .84rem; min-height: 1.1em; line-height: 1.25; }
+    #map {
+      display: none; height: 190px; min-height: 190px; width: 100%; border-radius: 20px; overflow: hidden;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06), 0 10px 22px rgba(101, 78, 163, .12); background: #e6f7ff;
+    }
+    #map.active { display: block !important; height: 190px !important; min-height: 190px !important; }
+    .mapHint { display: none; color: var(--muted); font-size: .78rem; font-weight: 850; line-height: 1.25; }
+    .mapHint.active { display: block; }
+    .leaflet-control-attribution { font-size: 9px !important; }
+
+    /* Bag (scanned payload) card */
+    .bagCard { background: linear-gradient(135deg, #fff, #ecfdf6); border:1px solid rgba(126,231,200,.6); }
+    .bagTitle { font-weight:1000; font-size:1.25rem; display:flex; align-items:center; gap:8px; }
+    .bagMeta { color:var(--muted); font-weight:900; font-size:.82rem; margin-top:2px; }
+    .bagItem {
+      background:white; border-radius:16px; padding:10px 12px; margin-top:8px;
+      box-shadow: 0 6px 14px rgba(101,78,163,.08); display:flex; justify-content:space-between; gap:8px; align-items:flex-start;
+    }
+    .bagItem .nm { font-weight:1000; font-size:1.02rem; }
+    .bagItem .sub { color:var(--muted); font-weight:900; font-size:.8rem; margin-top:2px; }
+    .qty { font-weight:1000; font-size:1.1rem; white-space:nowrap; color:var(--ink);
+      background:linear-gradient(135deg,var(--banana),var(--mint)); padding:4px 10px; border-radius:999px; }
+    .expFlag { display:inline-block; margin-top:4px; padding:3px 8px; border-radius:999px; font-size:.74rem; font-weight:1000; }
+    .expFlag.bad { background:#ffe1ea; color:var(--danger); }
+    .expFlag.soon { background:#fff3d6; color:#b8860b; }
+    .expFlag.ok { background:#e3f9ee; color:#1c9c6b; }
+    .bagNote { margin-top:8px; color:var(--ink); font-weight:900; font-size:.9rem; }
+    .noBag { text-align:center; color:var(--muted); padding:14px 8px; font-weight:900; line-height:1.4; }
+
+    .history { max-height: min(30vh, 240px); overflow-y: auto; display: grid; gap: 9px; overscroll-behavior: contain; }
+    .historyItem { background: white; border-radius: 18px; padding: 11px 12px; box-shadow: 0 8px 18px rgba(101, 78, 163, .09); position: relative; }
+    .historyTop { display: flex; justify-content: space-between; gap: 10px; font-weight: 1000; }
+    .time { color: var(--muted); font-size: .78rem; white-space: nowrap; padding-top: 2px; }
+    .did { color: var(--muted); margin-top: 4px; font-size: .9rem; line-height: 1.3; }
+    .deleteNoteBtn { border-radius: 999px; box-shadow: none; background: #fff0f7; color: var(--hot);
+      min-height: 28px; height: 28px; padding: 0 9px; font-size: .8rem; flex: 0 0 auto; }
+    .empty { text-align: center; color: var(--muted); padding: 18px 10px; font-weight: 900; }
+    .bottomRow { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+    .qrOverlay { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center;
+      padding: 18px; background: rgba(36, 36, 58, .46); backdrop-filter: blur(10px); }
+    .qrOverlay.active { display: flex; }
+    .qrCard { width: min(340px, 100%); background: linear-gradient(135deg, #fff, #fff0f7);
+      border: 1px solid rgba(255,255,255,.95); border-radius: 30px; box-shadow: 0 24px 60px rgba(36, 36, 58, .28); padding: 18px; text-align: center; }
+    .qrTitle { font-weight: 1000; font-size: 1.2rem; margin-bottom: 3px; }
+    .qrSub { color: var(--muted); font-weight: 800; font-size: .9rem; margin-bottom: 12px; }
+    .qrBox { display: inline-block; background: white; padding: 10px; border-radius: 18px; box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); }
+    .qrBox img { display: block; width: min(250px, 72vw); height: min(250px, 72vw); image-rendering: pixelated; }
+    .qrText { margin: 12px 0; color: var(--muted); font-size: .85rem; font-weight: 800; word-break: break-word; max-height: 74px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <span>💊 Bag Resolver</span>
+    <button class="bannerDemoBtn" id="demoNoticeBtn" title="Show notice">notice</button>
+    <button class="qrBtn" id="qrBtn" title="Share resolver" aria-label="Share resolver">QR</button>
+  </div>
+
+  <div class="demoToast" id="demoToast" aria-live="polite">
+    The bag QR carries only medication contents — never recipient or patient information. This page captures who handed it out, GPS/cross-street estimate, and time. Do not enter recipient names or any private medical info. History stays local on this device; only the fields below are sent to the configured form.
+  </div>
+
+  <main class="app">
+
+    <!-- Scanned bag contents -->
+    <section class="card bagCard" id="bagCard">
+      <div class="noBag" id="bagBody">Loading bag…</div>
+    </section>
+
+    <section class="card" id="userCard">
+      <div id="userSet">
+        <div class="sectionTitle"><span>Volunteer (you)</span></div>
+        <div class="userSetRow">
+          <input id="userNameInput" placeholder="Your name" autocomplete="off" />
+          <button class="tinyBtn" id="saveUserBtn">save</button>
+        </div>
+      </div>
+      <div id="userShown" class="userShown" style="display:none;">
+        <div class="userTiny">volunteer: <strong id="userNameSmall"></strong></div>
+        <button class="tinyBtn" id="changeUserBtn">change</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <span id="locationTitle">Location</span>
+        <div class="miniActions"><button class="tinyBtn" id="toggleMapBtn">map</button></div>
+      </div>
+      <div class="locationGrid">
+        <input id="streetInput" placeholder="Auto cross streets, editable" autocomplete="off" />
+        <div id="locationStatus" class="locationStatus">Location idle.</div>
+        <div id="map"></div>
+        <div class="mapControls" id="mapControls">
+          <button class="tinyBtn" id="hideMapBtn">hide map</button>
+          <button class="tinyBtn" id="gpsOnceBtn">locate</button>
+          <button class="tinyBtn" id="gpsTrackBtn">track</button>
+          <button class="tinyBtn" id="refreshStreetsBtn">streets</button>
+          <button class="tinyBtn dangerTinyBtn" id="clearRouteBtn">clear route</button>
+        </div>
+        <div class="mapHint" id="mapHint">Map uses your browser GPS. Cross-streets are estimated from OpenStreetMap and should be corrected if wrong.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <textarea id="whatDid" placeholder="Optional handout note (e.g. counseled on use, declined refill)"></textarea>
+      <div style="height: 10px"></div>
+      <button class="mainBtn" id="saveBtn">Log handout + open form</button>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <span>Handout history</span>
+        <button class="tinyBtn" id="clearHistoryBtn">clear</button>
+      </div>
+      <div id="history" class="history"></div>
+    </section>
+
+  </main>
+
+  <div class="qrOverlay" id="qrOverlay" aria-hidden="true">
+    <div class="qrCard" role="dialog" aria-modal="true" aria-label="QR share">
+      <div class="qrTitle" id="qrTitle">QR</div>
+      <div class="qrSub" id="qrSub">scan to open</div>
+      <div class="qrBox"><img id="qrImg" alt="QR code" /></div>
+      <div class="qrText" id="qrText"></div>
+      <button class="mainBtn" id="qrCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script>
+    // ====== CONFIGURE: your form's prefill field tokens ======
+    // Same Microsoft Forms structure as Street Memory. Re-map the field IDs to your own form.
+    // NAME_TOKEN -> bag id / med summary, NOTES_TOKEN -> full contents + GPS, USER_TOKEN -> volunteer, STREET_TOKEN -> cross streets
+    const FORM_URL_TEMPLATE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUOEVZQjREQTREQVEwNjI3U1ZQRk5aOE1GSS4u&refeb9285ea984d15bab0df344691d152=NAME_TOKEN&re19b101523754a4e9cdf48be316ae459=NOTES_TOKEN&rb74e1d20fecd43028ab3d24f3a1754b8=USER_TOKEN&r567e0863cf0e4532b07352930c16dd5c=STREET_TOKEN";
+
+    const HISTORY_KEY = "pillbag_resolver_history_v1";
+    const USER_KEY = "pillbag_resolver_user_v1";
+    const ROUTE_KEY = "pillbag_resolver_route_v1";
+    const LAST_LOCATION_KEY = "pillbag_resolver_last_location_v1";
+    const LAST_STREET_KEY = "pillbag_resolver_last_street_v1";
+
+    const DEFAULT_MAP_LAT = 40.4406;
+    const DEFAULT_MAP_LON = -79.9959;
+
+    let bag = null;               // decoded payload
+    let watchId = null;
+    let map = null, currentMarker = null, routeLine = null;
+    let routePath = getRoutePath();
+    let mapVisible = false;
+    let demoToastTimer = null;
+    let lastGeocodeAt = 0, lastGeocodePoint = null;
+    let streetWasAuto = true;
+
+    const locationStatus = document.getElementById("locationStatus");
+    const streetInput = document.getElementById("streetInput");
+    const $ = id => document.getElementById(id);
+
+    // ---- Payload contract (must match the maker exactly) ----
+    function decodePayload(s) {
+      s = s.replace(/-/g, "+").replace(/_/g, "/");
+      while (s.length % 4) s += "=";
+      const json = decodeURIComponent(escape(atob(s)));
+      return JSON.parse(json);
+    }
+
+    function readBagFromUrl() {
+      const raw = (location.hash || "").replace(/^#/, "");
+      const params = new URLSearchParams(raw);
+      let token = params.get("m");
+      if (!token && location.search) token = new URLSearchParams(location.search).get("m");
+      if (!token) return null;
+      try { return decodePayload(token); }
+      catch (e) { console.warn("payload decode failed", e); return "ERROR"; }
+    }
+
+    function expState(exp) {
+      if (!exp) return null;
+      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
+      if (isNaN(d)) return null;
+      const now = new Date();
+      const months = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+      if (months < 0) return { cls: "bad", txt: "⚠ EXPIRED" };
+      if (months <= 2) return { cls: "soon", txt: "expires soon" };
+      return { cls: "ok", txt: "in date" };
+    }
+
+    function renderBag() {
+      const body = $("bagBody");
+      if (bag === "ERROR") {
+        body.innerHTML = `<div class="noBag">Couldn't read this QR's data. The link may be incomplete. You can still log a handout manually.</div>`;
+        return;
+      }
+      if (!bag || !bag.items || !bag.items.length) {
+        body.innerHTML = `<div class="noBag">No bag scanned.<br>Open this page from a bag's QR code, or use it to log a handout manually.</div>`;
+        return;
+      }
+      const metaBits = [];
+      if (bag.bag) metaBits.push("Bag " + escapeHtml(bag.bag));
+      if (bag.made) metaBits.push("prepped " + escapeHtml(bag.made));
+      if (bag.by) metaBits.push("by " + escapeHtml(bag.by));
+      let html = `<div class="bagTitle">💊 Bag contents</div>`;
+      if (metaBits.length) html += `<div class="bagMeta">${metaBits.join(" · ")}</div>`;
+      bag.items.forEach(it => {
+        const sub = [];
+        if (it.s) sub.push(escapeHtml(it.s));
+        if (it.exp) sub.push("exp " + escapeHtml(it.exp));
+        if (it.lot) sub.push("lot " + escapeHtml(it.lot));
+        const es = expState(it.exp);
+        html += `<div class="bagItem">
+          <div>
+            <div class="nm">${escapeHtml(it.n)}</div>
+            ${sub.length ? `<div class="sub">${sub.join(" · ")}</div>` : ""}
+            ${es ? `<span class="expFlag ${es.cls}">${es.txt}</span>` : ""}
+          </div>
+          ${it.q ? `<div class="qty">×${escapeHtml(it.q)}</div>` : ""}
+        </div>`;
+      });
+      if (bag.note) html += `<div class="bagNote">📝 ${escapeHtml(bag.note)}</div>`;
+      body.innerHTML = html;
+    }
+
+    function bagSummaryText() {
+      if (!bag || bag === "ERROR" || !bag.items) return "";
+      return bag.items.map(it => {
+        const bits = [it.n];
+        if (it.s) bits.push(it.s);
+        let s = bits.join(" ");
+        if (it.q) s += ` x${it.q}`;
+        if (it.exp) s += ` (exp ${it.exp}`;
+        if (it.exp && it.lot) s += `, lot ${it.lot})`;
+        else if (it.exp) s += `)`;
+        else if (it.lot) s += ` (lot ${it.lot})`;
+        return s;
+      }).join("; ");
+    }
+
+    function bagShortName() {
+      if (!bag || bag === "ERROR" || !bag.items) return "Handout";
+      if (bag.bag) return "Bag " + bag.bag;
+      return bag.items.map(i => i.n).join(", ").slice(0, 60);
+    }
+
+    // ---------- storage ----------
+    function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch { return []; } }
+    function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+    function getRoutePath() { try { return JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]"); } catch { return []; } }
+    function saveRoutePath() { localStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
+
+    function getUserName() { return (localStorage.getItem(USER_KEY) || $("userNameInput").value || "").trim(); }
+    function saveUserName() { const v = $("userNameInput").value.trim(); if (v) localStorage.setItem(USER_KEY, v); renderUserName(); }
+    function loadUserName() { $("userNameInput").value = localStorage.getItem(USER_KEY) || ""; renderUserName(); }
+    function renderUserName(editing = false) {
+      const saved = localStorage.getItem(USER_KEY) || "";
+      if (saved && !editing) {
+        $("userNameSmall").textContent = saved;
+        $("userSet").style.display = "none"; $("userShown").style.display = "flex";
+      } else {
+        $("userSet").style.display = "block"; $("userShown").style.display = "none";
+        $("userNameInput").value = saved; setTimeout(() => $("userNameInput").focus(), 0);
+      }
+    }
+    function changeUserName() { renderUserName(true); }
+
+    function formUrl(name, notes, user, street) {
+      return FORM_URL_TEMPLATE
+        .replace("NAME_TOKEN", encodeURIComponent(name))
+        .replace("NOTES_TOKEN", encodeURIComponent(notes))
+        .replace("USER_TOKEN", encodeURIComponent(user))
+        .replace("STREET_TOKEN", encodeURIComponent(street));
+    }
+
+    function blankAppUrl() { const u = new URL(window.location.href); u.search = ""; u.hash = ""; return u.toString(); }
+
+    function showQr() {
+      const data = blankAppUrl();
+      $("qrTitle").textContent = "Share resolver";
+      $("qrSub").textContent = "blank app — no bag data";
+      $("qrText").textContent = data;
+      if (typeof qrcode !== "undefined") {
+        try { const qr = qrcode(0, "M"); qr.addData(data); qr.make(); $("qrImg").src = qr.createDataURL(5, 8); }
+        catch { $("qrImg").removeAttribute("src"); }
+      }
+      $("qrOverlay").classList.add("active"); $("qrOverlay").setAttribute("aria-hidden", "false");
+    }
+    function closeQr() { $("qrOverlay").classList.remove("active"); $("qrOverlay").setAttribute("aria-hidden", "true"); }
+
+    function logHandout() {
+      const user = getUserName();
+      if (!user) { saveUserName(); if (!getUserName()) { alert("Enter your name (volunteer) first."); return; } }
+      const note = $("whatDid").value.trim();
+      const street = streetInput.value.trim();
+      const last = getLastLocation();
+      const gpsLine = last ? `GPS estimate: ${last.lat.toFixed(5)}, ${last.lon.toFixed(5)} ±${Math.round(last.accuracy || 0)}m` : "";
+      const contents = bagSummaryText();
+
+      const formNotesParts = [];
+      if (contents) formNotesParts.push("Contents: " + contents);
+      if (bag && bag !== "ERROR" && bag.note) formNotesParts.push("Bag note: " + bag.note);
+      if (note) formNotesParts.push("Handout note: " + note);
+      if (gpsLine) formNotesParts.push(gpsLine);
+      const formNotes = formNotesParts.join("\n");
+
+      const item = {
+        bagId: (bag && bag !== "ERROR" && bag.bag) || "",
+        contents,
+        bagNote: (bag && bag !== "ERROR" && bag.note) || "",
+        user, note, street,
+        location: last,
+        timestamp: new Date().toISOString()
+      };
+      const history = getHistory();
+      history.unshift(item);
+      saveHistory(history.slice(0, 200));
+
+      window.open(formUrl(bagShortName(), formNotes, user, street), "_blank", "noopener,noreferrer");
+      $("whatDid").value = "";
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (!confirm("Clear all stored handout history on this device?")) return;
+      localStorage.removeItem(HISTORY_KEY); renderHistory();
+    }
+    function deleteHistoryItem(i) { const h = getHistory(); h.splice(i, 1); saveHistory(h); renderHistory(); }
+
+    function prettyTime(iso) { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+    function escapeHtml(s) { return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+
+    function renderHistory() {
+      const el = $("history"); const h = getHistory();
+      if (!h.length) { el.innerHTML = `<div class="empty">No handouts logged yet</div>`; return; }
+      el.innerHTML = "";
+      h.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "historyItem";
+        div.innerHTML = `
+          <div class="historyTop">
+            <span>${escapeHtml(item.bagId ? "Bag " + item.bagId : "Handout")}</span>
+            <span class="time">${prettyTime(item.timestamp)}</span>
+            <button class="deleteNoteBtn" type="button" aria-label="Delete">×</button>
+          </div>
+          ${item.contents ? `<div class="did">💊 ${escapeHtml(item.contents)}</div>` : ""}
+          ${item.note ? `<div class="did">📝 ${escapeHtml(item.note)}</div>` : ""}
+          ${item.street ? `<div class="did">📍 ${escapeHtml(item.street)}</div>` : ""}
+          ${item.user ? `<div class="did">👤 ${escapeHtml(item.user)}</div>` : ""}
+        `;
+        div.querySelector(".deleteNoteBtn").addEventListener("click", () => deleteHistoryItem(i));
+        el.appendChild(div);
+      });
+    }
+
+    // ---------- location (ported from Street Memory) ----------
+    function setLocationStatus(t) { locationStatus.textContent = t; }
+    function renderLocationTitle() {
+      const s = streetInput.value.trim();
+      const label = s.length > 34 ? s.slice(0, 31) + "…" : s;
+      $("locationTitle").textContent = label ? `Location · ${label}` : "Location";
+    }
+    function getLastLocation() { try { return JSON.parse(localStorage.getItem(LAST_LOCATION_KEY) || "null"); } catch { return null; } }
+    function saveLastLocation(p) { localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(p)); }
+    function loadLastStreet() { const s = localStorage.getItem(LAST_STREET_KEY) || ""; if (s) { streetInput.value = s; streetWasAuto = true; } }
+
+    function forceMapBoxVisible() {
+      const m = $("map"); m.classList.add("active"); m.style.display = "block";
+      m.style.height = "190px"; m.style.minHeight = "190px"; m.style.width = "100%";
+    }
+    function setMapExpanded(expanded) {
+      mapVisible = expanded;
+      const m = $("map"); const controls = $("mapControls"); const hint = $("mapHint"); const btn = $("toggleMapBtn");
+      controls.classList.toggle("active", mapVisible); hint.classList.toggle("active", mapVisible);
+      btn.textContent = mapVisible ? "hide map" : "map";
+      if (!mapVisible) { m.classList.remove("active"); m.style.display = "none"; return; }
+      forceMapBoxVisible();
+      const last = getLastLocation() || routePath[routePath.length - 1] || { lat: DEFAULT_MAP_LAT, lon: DEFAULT_MAP_LON, accuracy: 0, timestamp: new Date().toISOString() };
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        updateMap(last, false);
+        if (map) {
+          map.invalidateSize(true);
+          const line = routePath.map(p => [p.lat, p.lon]);
+          if (line.length > 1) map.fitBounds(line, { padding: [18, 18], maxZoom: 18 });
+          else map.setView([last.lat, last.lon], 16);
+        }
+      }));
+    }
+    function toggleMapSize() { setMapExpanded(!mapVisible); }
+
+    function showDemoNotice() {
+      const t = $("demoToast"); t.classList.add("active");
+      clearTimeout(demoToastTimer); demoToastTimer = setTimeout(() => t.classList.remove("active"), 5200);
+    }
+
+    function startLocationOnce() {
+      if (!navigator.geolocation) { setLocationStatus("Geolocation not supported."); return; }
+      setMapExpanded(true); setLocationStatus("Getting current location...");
+      navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+    }
+    function toggleTracking() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId); watchId = null;
+        $("gpsTrackBtn").textContent = "track";
+        setLocationStatus("Route tracking stopped. Saved route remains until cleared."); return;
+      }
+      if (!navigator.geolocation) { setLocationStatus("Geolocation not supported."); return; }
+      setMapExpanded(true); $("gpsTrackBtn").textContent = "stop"; setLocationStatus("Tracking route...");
+      watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+    }
+    function handleLocationError(error) {
+      let msg = "GPS unavailable. Check permission or step outside.";
+      if (error && error.code === 1) msg = "Location permission denied.";
+      if (error && error.code === 2) msg = "Location unavailable.";
+      if (error && error.code === 3) msg = "Location request timed out.";
+      setLocationStatus(msg);
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; $("gpsTrackBtn").textContent = "track"; }
+    }
+    function updateLocation(position) {
+      const point = { lat: position.coords.latitude, lon: position.coords.longitude, accuracy: position.coords.accuracy, timestamp: new Date().toISOString() };
+      saveLastLocation(point); addRoutePoint(point); updateMap(point);
+      setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Estimating cross streets...`);
+      maybeUpdateStreetEstimate(point);
+    }
+    function addRoutePoint(point) {
+      const last = routePath[routePath.length - 1];
+      if (!last || calculateDistance(last.lat, last.lon, point.lat, point.lon) > 3) {
+        routePath.push(point); routePath = routePath.slice(-700); saveRoutePath();
+      }
+    }
+    function initMap(lat, lon) {
+      if (map) return;
+      const m = $("map"); forceMapBoxVisible();
+      if (typeof L === "undefined") {
+        m.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:14px;text-align:center;font-weight:950;color:#6b6b88;background:white;border-radius:18px;">Map library did not load. Check connection, then reload.</div>`;
+        setLocationStatus("Map library did not load. Check connection, then reload."); return;
+      }
+      map = L.map("map", { zoomControl: false, attributionControl: true }).setView([lat, lon], 16);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 20 }).addTo(map);
+      routeLine = L.polyline([], { color: "#ff4f8b", weight: 7, opacity: 0.72, lineCap: "round" }).addTo(map);
+      currentMarker = L.circleMarker([lat, lon], { color: "#ffffff", weight: 3, fillColor: "#77c8ff", fillOpacity: 1, radius: 8 }).addTo(map);
+      setTimeout(() => map.invalidateSize(true), 120);
+    }
+    function updateMap(point, pan = true) {
+      initMap(point.lat, point.lon);
+      if (!map || !routeLine || !currentMarker) return;
+      routeLine.setLatLngs(routePath.map(p => [p.lat, p.lon]));
+      currentMarker.setLatLng([point.lat, point.lon]);
+      if (pan) map.setView([point.lat, point.lon], Math.max(map.getZoom(), 17));
+      if (mapVisible && map) setTimeout(() => map.invalidateSize(true), 120);
+    }
+    function clearRoute() {
+      if (!confirm("Clear local route memory and last GPS/cross-street estimate?")) return;
+      routePath = [];
+      localStorage.removeItem(ROUTE_KEY); localStorage.removeItem(LAST_LOCATION_KEY); localStorage.removeItem(LAST_STREET_KEY);
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; $("gpsTrackBtn").textContent = "track"; }
+      streetInput.value = ""; streetWasAuto = true; renderLocationTitle();
+      lastGeocodePoint = null; lastGeocodeAt = 0;
+      if (routeLine) routeLine.setLatLngs([]);
+      setLocationStatus("Local route memory cleared.");
+    }
+
+    function shouldGeocode(point, force = false) {
+      if (force) return true;
+      if (!lastGeocodePoint) return true;
+      if (Date.now() - lastGeocodeAt < 15000) return false;
+      return calculateDistance(lastGeocodePoint.lat, lastGeocodePoint.lon, point.lat, point.lon) > 25;
+    }
+    async function refreshStreetEstimate() {
+      const point = getLastLocation() || routePath[routePath.length - 1];
+      if (!point) { setLocationStatus("No GPS point yet. Tap locate first."); return; }
+      setLocationStatus("Refreshing cross-street estimate...");
+      await maybeUpdateStreetEstimate(point, true);
+    }
+    async function maybeUpdateStreetEstimate(point, force = false) {
+      if (!shouldGeocode(point, force)) {
+        const s = streetInput.value.trim();
+        setLocationStatus(s ? `GPS acquired: ±${Math.round(point.accuracy || 0)}m. Cross streets: ${s}` : `GPS acquired: ±${Math.round(point.accuracy || 0)}m.`);
+        return;
+      }
+      lastGeocodeAt = Date.now(); lastGeocodePoint = point;
+      try {
+        const estimate = await estimateCrossStreets(point.lat, point.lon);
+        if (estimate) {
+          localStorage.setItem(LAST_STREET_KEY, estimate);
+          if (streetWasAuto || !streetInput.value.trim() || force) { streetInput.value = estimate; streetWasAuto = true; }
+          renderLocationTitle();
+          setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Cross-street estimate updated.`);
+        } else setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. No cross-street estimate; type it manually.`);
+      } catch (err) { console.warn(err); setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Street lookup failed; type it manually.`); }
+    }
+    async function estimateCrossStreets(lat, lon) {
+      const reverse = await reverseGeocode(lat, lon).catch(() => null);
+      const primaryRoad = pickRoadName(reverse && reverse.address);
+      const displayName = reverse && reverse.display_name ? reverse.display_name : "";
+      const nearbyRoads = await nearbyNamedRoadsMultiRadius(lat, lon).catch(() => []);
+      const distinct = distinctRoads(nearbyRoads);
+      if (distinct.length >= 2) {
+        let first = distinct[0].name, second = distinct[1].name;
+        const primaryMatch = primaryRoad ? distinct.find(r => sameStreetName(r.name, primaryRoad)) : null;
+        if (primaryMatch) {
+          first = primaryMatch.name;
+          const cross = distinct.find(r => !sameStreetName(r.name, first));
+          if (cross) second = cross.name;
+        } else if (primaryRoad && !sameStreetName(primaryRoad, first) && !sameStreetName(primaryRoad, second)) {
+          first = primaryRoad; second = distinct[0].name;
+        }
+        return `${first} & ${second} (est.)`;
+      }
+      if (distinct.length === 1) {
+        const only = distinct[0].name;
+        if (primaryRoad && !sameStreetName(primaryRoad, only)) return `${primaryRoad} & ${only} (est.)`;
+        return `${only} — add nearest cross street if known`;
+      }
+      if (primaryRoad) return `${primaryRoad} — add nearest cross street if known`;
+      return displayName.split(",").slice(0, 3).join(", ").trim();
+    }
+    async function reverseGeocode(lat, lon) {
+      const url = new URL("https://nominatim.openstreetmap.org/reverse");
+      url.searchParams.set("format", "jsonv2"); url.searchParams.set("lat", String(lat));
+      url.searchParams.set("lon", String(lon)); url.searchParams.set("zoom", "18"); url.searchParams.set("addressdetails", "1");
+      const res = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
+      if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
+      return res.json();
+    }
+    async function nearbyNamedRoadsMultiRadius(lat, lon) {
+      const radii = [90, 180, 320, 500]; let best = [];
+      for (const radius of radii) {
+        const roads = await nearbyNamedRoads(lat, lon, radius).catch(() => []);
+        if (roads.length > best.length) best = roads;
+        if (distinctRoads(roads).length >= 2) return roads;
+      }
+      return best;
+    }
+    async function nearbyNamedRoads(lat, lon, radiusMeters) {
+      const query = `[out:json][timeout:10];way(around:${radiusMeters},${lat},${lon})["highway"]["name"];out tags geom;`;
+      const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!res.ok) throw new Error(`Overpass lookup failed: ${res.status}`);
+      const data = await res.json();
+      const byName = new Map();
+      for (const el of data.elements || []) {
+        if (!el.tags || !el.tags.name || !Array.isArray(el.geometry)) continue;
+        const name = el.tags.name; const roadClass = el.tags.highway || "road";
+        const d = minDistanceToWayMeters(lat, lon, el.geometry);
+        const candidate = { name, distance: d, roadClass, priority: roadClassPriority(roadClass) };
+        const old = byName.get(name);
+        if (!old || candidateScore(candidate) < candidateScore(old)) byName.set(name, candidate);
+      }
+      return Array.from(byName.values()).sort((a, b) => candidateScore(a) - candidateScore(b));
+    }
+    function distinctRoads(roads) {
+      const out = [];
+      for (const road of roads) {
+        if (!road.name) continue;
+        if (!out.some(r => sameStreetName(r.name, road.name))) out.push(road);
+      }
+      return out.sort((a, b) => candidateScore(a) - candidateScore(b));
+    }
+    function candidateScore(r) { return r.distance + (r.priority || 0); }
+    function roadClassPriority(highway) {
+      const h = String(highway || "");
+      if (["primary","secondary","tertiary","residential","unclassified","living_street"].includes(h)) return 0;
+      if (["service","track"].includes(h)) return 25;
+      if (["footway","path","cycleway","pedestrian","steps"].includes(h)) return 45;
+      if (["motorway","trunk"].includes(h)) return 60;
+      return 10;
+    }
+    function pickRoadName(address) {
+      if (!address) return "";
+      return address.road || address.pedestrian || address.footway || address.cycleway || address.path || address.neighbourhood || address.suburb || address.city_district || "";
+    }
+    function sameStreetName(a, b) { return normalizeStreetName(a) === normalizeStreetName(b); }
+    function normalizeStreetName(s) {
+      return String(s || "").toLowerCase()
+        .replace(/\b(street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|place|pl|court|ct|way|circle|cir|parkway|pkwy)\b/g, "")
+        .replace(/[^a-z0-9]/g, "").trim();
+    }
+    function minDistanceToWayMeters(lat, lon, geometry) {
+      if (!geometry.length) return Infinity;
+      if (geometry.length === 1) return calculateDistance(lat, lon, geometry[0].lat, geometry[0].lon);
+      let best = Infinity;
+      for (let i = 1; i < geometry.length; i++)
+        best = Math.min(best, pointToSegmentDistanceMeters({ lat, lon }, { lat: geometry[i-1].lat, lon: geometry[i-1].lon }, { lat: geometry[i].lat, lon: geometry[i].lon }));
+      return best;
+    }
+    function pointToSegmentDistanceMeters(p, a, b) {
+      const lat0 = p.lat * Math.PI / 180, mLat = 111320, mLon = 111320 * Math.cos(lat0);
+      const px = p.lon * mLon, py = p.lat * mLat, ax = a.lon * mLon, ay = a.lat * mLat, bx = b.lon * mLon, by = b.lat * mLat;
+      const dx = bx - ax, dy = by - ay;
+      if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay);
+      const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+      return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+    }
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3, p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+      const dp = (lat2-lat1)*Math.PI/180, dl = (lon2-lon1)*Math.PI/180;
+      const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // ---------- wire up ----------
+    $("saveBtn").addEventListener("click", logHandout);
+    $("clearHistoryBtn").addEventListener("click", clearHistory);
+    $("demoNoticeBtn").addEventListener("click", showDemoNotice);
+    $("qrBtn").addEventListener("click", showQr);
+    $("qrCloseBtn").addEventListener("click", closeQr);
+    $("toggleMapBtn").addEventListener("click", toggleMapSize);
+    $("hideMapBtn").addEventListener("click", () => setMapExpanded(false));
+    $("gpsOnceBtn").addEventListener("click", startLocationOnce);
+    $("gpsTrackBtn").addEventListener("click", toggleTracking);
+    $("refreshStreetsBtn").addEventListener("click", refreshStreetEstimate);
+    $("clearRouteBtn").addEventListener("click", clearRoute);
+    $("qrOverlay").addEventListener("click", e => { if (e.target.id === "qrOverlay") closeQr(); });
+    $("saveUserBtn").addEventListener("click", saveUserName);
+    $("changeUserBtn").addEventListener("click", changeUserName);
+    $("userNameInput").addEventListener("keydown", e => { if (e.key === "Enter") saveUserName(); });
+    streetInput.addEventListener("input", () => { streetWasAuto = false; localStorage.setItem(LAST_STREET_KEY, streetInput.value.trim()); renderLocationTitle(); });
+
+    bag = readBagFromUrl();
+    loadUserName();
+    loadLastStreet();
+    renderBag();
+    renderHistory();
+    renderLocationTitle();
+    if (routePath.length > 0) setLocationStatus(`Saved route loaded: ${routePath.length} point(s).`);
+  </script>
+</body>
+</html>
