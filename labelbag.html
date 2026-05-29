@@ -172,7 +172,13 @@
     function todayISO() { return new Date().toISOString().slice(0, 10); }
 
     function loadSaved() {
-      $("resolverUrl").value = localStorage.getItem(RESOLVER_KEY) || DEFAULT_RESOLVER;
+      let saved = localStorage.getItem(RESOLVER_KEY) || "";
+      // Self-heal: earlier versions defaulted to pillbag-qr-resolver.html, which 404s on the deployed site.
+      if (saved.includes("pillbag-qr-resolver.html")) {
+        saved = DEFAULT_RESOLVER;
+        localStorage.setItem(RESOLVER_KEY, saved);
+      }
+      $("resolverUrl").value = saved || DEFAULT_RESOLVER;
       $("preparedBy").value = localStorage.getItem(PREP_KEY) || "";
       $("madeDate").value = todayISO();
     }
