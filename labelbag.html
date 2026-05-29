@@ -154,6 +154,7 @@
   <script>
     const RESOLVER_KEY = "pillbag_maker_resolver_url_v1";
     const PREP_KEY = "pillbag_maker_preparedby_v1";
+    const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag.html";
 
     // ---- Payload contract (must match the resolver exactly) ----
     // { v:1, bag, by, made, note, items:[{n,q,s,exp,lot}] }
@@ -171,7 +172,7 @@
     function todayISO() { return new Date().toISOString().slice(0, 10); }
 
     function loadSaved() {
-      $("resolverUrl").value = localStorage.getItem(RESOLVER_KEY) || "";
+      $("resolverUrl").value = localStorage.getItem(RESOLVER_KEY) || DEFAULT_RESOLVER;
       $("preparedBy").value = localStorage.getItem(PREP_KEY) || "";
       $("madeDate").value = todayISO();
     }
@@ -262,7 +263,7 @@
 
     function resolverBase() {
       const v = $("resolverUrl").value.trim();
-      return v || (location.href.replace(/[^/]*$/, "") + "pillbag-qr-resolver.html");
+      return v || DEFAULT_RESOLVER;
     }
 
     function currentLink() {
