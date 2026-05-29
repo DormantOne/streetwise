@@ -1,0 +1,380 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Pill Bag QR Maker</title>
+  <style>
+    :root {
+      --pink: #ff7eb6; --hot: #ff4f8b; --peach: #ffb86b; --banana: #ffe66d;
+      --mint: #7ee7c8; --sky: #77c8ff; --lav: #b69cff; --ink: #24243a;
+      --soft: rgba(255,255,255,0.78); --muted: #6b6b88; --danger: #ff4f72;
+      --shadow: 0 16px 40px rgba(56, 42, 111, 0.16); --radius: 26px;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffe0ef 0, transparent 34%),
+        radial-gradient(circle at top right, #ddf7ff 0, transparent 32%),
+        linear-gradient(135deg, #fff8d8, #f3e8ff 45%, #dcfce7);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .banner {
+      position: sticky; top: 0; z-index: 1500;
+      padding: calc(7px + env(safe-area-inset-top)) 12px 7px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      color: white;
+      background: linear-gradient(90deg, var(--sky), var(--mint), var(--banana));
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    }
+    .banner span { font-weight: 1000; font-size: 1.08rem; letter-spacing: .02em; }
+    .banner a { color: white; font-weight: 1000; text-decoration: none; font-size: .8rem;
+      background: rgba(255,255,255,.22); padding: 7px 11px; border-radius: 999px; }
+    .app { max-width: 540px; margin: 0 auto; padding: 14px 14px calc(18px + env(safe-area-inset-bottom)); }
+    .card {
+      background: var(--soft); border: 1px solid rgba(255,255,255,.92);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 12px; margin: 10px 0; backdrop-filter: blur(14px);
+    }
+    .sectionTitle { font-weight: 1000; font-size: 1rem; margin-bottom: 8px;
+      display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    label.lbl { display:block; font-weight:950; font-size:.78rem; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.05em; margin:8px 2px 4px; }
+    input, textarea {
+      width: 100%; border: 0; outline: 0; border-radius: 16px; padding: 11px 12px;
+      background: white; color: var(--ink); font-size: 1rem;
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); font-family: inherit;
+    }
+    textarea { min-height: 56px; resize: vertical; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .grid3 { display:grid; grid-template-columns: 2fr 1fr; gap:8px; }
+    button {
+      border: 0; border-radius: 16px; padding: 11px 12px; font-weight: 1000;
+      color: var(--ink); cursor: pointer; font-size: .98rem;
+      box-shadow: 0 8px 16px rgba(0,0,0,.09); font-family: inherit;
+      min-height: 44px; touch-action: manipulation; transition: transform .08s ease, filter .08s ease;
+    }
+    button:active { transform: scale(.97); }
+    .addBtn { background: linear-gradient(135deg, var(--mint), var(--sky)); }
+    .mainBtn { width:100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color:white; font-size:1.08rem; }
+    .tinyBtn { padding:8px 11px; font-size:.82rem; border-radius:999px; background:white; box-shadow:none; min-height:34px; white-space:nowrap; }
+    .dangerTinyBtn { color: var(--hot); background:#fff0f7; }
+    .item {
+      background:white; border-radius:18px; padding:10px; margin-bottom:8px;
+      box-shadow: 0 8px 18px rgba(101,78,163,.09); position:relative;
+    }
+    .item .rmRow { display:flex; justify-content:flex-end; margin-top:6px; }
+    .expBad { color: var(--danger); font-weight:950; }
+    .empty { text-align:center; color:var(--muted); padding:12px; font-weight:900; }
+    .qrWrap { text-align:center; }
+    .qrBox { display:inline-block; background:white; padding:12px; border-radius:18px;
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); }
+    .qrBox img, .qrBox canvas { display:block; width:min(280px,76vw); height:min(280px,76vw); image-rendering: pixelated; }
+    .qrMeta { color:var(--muted); font-weight:850; font-size:.82rem; margin-top:8px; word-break:break-word; }
+    .summary { background:linear-gradient(135deg,#fff0f7,#fff9db); border-radius:16px; padding:10px 12px;
+      font-weight:900; font-size:.92rem; line-height:1.35; margin-top:10px; text-align:left; }
+    .summary .h { font-weight:1000; }
+    .btnRow { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; justify-content:center; }
+    .note { color:var(--muted); font-size:.8rem; font-weight:850; line-height:1.3; margin-top:8px; }
+    .warn { background:#fff0f7; color:var(--hot); border-radius:14px; padding:8px 10px;
+      font-weight:950; font-size:.82rem; line-height:1.3; }
+    @media print {
+      body { background:white; }
+      .banner, .app > .card:not(#printCard), .btnRow, .note, #cfgCard { display:none !important; }
+      #printCard { box-shadow:none; border:none; background:white; }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <span>💊 Pill Bag QR Maker</span>
+    <a href="#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
+  </div>
+
+  <main class="app">
+
+    <section class="card" id="cfgCard">
+      <div class="sectionTitle"><span>Resolver app link</span></div>
+      <label class="lbl">URL of the deployed resolver page</label>
+      <input id="resolverUrl" placeholder="https://your-site.example/pillbag-qr-resolver.html" autocomplete="off" />
+      <div class="note">This is where each QR points. The medication details get encoded into the link after <strong>#m=</strong> so they never hit a server log. Set this once; it is remembered on this device.</div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle"><span>Bag info</span></div>
+      <div class="grid2">
+        <div>
+          <label class="lbl">Bag / lot ID</label>
+          <input id="bagId" placeholder="BAG-001" autocomplete="off" />
+        </div>
+        <div>
+          <label class="lbl">Prep date</label>
+          <input id="madeDate" type="date" autocomplete="off" />
+        </div>
+      </div>
+      <label class="lbl">Prepared by</label>
+      <input id="preparedBy" placeholder="Coordinator / pharmacy name" autocomplete="off" />
+      <label class="lbl">Bag note (optional)</label>
+      <input id="bagNote" placeholder="e.g. Keep cool, naloxone kit" autocomplete="off" />
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">
+        <span>Medications</span>
+        <button class="tinyBtn addBtn" id="addItemBtn">+ add med</button>
+      </div>
+      <div id="items"></div>
+    </section>
+
+    <section class="card" id="printCard">
+      <div class="sectionTitle"><span>QR code</span></div>
+      <div class="qrWrap">
+        <div class="qrBox" id="qrBox"><div class="empty">Add a medication to generate the QR</div></div>
+        <div class="summary" id="summary"></div>
+        <div class="qrMeta" id="qrMeta"></div>
+      </div>
+      <div class="btnRow">
+        <button class="tinyBtn" id="downloadBtn">download PNG</button>
+        <button class="tinyBtn" id="copyLinkBtn">copy link</button>
+        <button class="tinyBtn" id="printBtn">print label</button>
+        <button class="tinyBtn" id="testBtn">test in resolver ↗</button>
+      </div>
+      <div class="note">The QR encodes only what is in the bag (meds, counts, strength, expiration, lot, bag ID, prep info). It contains <strong>no patient or recipient information</strong>. Who handed it out and where is captured by the resolver at scan time.</div>
+    </section>
+
+  </main>
+
+  <!-- Client-side QR generation: payload never leaves the device -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script>
+    const RESOLVER_KEY = "pillbag_maker_resolver_url_v1";
+    const PREP_KEY = "pillbag_maker_preparedby_v1";
+
+    // ---- Payload contract (must match the resolver exactly) ----
+    // { v:1, bag, by, made, note, items:[{n,q,s,exp,lot}] }
+    // n=name  q=qty  s=strength/dose  exp=YYYY-MM or YYYY-MM-DD  lot=lot#
+    function encodePayload(obj) {
+      const json = JSON.stringify(obj);
+      const b64 = btoa(unescape(encodeURIComponent(json)));
+      return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    let items = [{ n: "", q: "", s: "", exp: "", lot: "" }];
+
+    const $ = id => document.getElementById(id);
+
+    function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+    function loadSaved() {
+      $("resolverUrl").value = localStorage.getItem(RESOLVER_KEY) || "";
+      $("preparedBy").value = localStorage.getItem(PREP_KEY) || "";
+      $("madeDate").value = todayISO();
+    }
+
+    function renderItems() {
+      const wrap = $("items");
+      wrap.innerHTML = "";
+      if (!items.length) {
+        wrap.innerHTML = `<div class="empty">No medications yet</div>`;
+        return;
+      }
+      items.forEach((it, i) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <label class="lbl">Medication name</label>
+          <input data-i="${i}" data-f="n" placeholder="e.g. Naloxone, Ibuprofen" value="">
+          <div class="grid3" style="margin-top:6px;">
+            <div>
+              <label class="lbl">Strength / dose</label>
+              <input data-i="${i}" data-f="s" placeholder="4 mg, 200 mg" value="">
+            </div>
+            <div>
+              <label class="lbl">Qty</label>
+              <input data-i="${i}" data-f="q" inputmode="numeric" placeholder="2" value="">
+            </div>
+          </div>
+          <div class="grid2" style="margin-top:6px;">
+            <div>
+              <label class="lbl">Expiration</label>
+              <input data-i="${i}" data-f="exp" type="month" value="">
+            </div>
+            <div>
+              <label class="lbl">Lot #</label>
+              <input data-i="${i}" data-f="lot" placeholder="optional" value="">
+            </div>
+          </div>
+          <div class="rmRow"><button class="tinyBtn dangerTinyBtn" data-rm="${i}">remove</button></div>
+        `;
+        wrap.appendChild(div);
+        div.querySelector(`[data-f="n"]`).value = it.n;
+        div.querySelector(`[data-f="s"]`).value = it.s;
+        div.querySelector(`[data-f="q"]`).value = it.q;
+        div.querySelector(`[data-f="exp"]`).value = it.exp;
+        div.querySelector(`[data-f="lot"]`).value = it.lot;
+      });
+      wrap.querySelectorAll("input").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const i = +inp.dataset.i, f = inp.dataset.f;
+          items[i][f] = inp.value;
+          buildQr();
+        });
+      });
+      wrap.querySelectorAll("[data-rm]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          items.splice(+btn.dataset.rm, 1);
+          if (!items.length) items.push({ n: "", q: "", s: "", exp: "", lot: "" });
+          renderItems(); buildQr();
+        });
+      });
+    }
+
+    function cleanItems() {
+      return items
+        .filter(it => (it.n || "").trim())
+        .map(it => {
+          const o = { n: it.n.trim() };
+          if ((it.q + "").trim()) o.q = (it.q + "").trim();
+          if ((it.s || "").trim()) o.s = it.s.trim();
+          if ((it.exp || "").trim()) o.exp = it.exp.trim();
+          if ((it.lot || "").trim()) o.lot = it.lot.trim();
+          return o;
+        });
+    }
+
+    function buildPayloadObj() {
+      const obj = { v: 1, items: cleanItems() };
+      const bag = $("bagId").value.trim();
+      const by = $("preparedBy").value.trim();
+      const made = $("madeDate").value.trim();
+      const note = $("bagNote").value.trim();
+      if (bag) obj.bag = bag;
+      if (by) obj.by = by;
+      if (made) obj.made = made;
+      if (note) obj.note = note;
+      return obj;
+    }
+
+    function resolverBase() {
+      const v = $("resolverUrl").value.trim();
+      return v || (location.href.replace(/[^/]*$/, "") + "pillbag-qr-resolver.html");
+    }
+
+    function currentLink() {
+      const obj = buildPayloadObj();
+      if (!obj.items.length) return "";
+      return resolverBase().split("#")[0] + "#m=" + encodePayload(obj);
+    }
+
+    function expBadge(exp) {
+      if (!exp) return "";
+      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
+      if (isNaN(d)) return "";
+      const now = new Date();
+      const monthsOut = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+      if (monthsOut < 0) return ` <span class="expBad">⚠ EXPIRED</span>`;
+      if (monthsOut <= 2) return ` <span class="expBad">⚠ expires soon</span>`;
+      return "";
+    }
+
+    function renderSummary(obj) {
+      const lines = [];
+      if (obj.bag) lines.push(`<div class="h">Bag ${escapeHtml(obj.bag)}</div>`);
+      obj.items.forEach(it => {
+        const bits = [escapeHtml(it.n)];
+        if (it.s) bits.push(escapeHtml(it.s));
+        const qty = it.q ? `×${escapeHtml(it.q)}` : "";
+        const exp = it.exp ? ` · exp ${escapeHtml(it.exp)}${expBadge(it.exp)}` : "";
+        const lot = it.lot ? ` · lot ${escapeHtml(it.lot)}` : "";
+        lines.push(`• ${bits.join(" ")} ${qty}${exp}${lot}`);
+      });
+      if (obj.note) lines.push(`<div style="color:var(--muted);margin-top:4px;">📝 ${escapeHtml(obj.note)}</div>`);
+      return lines.join("<br>");
+    }
+
+    function escapeHtml(s) {
+      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    let lastDataUrl = "";
+
+    function buildQr() {
+      const obj = buildPayloadObj();
+      const box = $("qrBox"), summary = $("summary"), meta = $("qrMeta");
+      if (!obj.items.length) {
+        box.innerHTML = `<div class="empty">Add a medication to generate the QR</div>`;
+        summary.innerHTML = ""; meta.textContent = ""; lastDataUrl = ""; return;
+      }
+      const link = currentLink();
+      summary.innerHTML = renderSummary(obj);
+
+      if (typeof qrcode === "undefined") {
+        box.innerHTML = `<div class="warn">QR library did not load. Check connection and reload.</div>`;
+        meta.textContent = ""; return;
+      }
+      let made = false;
+      for (const ec of ["M", "L"]) {
+        try {
+          const qr = qrcode(0, ec);
+          qr.addData(link);
+          qr.make();
+          box.innerHTML = qr.createImgTag(6, 8);
+          lastDataUrl = qr.createDataURL(6, 8);
+          made = true;
+          break;
+        } catch (e) { /* try lower error correction for more capacity */ }
+      }
+      if (!made) {
+        box.innerHTML = `<div class="warn">Too much data for one QR. Use fewer meds per bag or shorter text.</div>`;
+        lastDataUrl = "";
+      }
+      meta.textContent = `${link.length} chars in link`;
+    }
+
+    // ---- Buttons ----
+    $("addItemBtn").addEventListener("click", () => {
+      items.push({ n: "", q: "", s: "", exp: "", lot: "" });
+      renderItems();
+    });
+    ["bagId","madeDate","preparedBy","bagNote","resolverUrl"].forEach(id => $(id).addEventListener("input", () => {
+      if (id === "resolverUrl") localStorage.setItem(RESOLVER_KEY, $("resolverUrl").value.trim());
+      if (id === "preparedBy") localStorage.setItem(PREP_KEY, $("preparedBy").value.trim());
+      buildQr();
+    }));
+    $("downloadBtn").addEventListener("click", () => {
+      if (!lastDataUrl) return;
+      const a = document.createElement("a");
+      const obj = buildPayloadObj();
+      a.href = lastDataUrl;
+      a.download = `pillbag-${(obj.bag || "qr").replace(/[^a-z0-9_-]/gi,"")}.gif`;
+      a.click();
+    });
+    $("copyLinkBtn").addEventListener("click", async () => {
+      const link = currentLink();
+      if (!link) return;
+      try { await navigator.clipboard.writeText(link); $("copyLinkBtn").textContent = "copied!"; setTimeout(()=>$("copyLinkBtn").textContent="copy link",1200); }
+      catch { prompt("Copy this link:", link); }
+    });
+    $("testBtn").addEventListener("click", () => {
+      const link = currentLink();
+      if (link) window.open(link, "_blank", "noopener");
+    });
+    $("printBtn").addEventListener("click", () => window.print());
+    function syncResolverLink() {
+      const l = currentLink() || resolverBase();
+      $("openResolverLink").href = l;
+    }
+    document.addEventListener("input", syncResolverLink);
+
+    loadSaved();
+    renderItems();
+    buildQr();
+    syncResolverLink();
+  </script>
+</body>
+</html>
