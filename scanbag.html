@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -259,12 +260,28 @@
     const streetInput = document.getElementById("streetInput");
     const $ = id => document.getElementById(id);
 
-    // ---- Payload contract (must match the maker exactly) ----
+    // ---- Payload contract (must match the maker's encodePayload exactly) ----
+    // Order: v, bag, made, by, note, name, dose, qty, exp, lot
+    const SEP = "\u001f";
     function decodePayload(s) {
       s = s.replace(/-/g, "+").replace(/_/g, "/");
       while (s.length % 4) s += "=";
-      const json = decodeURIComponent(escape(atob(s)));
-      return JSON.parse(json);
+      const str = decodeURIComponent(escape(atob(s)));
+      // Old QRs were JSON; new QRs are a compact unit-separated string. Read both.
+      if (str.charAt(0) === "{") return JSON.parse(str);
+      const f = str.split(SEP);
+      const it = {};
+      if (f[5]) it.n = f[5];
+      if (f[7]) it.q = f[7];
+      if (f[6]) it.s = f[6];
+      if (f[8]) it.exp = f[8];
+      if (f[9]) it.lot = f[9];
+      const obj = { v: 1, items: it.n ? [it] : [] };
+      if (f[1]) obj.bag = f[1];
+      if (f[3]) obj.by = f[3];
+      if (f[2]) obj.made = f[2];
+      if (f[4]) obj.note = f[4];
+      return obj;
     }
 
     function readBagFromUrl() {
