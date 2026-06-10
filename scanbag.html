@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Pill Bag QR Maker</title>
+  <title>Pill Bag Resolver</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root {
       --pink: #ff7eb6; --hot: #ff4f8b; --peach: #ffb86b; --banana: #ffe66d;
@@ -26,663 +26,722 @@
     }
     .banner {
       position: sticky; top: 0; z-index: 1500;
-      padding: calc(7px + env(safe-area-inset-top)) 12px 7px;
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      color: white;
-      background: linear-gradient(90deg, var(--sky), var(--mint), var(--banana));
+      padding: calc(7px + env(safe-area-inset-top)) 10px 7px;
+      display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px;
+      color: white; background: linear-gradient(90deg, var(--danger), var(--lav), var(--sky));
       box-shadow: 0 8px 20px rgba(0,0,0,.12);
     }
-    .banner span { font-weight: 1000; font-size: 1.08rem; letter-spacing: .02em; }
-    .banner a { color: white; font-weight: 1000; text-decoration: none; font-size: .8rem;
-      background: rgba(255,255,255,.22); padding: 7px 11px; border-radius: 999px; }
+    .banner span { font-weight: 1000; font-size: 1.08rem; letter-spacing: .02em; white-space: nowrap; }
+    .bannerDemoBtn {
+      min-height: 34px; height: 34px; padding: 0 10px; border-radius: 999px;
+      background: rgba(255,255,255,.22); color: white; box-shadow: none;
+      font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .demoToast {
+      position: fixed; top: calc(52px + env(safe-area-inset-top)); left: 50%;
+      transform: translateX(-50%) translateY(-10px); z-index: 1400;
+      width: min(500px, calc(100vw - 24px)); padding: 11px 13px; border-radius: 20px;
+      background: rgba(255,255,255,.96); color: var(--ink);
+      box-shadow: 0 18px 44px rgba(36,36,58,.22); font-size: .86rem; font-weight: 950;
+      line-height: 1.25; opacity: 0; pointer-events: none; transition: opacity .22s ease, transform .22s ease;
+    }
+    .demoToast.active { opacity: 1; transform: translateX(-50%) translateY(0); }
     .app { max-width: 540px; margin: 0 auto; padding: 14px 14px calc(18px + env(safe-area-inset-bottom)); }
     .card {
       background: var(--soft); border: 1px solid rgba(255,255,255,.92);
       border-radius: var(--radius); box-shadow: var(--shadow);
       padding: 12px; margin: 10px 0; backdrop-filter: blur(14px);
     }
-    .sectionTitle { font-weight: 1000; font-size: 1rem; margin-bottom: 8px;
-      display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    label.lbl { display:block; font-weight:950; font-size:.78rem; color:var(--muted);
-      text-transform:uppercase; letter-spacing:.05em; margin:8px 2px 4px; }
+    .qrBtn {
+      width: 46px; min-width: 46px; height: 34px; min-height: 34px; padding: 0; border-radius: 18px;
+      background: linear-gradient(135deg, var(--banana), var(--mint)); color: var(--ink);
+      font-size: .95rem; box-shadow: 0 10px 22px rgba(101, 78, 163, .15);
+    }
+    .row, .userSetRow { display: flex; gap: 10px; align-items: stretch; }
+    .userSetRow { gap: 8px; }
+    .userShown { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 38px; }
+    .userTiny { min-width: 0; font-size: .86rem; color: var(--muted); font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .userTiny strong { color: var(--ink); }
     input, textarea {
-      width: 100%; border: 0; outline: 0; border-radius: 16px; padding: 11px 12px;
+      width: 100%; border: 0; outline: 0; border-radius: 18px; padding: 12px 13px;
       background: white; color: var(--ink); font-size: 1rem;
       box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); font-family: inherit;
     }
-    textarea { min-height: 56px; resize: vertical; }
-    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-    .grid3 { display:grid; grid-template-columns: 2fr 1fr; gap:8px; }
+    textarea { min-height: 64px; resize: none; }
     button {
-      border: 0; border-radius: 16px; padding: 11px 12px; font-weight: 1000;
-      color: var(--ink); cursor: pointer; font-size: .98rem;
-      box-shadow: 0 8px 16px rgba(0,0,0,.09); font-family: inherit;
-      min-height: 44px; touch-action: manipulation; transition: transform .08s ease, filter .08s ease;
+      border: 0; border-radius: 18px; padding: 11px 12px; font-weight: 1000; color: var(--ink);
+      cursor: pointer; font-size: .98rem; box-shadow: 0 8px 16px rgba(0,0,0,.09);
+      transition: transform .08s ease, filter .08s ease, opacity .08s ease;
+      font-family: inherit; min-height: 44px; touch-action: manipulation;
     }
     button:active { transform: scale(.97); }
-    button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
-    .addBtn { background: linear-gradient(135deg, var(--mint), var(--sky)); }
-    .mainBtn { width:100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color:white; font-size:1.08rem; }
-    .tinyBtn { padding:8px 11px; font-size:.82rem; border-radius:999px; background:white; box-shadow:none; min-height:34px; white-space:nowrap; }
-    .dangerTinyBtn { color: var(--hot); background:#fff0f7; }
-    .item {
-      background:white; border-radius:18px; padding:10px; margin-bottom:8px;
-      box-shadow: 0 8px 18px rgba(101,78,163,.09); position:relative;
+    .mainBtn { width: 100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color: white; font-size: 1.08rem; }
+    .ghostBtn { background: white; box-shadow: none; color: var(--muted); min-height: 38px; padding: 8px 12px; }
+    .tinyBtn { padding: 8px 11px; font-size: .82rem; border-radius: 999px; background: white; box-shadow: none; min-height: 34px; white-space: nowrap; }
+    .dangerTinyBtn { color: var(--hot); background: #fff0f7; }
+    .sectionTitle { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-weight: 1000; font-size: 1rem; }
+    .sectionTitle > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .miniActions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .locationGrid { display: grid; gap: 8px; }
+    .mapControls { display: none; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .mapControls.active { display: flex; }
+    .locationStatus { color: var(--muted); font-weight: 900; font-size: .84rem; min-height: 1.1em; line-height: 1.25; }
+    #map {
+      display: none; height: 190px; min-height: 190px; width: 100%; border-radius: 20px; overflow: hidden;
+      border: 3px solid rgba(255,255,255,.9);
+      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06), 0 10px 22px rgba(101, 78, 163, .12); background: #e6f7ff;
     }
-    .item .rmRow { display:flex; justify-content:flex-end; margin-top:6px; }
-    .expBad { color: var(--danger); font-weight:950; }
-    .empty { text-align:center; color:var(--muted); padding:12px; font-weight:900; }
-    .qrWrap { text-align:center; }
-    .qrBox { display:inline-block; background:white; padding:12px; border-radius:18px;
-      box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); }
-    .qrBox img, .qrBox canvas { display:block; width:min(280px,76vw); height:min(280px,76vw); image-rendering: pixelated; }
-    .qrMeta { color:var(--muted); font-weight:850; font-size:.82rem; margin-top:8px; word-break:break-word; }
-    .summary { background:linear-gradient(135deg,#fff0f7,#fff9db); border-radius:16px; padding:10px 12px;
-      font-weight:900; font-size:.92rem; line-height:1.35; margin-top:10px; text-align:left; }
-    .summary .h { font-weight:1000; }
-    .btnRow { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; justify-content:center; }
-    .note { color:var(--muted); font-size:.8rem; font-weight:850; line-height:1.3; margin-top:8px; }
-    .warn { background:#fff0f7; color:var(--hot); border-radius:14px; padding:8px 10px;
-      font-weight:950; font-size:.82rem; line-height:1.3; }
+    #map.active { display: block !important; height: 190px !important; min-height: 190px !important; }
+    .mapHint { display: none; color: var(--muted); font-size: .78rem; font-weight: 850; line-height: 1.25; }
+    .mapHint.active { display: block; }
+    .leaflet-control-attribution { font-size: 9px !important; }
 
-    /* ---- Batch collection ---- */
-    .count { font-weight:900; color:var(--muted); font-size:.82rem; }
-    .batchList { display:grid; gap:8px; max-height:min(40vh,320px); overflow:auto; overscroll-behavior:contain; }
-    .batchItem { background:white; border-radius:16px; padding:10px 12px; box-shadow:0 8px 18px rgba(101,78,163,.09); }
-    .batchTop { display:flex; justify-content:space-between; align-items:center; gap:8px; font-weight:1000; }
-    .batchSub { color:var(--muted); font-weight:850; font-size:.82rem; margin-top:3px; line-height:1.3; word-break:break-word; }
-
-    /* ---- Batch print sheet (hidden on screen, shown only when printing a batch) ---- */
-    #batchSheet { display:none; }
-    .labelGrid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
-    .label { border:1px solid #cfcfe0; border-radius:14px; padding:10px 10px 8px; text-align:center;
-      page-break-inside:avoid; break-inside:avoid; }
-    .label .lHead { font-weight:1000; font-size:1.02rem; }
-    .label .lMeta { color:#555; font-size:.72rem; font-weight:800; margin-top:1px; }
-    .label .lQr img { width:150px; height:150px; image-rendering:pixelated; margin:6px 0 4px; }
-    .label .lItems { text-align:left; font-size:.78rem; font-weight:800; line-height:1.3; }
-    .label .lItem { margin:1px 0; }
-    .label .lNote { text-align:left; font-size:.74rem; margin-top:4px; }
-    .label .lScan { color:#888; font-size:.66rem; font-weight:800; margin-top:6px; text-transform:uppercase; letter-spacing:.05em; }
-
-    @media print {
-      body { background:white; }
-      .banner, .btnRow, .note { display:none !important; }
-      /* single-label mode: show only the QR preview card */
-      body.mode-single .app > .card:not(#printCard) { display:none !important; }
-      body.mode-single #printCard { box-shadow:none; border:none; background:white; }
-      body.mode-single #batchSheet { display:none !important; }
-      /* batch mode: hide the whole app, show the label sheet */
-      body.mode-batch .app { display:none !important; }
-      body.mode-batch #batchSheet { display:block !important; padding:6px; }
+    /* Bag (scanned payload) card */
+    .bagCard { background: linear-gradient(135deg, #fff, #ecfdf6); border:1px solid rgba(126,231,200,.6); }
+    .bagTitle { font-weight:1000; font-size:1.25rem; display:flex; align-items:center; gap:8px; }
+    .bagMeta { color:var(--muted); font-weight:900; font-size:.82rem; margin-top:2px; }
+    .bagItem {
+      background:white; border-radius:16px; padding:10px 12px; margin-top:8px;
+      box-shadow: 0 6px 14px rgba(101,78,163,.08); display:flex; justify-content:space-between; gap:8px; align-items:flex-start;
     }
+    .bagItem .nm { font-weight:1000; font-size:1.02rem; }
+    .bagItem .sub { color:var(--muted); font-weight:900; font-size:.8rem; margin-top:2px; }
+    .qty { font-weight:1000; font-size:1.1rem; white-space:nowrap; color:var(--ink);
+      background:linear-gradient(135deg,var(--banana),var(--mint)); padding:4px 10px; border-radius:999px; }
+    .expFlag { display:inline-block; margin-top:4px; padding:3px 8px; border-radius:999px; font-size:.74rem; font-weight:1000; }
+    .expFlag.bad { background:#ffe1ea; color:var(--danger); }
+    .expFlag.soon { background:#fff3d6; color:#b8860b; }
+    .expFlag.ok { background:#e3f9ee; color:#1c9c6b; }
+    .bagNote { margin-top:8px; color:var(--ink); font-weight:900; font-size:.9rem; }
+    .noBag { text-align:center; color:var(--muted); padding:14px 8px; font-weight:900; line-height:1.4; }
+
+    .history { max-height: min(30vh, 240px); overflow-y: auto; display: grid; gap: 9px; overscroll-behavior: contain; }
+    .historyItem { background: white; border-radius: 18px; padding: 11px 12px; box-shadow: 0 8px 18px rgba(101, 78, 163, .09); position: relative; }
+    .historyTop { display: flex; justify-content: space-between; gap: 10px; font-weight: 1000; }
+    .time { color: var(--muted); font-size: .78rem; white-space: nowrap; padding-top: 2px; }
+    .did { color: var(--muted); margin-top: 4px; font-size: .9rem; line-height: 1.3; }
+    .deleteNoteBtn { border-radius: 999px; box-shadow: none; background: #fff0f7; color: var(--hot);
+      min-height: 28px; height: 28px; padding: 0 9px; font-size: .8rem; flex: 0 0 auto; }
+    .empty { text-align: center; color: var(--muted); padding: 18px 10px; font-weight: 900; }
+    .bottomRow { display: flex; justify-content: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+    .qrOverlay { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center;
+      padding: 18px; background: rgba(36, 36, 58, .46); backdrop-filter: blur(10px); }
+    .qrOverlay.active { display: flex; }
+    .qrCard { width: min(340px, 100%); background: linear-gradient(135deg, #fff, #fff0f7);
+      border: 1px solid rgba(255,255,255,.95); border-radius: 30px; box-shadow: 0 24px 60px rgba(36, 36, 58, .28); padding: 18px; text-align: center; }
+    .qrTitle { font-weight: 1000; font-size: 1.2rem; margin-bottom: 3px; }
+    .qrSub { color: var(--muted); font-weight: 800; font-size: .9rem; margin-bottom: 12px; }
+    .qrBox { display: inline-block; background: white; padding: 10px; border-radius: 18px; box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); }
+    .qrBox img { display: block; width: min(250px, 72vw); height: min(250px, 72vw); image-rendering: pixelated; }
+    .qrText { margin: 12px 0; color: var(--muted); font-size: .85rem; font-weight: 800; word-break: break-word; max-height: 74px; overflow: auto; }
   </style>
 </head>
-<body class="mode-single">
+<body>
   <div class="banner">
-    <span>💊 Pill Bag QR Maker</span>
-    <a href="#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
+    <span>💊 Bag Resolver</span>
+    <button class="bannerDemoBtn" id="demoNoticeBtn" title="Show notice">notice</button>
+    <button class="qrBtn" id="qrBtn" title="Share resolver" aria-label="Share resolver">QR</button>
+  </div>
+
+  <div class="demoToast" id="demoToast" aria-live="polite">
+    The bag QR carries only medication contents — never recipient or patient information. This page captures who handed it out, GPS/cross-street estimate, and time. Do not enter recipient names or any private medical info. History stays local on this device; only the fields below are sent to the configured form.
   </div>
 
   <main class="app">
 
-    <section class="card" id="cfgCard">
-      <div class="sectionTitle"><span>Resolver app link</span></div>
-      <label class="lbl">URL of the deployed resolver page</label>
-      <input id="resolverUrl" placeholder="https://dormantone.github.io/streetwise/scanbag.html" autocomplete="off" />
-      <div class="note">This is where each QR points. The medication details get encoded into the link after <strong>#m=</strong> so they never hit a server log. Set this once; it is remembered on this device.</div>
+    <!-- Scanned bag contents -->
+    <section class="card bagCard" id="bagCard">
+      <div class="noBag" id="bagBody">Loading bag…</div>
     </section>
 
-    <section class="card">
-      <div class="sectionTitle"><span>Bag info</span></div>
-      <div class="grid2">
-        <div>
-          <label class="lbl">Bag / lot ID</label>
-          <input id="bagId" placeholder="BAG-001" autocomplete="off" />
-        </div>
-        <div>
-          <label class="lbl">Prep date</label>
-          <input id="madeDate" type="date" autocomplete="off" />
+    <section class="card" id="userCard">
+      <div id="userSet">
+        <div class="sectionTitle"><span>Volunteer (you)</span></div>
+        <div class="userSetRow">
+          <input id="userNameInput" placeholder="Your name" autocomplete="off" />
+          <button class="tinyBtn" id="saveUserBtn">save</button>
         </div>
       </div>
-      <label class="lbl">Prepared by</label>
-      <input id="preparedBy" placeholder="Coordinator / pharmacy name" autocomplete="off" />
-      <label class="lbl">Bag note (optional)</label>
-      <input id="bagNote" placeholder="e.g. Keep cool, naloxone kit" autocomplete="off" />
+      <div id="userShown" class="userShown" style="display:none;">
+        <div class="userTiny">volunteer: <strong id="userNameSmall"></strong></div>
+        <button class="tinyBtn" id="changeUserBtn">change</button>
+      </div>
     </section>
 
     <section class="card">
       <div class="sectionTitle">
-        <span>Medications</span>
-        <button class="tinyBtn addBtn" id="addItemBtn">+ add med</button>
+        <span id="locationTitle">Location</span>
+        <div class="miniActions"><button class="tinyBtn" id="toggleMapBtn">map</button></div>
       </div>
-      <div id="items"></div>
+      <div class="locationGrid">
+        <input id="streetInput" placeholder="Auto cross streets, editable" autocomplete="off" />
+        <div id="locationStatus" class="locationStatus">Location idle.</div>
+        <div id="map"></div>
+        <div class="mapControls" id="mapControls">
+          <button class="tinyBtn" id="hideMapBtn">hide map</button>
+          <button class="tinyBtn" id="gpsOnceBtn">locate</button>
+          <button class="tinyBtn" id="gpsTrackBtn">track</button>
+          <button class="tinyBtn" id="refreshStreetsBtn">streets</button>
+          <button class="tinyBtn dangerTinyBtn" id="clearRouteBtn">clear route</button>
+        </div>
+        <div class="mapHint" id="mapHint">Map uses your browser GPS. Cross-streets are estimated from OpenStreetMap and should be corrected if wrong.</div>
+      </div>
     </section>
 
-    <section class="card" id="printCard">
-      <div class="sectionTitle"><span>QR code</span></div>
-      <div class="qrWrap">
-        <div class="qrBox" id="qrBox"><div class="empty">Add a medication to generate the QR</div></div>
-        <div class="summary" id="summary"></div>
-        <div class="qrMeta" id="qrMeta"></div>
-      </div>
-      <div class="btnRow">
-        <button class="tinyBtn addBtn" id="addBatchBtn">+ add to batch</button>
-        <button class="tinyBtn" id="downloadBtn">download image</button>
-        <button class="tinyBtn" id="copyLinkBtn">copy link</button>
-        <button class="tinyBtn" id="printBtn">print this label</button>
-        <button class="tinyBtn" id="testBtn">test in resolver ↗</button>
-      </div>
-      <div class="note">The QR encodes only what is in the bag (meds, counts, strength, expiration, lot, bag ID, prep info). It contains <strong>no patient or recipient information</strong>. Who handed it out and where is captured by the resolver at scan time.</div>
+    <section class="card">
+      <textarea id="whatDid" placeholder="Optional handout note (e.g. counseled on use, declined refill)"></textarea>
+      <div style="height: 10px"></div>
+      <button class="mainBtn" id="saveBtn">Log handout + open form</button>
     </section>
 
-    <section class="card" id="batchCard">
+    <section class="card">
       <div class="sectionTitle">
-        <span>Batch <span class="count" id="batchCount"></span></span>
+        <span>Handout history</span>
+        <button class="tinyBtn" id="clearHistoryBtn">clear</button>
       </div>
-      <div id="batchList" class="batchList"></div>
-      <div class="btnRow" style="justify-content:flex-start;">
-        <button class="tinyBtn" id="printBatchBtn">print batch labels</button>
-        <button class="tinyBtn" id="downloadCsvBtn">download pillfill CSV</button>
-        <button class="tinyBtn" id="copyTsvBtn">copy rows (TSV)</button>
-        <button class="tinyBtn" id="pillfillFormBtn">send bag to pillfill form ↗</button>
-        <button class="tinyBtn dangerTinyBtn" id="clearBatchBtn">clear batch</button>
-      </div>
-      <div class="note"><strong>Add to batch</strong> snapshots the bag above. Build as many as you like, then <strong>print batch labels</strong> for one sheet of QR labels, or send them to your <strong>pillfill</strong> spreadsheet: <strong>download pillfill CSV</strong> (open or import in Excel / Google Sheets) or <strong>copy rows (TSV)</strong> (paste straight into the sheet). Each spreadsheet row is one medication line. The batch lives only on this device until you clear it. No patient info is included.</div>
+      <div id="history" class="history"></div>
     </section>
 
   </main>
 
-  <!-- Hidden label sheet, filled and shown only when printing a batch -->
-  <div id="batchSheet" aria-hidden="true"></div>
+  <div class="qrOverlay" id="qrOverlay" aria-hidden="true">
+    <div class="qrCard" role="dialog" aria-modal="true" aria-label="QR share">
+      <div class="qrTitle" id="qrTitle">QR</div>
+      <div class="qrSub" id="qrSub">scan to open</div>
+      <div class="qrBox"><img id="qrImg" alt="QR code" /></div>
+      <div class="qrText" id="qrText"></div>
+      <button class="mainBtn" id="qrCloseBtn">Close</button>
+    </div>
+  </div>
 
-  <!-- Client-side QR generation: payload never leaves the device -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
-    const RESOLVER_KEY = "pillbag_maker_resolver_url_v1";
-    const PREP_KEY = "pillbag_maker_preparedby_v1";
-    const BATCH_KEY = "pillbag_maker_batch_v1";
-    const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag.html";
-
-    // Safe storage: uses localStorage when available, falls back to memory otherwise.
-    const _mem = {};
-    const store = {
-      get(k) { try { return localStorage.getItem(k); } catch { return (k in _mem) ? _mem[k] : null; } },
-      set(k, v) { try { localStorage.setItem(k, v); } catch { _mem[k] = v; } },
-      remove(k) { try { localStorage.removeItem(k); } catch { delete _mem[k]; } }
+    // ====== CONFIGURE: your Microsoft Form prefill mapping ======
+    // To point at a different form: replace FORM_BASE (everything up to but not including the first &)
+    // and the field IDs below with values from a fresh "Get pre-filled link".
+    const FORM_BASE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUMExBVkdKUlVSNEJOUEZUSURNUFNOVTdSSi4u";
+    const FORM_FIELDS = {
+      time:    "rc76335fa3e434236afb7a3fe4483e316", // Handout time
+      user:    "r98d2d2567ab3461096a1eafb5efc1f73", // Volunteer
+      bag:     "r1c0dfd1de5774da6bb9776bd797652b7", // Bag / lot ID
+      contents:"r3f07254bf0c04b19b37d6d22f2568c25", // Bag contents
+      street:  "r93dab2d34fbf4032b0aa1a5b2f73c792", // Cross streets
+      gps:     "rd777517dded941c6b70ddd6ebd764b00", // GPS coordinates
+      acc:     "rf86ef4b73628490b82de9ab707ca1913", // GPS accuracy (m)
+      by:      "rddaa70ef16cd42f98b9f164c76a9fa8f", // Prepared by
+      prep:    "ra8efbd4d50f0404db87974f20a41a3c9", // Prep date
+      bagNote: "r90899b7bef8843919b4eca592a10b4a2", // Bag note
+      note:    "rbaa1b1ea92d047e78b40370589a9cc23", // Handout note
+      exp:     "r03f0f7da41044f618499586912694965"  // Expired/expiring item? (Yes/No)
     };
 
-    // ===== OPTIONAL: live "pillfill" form logging (mirrors the resolver's form pattern) =====
-    // Leave PILLFILL_FORM_BASE = "" to keep this off (CSV/TSV export still works without it).
-    // To enable: in your pillfill form, make one question per spreadsheet column below, grab a
-    // "Get pre-filled link", paste everything up to (not including) the first & into PILLFILL_FORM_BASE,
-    // and paste each question's field id into PILLFILL_FIELDS. One form response = one medication line.
-    const PILLFILL_FORM_BASE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUMjZVTDc0MjJGMExLWEk0VE5PWVdISVY2Vi4u";
-    const PILLFILL_FIELDS = {
-      bag:     "rf2a7f04bad174ef3bc8162853fe0e683", // Bag/Lot ID
-      made:    "reae8824530bf476d8b41fa5f0cbfbcb8", // Prep date
-      by:      "r7531e86a56094fe995d34fe7fdb6caa6", // Prepared by
-      bagNote: "rf2f5bc58efdf4758880aa539c2c47b1e", // Bag note
-      med:     "r2f63cef4246845e2bff511dabf9f4530", // Medication
-      dose:    "r819e0f406cbe4b33a1c1ddead04fa11a", // Strength/Dose
-      qty:     "rbc23dbf06e744c84a48ba8a0d0cf1c1f", // Quantity
-      exp:     "r271f32611fa0473c912629c5697d0e83", // Expiration  (Date-type question)
-      lot:     "r269e7ea4dc5a4c7ba7ad92dd9e5f0a43", // Med lot #
-      status:  "r4ad63199eca848baa1e033e1de1e1761", // Expiry status
-      link:    "r4c8a3b0bde9b44ee96ffeb69245f7e79"  // Bag QR link
-    };
-    // Your form's Expiration question is a Date question, so it needs a full YYYY-MM-DD value.
-    // The label only carries month/year, so the form is sent the 1st of that month.
-    // If you change that question to a short-answer (text) question, set this to false so it
-    // sends plain YYYY-MM (matching the CSV/TSV export exactly).
-    const PILLFILL_EXP_IS_DATE = true;
+    const HISTORY_KEY = "pillbag_resolver_history_v1";
+    const USER_KEY = "pillbag_resolver_user_v1";
+    const ROUTE_KEY = "pillbag_resolver_route_v1";
+    const LAST_LOCATION_KEY = "pillbag_resolver_last_location_v1";
+    const LAST_STREET_KEY = "pillbag_resolver_last_street_v1";
 
-    // Column order for the pillfill spreadsheet / CSV / TSV (one row per medication line)
-    const PILLFILL_COLUMNS = [
-      "Bag/Lot ID", "Prep date", "Prepared by", "Bag note",
-      "Medication", "Strength/Dose", "Quantity", "Expiration",
-      "Med lot #", "Expiry status", "Bag QR link"
-    ];
+    const DEFAULT_MAP_LAT = 40.4406;
+    const DEFAULT_MAP_LON = -79.9959;
 
-    // ---- Payload contract (must match the resolver exactly) ----
-    // { v:1, bag, by, made, note, items:[{n,q,s,exp,lot}] }
-    // n=name  q=qty  s=strength/dose  exp=YYYY-MM or YYYY-MM-DD  lot=lot#
-    function encodePayload(obj) {
-      const json = JSON.stringify(obj);
-      const b64 = btoa(unescape(encodeURIComponent(json)));
-      return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    }
+    let bag = null;               // decoded payload
+    let watchId = null;
+    let map = null, currentMarker = null, routeLine = null;
+    let routePath = getRoutePath();
+    let mapVisible = false;
+    let demoToastTimer = null;
+    let lastGeocodeAt = 0, lastGeocodePoint = null;
+    let streetWasAuto = true;
 
-    let items = [{ n: "", q: "", s: "", exp: "", lot: "" }];
-
+    const locationStatus = document.getElementById("locationStatus");
+    const streetInput = document.getElementById("streetInput");
     const $ = id => document.getElementById(id);
 
-    function todayISO() { return new Date().toISOString().slice(0, 10); }
-
-    function loadSaved() {
-      let saved = store.get(RESOLVER_KEY) || "";
-      // Self-heal: earlier versions defaulted to pillbag-qr-resolver.html, which 404s on the deployed site.
-      if (saved.includes("pillbag-qr-resolver.html")) {
-        saved = DEFAULT_RESOLVER;
-        store.set(RESOLVER_KEY, saved);
-      }
-      $("resolverUrl").value = saved || DEFAULT_RESOLVER;
-      $("preparedBy").value = store.get(PREP_KEY) || "";
-      $("madeDate").value = todayISO();
+    // ---- Payload contract (must match the maker exactly) ----
+    function decodePayload(s) {
+      s = s.replace(/-/g, "+").replace(/_/g, "/");
+      while (s.length % 4) s += "=";
+      const json = decodeURIComponent(escape(atob(s)));
+      return JSON.parse(json);
     }
 
-    function renderItems() {
-      const wrap = $("items");
-      wrap.innerHTML = "";
-      if (!items.length) {
-        wrap.innerHTML = `<div class="empty">No medications yet</div>`;
+    function readBagFromUrl() {
+      const raw = (location.hash || "").replace(/^#/, "");
+      const params = new URLSearchParams(raw);
+      let token = params.get("m");
+      if (!token && location.search) token = new URLSearchParams(location.search).get("m");
+      if (!token) return null;
+      try { return decodePayload(token); }
+      catch (e) { console.warn("payload decode failed", e); return "ERROR"; }
+    }
+
+    function expState(exp) {
+      if (!exp) return null;
+      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
+      if (isNaN(d)) return null;
+      const now = new Date();
+      const months = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+      if (months < 0) return { cls: "bad", txt: "⚠ EXPIRED" };
+      if (months <= 2) return { cls: "soon", txt: "expires soon" };
+      return { cls: "ok", txt: "in date" };
+    }
+
+    function renderBag() {
+      const body = $("bagBody");
+      if (bag === "ERROR") {
+        body.innerHTML = `<div class="noBag">Couldn't read this QR's data. The link may be incomplete. You can still log a handout manually.</div>`;
         return;
       }
-      items.forEach((it, i) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `
-          <label class="lbl">Medication name</label>
-          <input data-i="${i}" data-f="n" placeholder="e.g. Naloxone, Ibuprofen" value="">
-          <div class="grid3" style="margin-top:6px;">
-            <div>
-              <label class="lbl">Strength / dose</label>
-              <input data-i="${i}" data-f="s" placeholder="4 mg, 200 mg" value="">
-            </div>
-            <div>
-              <label class="lbl">Qty</label>
-              <input data-i="${i}" data-f="q" inputmode="numeric" placeholder="2" value="">
-            </div>
-          </div>
-          <div class="grid2" style="margin-top:6px;">
-            <div>
-              <label class="lbl">Expiration</label>
-              <input data-i="${i}" data-f="exp" type="month" value="">
-            </div>
-            <div>
-              <label class="lbl">Lot #</label>
-              <input data-i="${i}" data-f="lot" placeholder="optional" value="">
-            </div>
-          </div>
-          <div class="rmRow"><button class="tinyBtn dangerTinyBtn" data-rm="${i}">remove</button></div>
-        `;
-        wrap.appendChild(div);
-        div.querySelector(`[data-f="n"]`).value = it.n;
-        div.querySelector(`[data-f="s"]`).value = it.s;
-        div.querySelector(`[data-f="q"]`).value = it.q;
-        div.querySelector(`[data-f="exp"]`).value = it.exp;
-        div.querySelector(`[data-f="lot"]`).value = it.lot;
-      });
-      wrap.querySelectorAll("input").forEach(inp => {
-        inp.addEventListener("input", () => {
-          const i = +inp.dataset.i, f = inp.dataset.f;
-          items[i][f] = inp.value;
-          buildQr();
-        });
-      });
-      wrap.querySelectorAll("[data-rm]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          items.splice(+btn.dataset.rm, 1);
-          if (!items.length) items.push({ n: "", q: "", s: "", exp: "", lot: "" });
-          renderItems(); buildQr();
-        });
-      });
-    }
-
-    function cleanItems() {
-      return items
-        .filter(it => (it.n || "").trim())
-        .map(it => {
-          const o = { n: it.n.trim() };
-          if ((it.q + "").trim()) o.q = (it.q + "").trim();
-          if ((it.s || "").trim()) o.s = it.s.trim();
-          if ((it.exp || "").trim()) o.exp = it.exp.trim();
-          if ((it.lot || "").trim()) o.lot = it.lot.trim();
-          return o;
-        });
-    }
-
-    function buildPayloadObj() {
-      const obj = { v: 1, items: cleanItems() };
-      const bag = $("bagId").value.trim();
-      const by = $("preparedBy").value.trim();
-      const made = $("madeDate").value.trim();
-      const note = $("bagNote").value.trim();
-      if (bag) obj.bag = bag;
-      if (by) obj.by = by;
-      if (made) obj.made = made;
-      if (note) obj.note = note;
-      return obj;
-    }
-
-    function resolverBase() {
-      const v = $("resolverUrl").value.trim();
-      return v || DEFAULT_RESOLVER;
-    }
-
-    function linkForObj(obj) {
-      return resolverBase().split("#")[0] + "#m=" + encodePayload(obj);
-    }
-
-    function currentLink() {
-      const obj = buildPayloadObj();
-      if (!obj.items.length) return "";
-      return linkForObj(obj);
-    }
-
-    function expBadge(exp) {
-      if (!exp) return "";
-      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
-      if (isNaN(d)) return "";
-      const now = new Date();
-      const monthsOut = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
-      if (monthsOut < 0) return ` <span class="expBad">⚠ EXPIRED</span>`;
-      if (monthsOut <= 2) return ` <span class="expBad">⚠ expires soon</span>`;
-      return "";
-    }
-
-    // Plain-text expiry status used in the spreadsheet rows
-    function expStatusText(exp) {
-      if (!exp) return "";
-      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
-      if (isNaN(d)) return "";
-      const now = new Date();
-      const m = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
-      if (m < 0) return "EXPIRED";
-      if (m <= 2) return "expires soon";
-      return "in date";
-    }
-
-    function renderSummary(obj) {
-      const lines = [];
-      if (obj.bag) lines.push(`<div class="h">Bag ${escapeHtml(obj.bag)}</div>`);
-      obj.items.forEach(it => {
-        const bits = [escapeHtml(it.n)];
-        if (it.s) bits.push(escapeHtml(it.s));
-        const qty = it.q ? `×${escapeHtml(it.q)}` : "";
-        const exp = it.exp ? ` · exp ${escapeHtml(it.exp)}${expBadge(it.exp)}` : "";
-        const lot = it.lot ? ` · lot ${escapeHtml(it.lot)}` : "";
-        lines.push(`• ${bits.join(" ")} ${qty}${exp}${lot}`);
-      });
-      if (obj.note) lines.push(`<div style="color:var(--muted);margin-top:4px;">📝 ${escapeHtml(obj.note)}</div>`);
-      return lines.join("<br>");
-    }
-
-    function escapeHtml(s) {
-      return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
-
-    let lastDataUrl = "";
-
-    function buildQr() {
-      const obj = buildPayloadObj();
-      const box = $("qrBox"), summary = $("summary"), meta = $("qrMeta");
-      if (!obj.items.length) {
-        box.innerHTML = `<div class="empty">Add a medication to generate the QR</div>`;
-        summary.innerHTML = ""; meta.textContent = ""; lastDataUrl = ""; return;
-      }
-      const link = currentLink();
-      summary.innerHTML = renderSummary(obj);
-
-      if (typeof qrcode === "undefined") {
-        box.innerHTML = `<div class="warn">QR library did not load. Check connection and reload.</div>`;
-        meta.textContent = ""; return;
-      }
-      let made = false;
-      for (const ec of ["M", "L"]) {
-        try {
-          const qr = qrcode(0, ec);
-          qr.addData(link);
-          qr.make();
-          box.innerHTML = qr.createImgTag(6, 8);
-          lastDataUrl = qr.createDataURL(6, 8);
-          made = true;
-          break;
-        } catch (e) { /* try lower error correction for more capacity */ }
-      }
-      if (!made) {
-        box.innerHTML = `<div class="warn">Too much data for one QR. Use fewer meds per bag or shorter text.</div>`;
-        lastDataUrl = "";
-      }
-      meta.textContent = `${link.length} chars in link`;
-    }
-
-    // ================= Batch collection =================
-    function getBatch() { try { return JSON.parse(store.get(BATCH_KEY) || "[]"); } catch { return []; } }
-    function saveBatch(b) { store.set(BATCH_KEY, JSON.stringify(b)); }
-
-    function addToBatch() {
-      const obj = buildPayloadObj();
-      if (!obj.items.length) { alert("Add at least one medication before adding the bag to the batch."); return; }
-      const batch = getBatch();
-      batch.push({ id: "b" + Date.now() + Math.random().toString(36).slice(2, 6), ts: new Date().toISOString(), obj });
-      saveBatch(batch);
-      renderBatch();
-      const btn = $("addBatchBtn"); const t = btn.textContent;
-      btn.textContent = "added ✓"; setTimeout(() => btn.textContent = t, 1100);
-    }
-
-    function removeBatchItem(id) {
-      saveBatch(getBatch().filter(e => e.id !== id));
-      renderBatch();
-    }
-
-    function clearBatch() {
-      if (!getBatch().length) return;
-      if (!confirm("Remove all bags from the local batch? (Anything you already exported to the spreadsheet is unaffected.)")) return;
-      store.remove(BATCH_KEY);
-      renderBatch();
-    }
-
-    function renderBatch() {
-      const el = $("batchList"); const b = getBatch();
-      $("batchCount").textContent = b.length ? `${b.length} bag${b.length > 1 ? "s" : ""}` : "";
-      const has = b.length > 0;
-      ["printBatchBtn", "downloadCsvBtn", "copyTsvBtn", "clearBatchBtn"].forEach(id => { $(id).disabled = !has; });
-      if (pillfillFormConfigured()) $("pillfillFormBtn").disabled = false;
-      if (!has) {
-        el.innerHTML = `<div class="empty">No bags in the batch yet. Fill in a bag above and tap "add to batch".</div>`;
+      if (!bag || !bag.items || !bag.items.length) {
+        body.innerHTML = `<div class="noBag">No bag scanned.<br>Open this page from a bag's QR code, or use it to log a handout manually.</div>`;
         return;
       }
-      el.innerHTML = "";
-      b.forEach(entry => {
-        const o = entry.obj;
-        const n = (o.items || []).length;
-        const meds = (o.items || []).map(i => i.n).filter(Boolean);
-        const summary = meds.length ? escapeHtml(meds.join(", ")) : "(no meds)";
-        const div = document.createElement("div");
-        div.className = "batchItem";
-        div.innerHTML = `
-          <div class="batchTop">
-            <span>${escapeHtml(o.bag || "Untitled bag")}</span>
-            <button class="tinyBtn dangerTinyBtn" data-del="${entry.id}">remove</button>
+      const metaBits = [];
+      if (bag.bag) metaBits.push("Bag " + escapeHtml(bag.bag));
+      if (bag.made) metaBits.push("prepped " + escapeHtml(bag.made));
+      if (bag.by) metaBits.push("by " + escapeHtml(bag.by));
+      let html = `<div class="bagTitle">💊 Bag contents</div>`;
+      if (metaBits.length) html += `<div class="bagMeta">${metaBits.join(" · ")}</div>`;
+      bag.items.forEach(it => {
+        const sub = [];
+        if (it.s) sub.push(escapeHtml(it.s));
+        if (it.exp) sub.push("exp " + escapeHtml(it.exp));
+        if (it.lot) sub.push("lot " + escapeHtml(it.lot));
+        const es = expState(it.exp);
+        html += `<div class="bagItem">
+          <div>
+            <div class="nm">${escapeHtml(it.n)}</div>
+            ${sub.length ? `<div class="sub">${sub.join(" · ")}</div>` : ""}
+            ${es ? `<span class="expFlag ${es.cls}">${es.txt}</span>` : ""}
           </div>
-          <div class="batchSub">${n} med${n === 1 ? "" : "s"} · ${summary}</div>`;
-        el.appendChild(div);
-      });
-      el.querySelectorAll("[data-del]").forEach(btn => btn.addEventListener("click", () => removeBatchItem(btn.dataset.del)));
-    }
-
-    // ---- pillfill rows (one row per medication line) ----
-    function pillfillRows() {
-      const rows = [];
-      getBatch().forEach(entry => {
-        const o = entry.obj;
-        const link = linkForObj(o);
-        (o.items || []).forEach(it => {
-          rows.push([
-            o.bag || "", o.made || "", o.by || "", o.note || "",
-            it.n || "", it.s || "", it.q || "", it.exp || "",
-            it.lot || "", expStatusText(it.exp), link
-          ]);
-        });
-      });
-      return rows;
-    }
-    function csvCell(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-    function toCSV() {
-      const head = PILLFILL_COLUMNS.map(csvCell).join(",");
-      const body = pillfillRows().map(r => r.map(csvCell).join(",")).join("\n");
-      return head + "\n" + body;
-    }
-    function toTSV() {
-      const clean = s => String(s ?? "").replace(/\t/g, " ").replace(/\r?\n/g, " ");
-      return [PILLFILL_COLUMNS.join("\t"), ...pillfillRows().map(r => r.map(clean).join("\t"))].join("\n");
-    }
-
-    function downloadCsv() {
-      if (!getBatch().length) return;
-      const csv = "\uFEFF" + toCSV(); // BOM so Excel reads UTF-8 correctly
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "pillfill.csv";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    }
-    async function copyTsv() {
-      if (!getBatch().length) return;
-      const tsv = toTSV();
-      try {
-        await navigator.clipboard.writeText(tsv);
-        const b = $("copyTsvBtn"); b.textContent = "copied!";
-        setTimeout(() => b.textContent = "copy rows (TSV)", 1200);
-      } catch { prompt("Copy these rows, then paste into your pillfill spreadsheet:", tsv); }
-    }
-
-    // ---- batch label printing ----
-    function printBatch() {
-      const batch = getBatch();
-      if (!batch.length) { alert("Add at least one bag to the batch first."); return; }
-      let html = `<div class="labelGrid">`;
-      batch.forEach(entry => {
-        const o = entry.obj;
-        const link = linkForObj(o);
-        let img = "";
-        for (const ec of ["M", "L"]) {
-          try { const qr = qrcode(0, ec); qr.addData(link); qr.make(); img = qr.createImgTag(5, 6); break; }
-          catch (e) { /* try lower EC for more capacity */ }
-        }
-        const meta = [];
-        if (o.made) meta.push("prepped " + escapeHtml(o.made));
-        if (o.by) meta.push("by " + escapeHtml(o.by));
-        const itemsHtml = (o.items || []).map(it => {
-          const bits = [escapeHtml(it.n)];
-          if (it.s) bits.push(escapeHtml(it.s));
-          const q = it.q ? " ×" + escapeHtml(it.q) : "";
-          const e = it.exp ? " · exp " + escapeHtml(it.exp) : "";
-          const l = it.lot ? " · lot " + escapeHtml(it.lot) : "";
-          return `<div class="lItem">${bits.join(" ")}${q}${e}${l}</div>`;
-        }).join("");
-        html += `<div class="label">
-          <div class="lHead">${escapeHtml(o.bag || "Pill bag")}</div>
-          ${meta.length ? `<div class="lMeta">${meta.join(" · ")}</div>` : ""}
-          <div class="lQr">${img || '<span style="color:#c00;font-weight:900;">QR too large — fewer meds</span>'}</div>
-          <div class="lItems">${itemsHtml}</div>
-          ${o.note ? `<div class="lNote">📝 ${escapeHtml(o.note)}</div>` : ""}
-          <div class="lScan">Scan to view contents</div>
+          ${it.q ? `<div class="qty">×${escapeHtml(it.q)}</div>` : ""}
         </div>`;
       });
-      html += `</div>`;
-      $("batchSheet").innerHTML = html;
-      document.body.classList.remove("mode-single");
-      document.body.classList.add("mode-batch");
-      window.print();
+      if (bag.note) html += `<div class="bagNote">📝 ${escapeHtml(bag.note)}</div>`;
+      body.innerHTML = html;
     }
-    window.addEventListener("afterprint", () => {
-      document.body.classList.remove("mode-batch");
-      document.body.classList.add("mode-single");
-    });
 
-    // ---- optional live pillfill form ----
-    function pillfillFormConfigured() {
-      return !!PILLFILL_FORM_BASE && Object.values(PILLFILL_FIELDS).some(Boolean);
+    function bagSummaryText() {
+      if (!bag || bag === "ERROR" || !bag.items) return "";
+      return bag.items.map(it => {
+        const bits = [it.n];
+        if (it.s) bits.push(it.s);
+        let s = bits.join(" ");
+        if (it.q) s += ` x${it.q}`;
+        if (it.exp) s += ` (exp ${it.exp}`;
+        if (it.exp && it.lot) s += `, lot ${it.lot})`;
+        else if (it.exp) s += `)`;
+        else if (it.lot) s += ` (lot ${it.lot})`;
+        return s;
+      }).join("; ");
     }
-    function buildPillfillUrl(vals) {
-      const parts = [PILLFILL_FORM_BASE];
-      for (const k in PILLFILL_FIELDS) {
-        const id = PILLFILL_FIELDS[k]; const v = vals[k];
-        if (!id || v === undefined || v === null || v === "") continue;
-        parts.push(id + "=" + encodeURIComponent(v));
+
+    function bagShortName() {
+      if (!bag || bag === "ERROR" || !bag.items) return "Handout";
+      if (bag.bag) return "Bag " + bag.bag;
+      return bag.items.map(i => i.n).join(", ").slice(0, 60);
+    }
+
+    // ---------- storage ----------
+    function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch { return []; } }
+    function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+    function getRoutePath() { try { return JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]"); } catch { return []; } }
+    function saveRoutePath() { localStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
+
+    function getUserName() { return (localStorage.getItem(USER_KEY) || $("userNameInput").value || "").trim(); }
+    function saveUserName() { const v = $("userNameInput").value.trim(); if (v) localStorage.setItem(USER_KEY, v); renderUserName(); }
+    function loadUserName() { $("userNameInput").value = localStorage.getItem(USER_KEY) || ""; renderUserName(); }
+    function renderUserName(editing = false) {
+      const saved = localStorage.getItem(USER_KEY) || "";
+      if (saved && !editing) {
+        $("userNameSmall").textContent = saved;
+        $("userSet").style.display = "none"; $("userShown").style.display = "flex";
+      } else {
+        $("userSet").style.display = "block"; $("userShown").style.display = "none";
+        $("userNameInput").value = saved; setTimeout(() => $("userNameInput").focus(), 0);
+      }
+    }
+    function changeUserName() { renderUserName(true); }
+
+    function buildFormUrl(values) {
+      const parts = [FORM_BASE];
+      for (const key in FORM_FIELDS) {
+        const v = values[key];
+        if (v === undefined || v === null || v === "") continue; // skip blanks
+        parts.push(FORM_FIELDS[key] + "=" + encodeURIComponent(v));
       }
       return parts.join("&");
     }
-    // Expiration is a Date question in this form, which needs a full quoted YYYY-MM-DD value.
-    function fmtExpForForm(exp) {
-      if (!exp) return "";
-      if (!PILLFILL_EXP_IS_DATE) return exp;              // short-answer text question
-      const full = exp.length === 7 ? exp + "-01" : exp;  // month/year -> 1st of that month
-      return '"' + full + '"';                            // Microsoft Forms date prefill format
+
+    function localStamp(d) {
+      d = d || new Date();
+      const p = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
     }
-    function sendCurrentBagToPillfill() {
-      if (!pillfillFormConfigured()) { alert("No pillfill form is configured. See the comment near the top of the script to enable it, or use the CSV / TSV export."); return; }
-      const o = buildPayloadObj();
-      if (!o.items.length) { alert("Add at least one medication first."); return; }
-      if (o.items.length > 5 && !confirm(`This bag has ${o.items.length} meds and will open ${o.items.length} form tabs. For larger jobs use the CSV/TSV export instead. Continue?`)) return;
-      const link = linkForObj(o);
-      o.items.forEach(it => {
-        const url = buildPillfillUrl({
-          bag: o.bag || "", made: o.made || "", by: o.by || "", bagNote: o.note || "",
-          med: it.n || "", dose: it.s || "", qty: it.q || "", exp: fmtExpForForm(it.exp),
-          lot: it.lot || "", status: expStatusText(it.exp), link
-        });
-        window.open(url, "_blank", "noopener,noreferrer");
+
+    function bagHasExpiryIssue() {
+      if (!bag || bag === "ERROR" || !bag.items) return false;
+      return bag.items.some(it => { const e = expState(it.exp); return e && (e.cls === "bad" || e.cls === "soon"); });
+    }
+
+    function blankAppUrl() { const u = new URL(window.location.href); u.search = ""; u.hash = ""; return u.toString(); }
+
+    function showQr() {
+      const data = blankAppUrl();
+      $("qrTitle").textContent = "Share resolver";
+      $("qrSub").textContent = "blank app — no bag data";
+      $("qrText").textContent = data;
+      if (typeof qrcode !== "undefined") {
+        try { const qr = qrcode(0, "M"); qr.addData(data); qr.make(); $("qrImg").src = qr.createDataURL(5, 8); }
+        catch { $("qrImg").removeAttribute("src"); }
+      }
+      $("qrOverlay").classList.add("active"); $("qrOverlay").setAttribute("aria-hidden", "false");
+    }
+    function closeQr() { $("qrOverlay").classList.remove("active"); $("qrOverlay").setAttribute("aria-hidden", "true"); }
+
+    function logHandout() {
+      const user = getUserName();
+      if (!user) { saveUserName(); if (!getUserName()) { alert("Enter your name (volunteer) first."); return; } }
+      const note = $("whatDid").value.trim();
+      const street = streetInput.value.trim();
+      const last = getLastLocation();
+      const contents = bagSummaryText();
+      const now = new Date();
+
+      const bagId   = (bag && bag !== "ERROR" && bag.bag)  || "";
+      const bagNote = (bag && bag !== "ERROR" && bag.note) || "";
+      const by      = (bag && bag !== "ERROR" && bag.by)   || "";
+      const prep    = (bag && bag !== "ERROR" && bag.made) || "";
+      const gps = last ? `${last.lat.toFixed(5)}, ${last.lon.toFixed(5)}` : "";
+      const acc = last ? String(Math.round(last.accuracy || 0)) : "";
+      const expFlag = (bag && bag !== "ERROR" && bag.items) ? (bagHasExpiryIssue() ? "Yes" : "No") : "";
+
+      const item = {
+        bagId, contents, bagNote,
+        user, note, street,
+        location: last,
+        timestamp: now.toISOString()
+      };
+      const history = getHistory();
+      history.unshift(item);
+      saveHistory(history.slice(0, 200));
+
+      const url = buildFormUrl({
+        time: localStamp(now),
+        user, bag: bagId, contents, street,
+        gps, acc, by, prep, bagNote, note,
+        exp: expFlag
+      });
+      window.open(url, "_blank", "noopener,noreferrer");
+      $("whatDid").value = "";
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (!confirm("Clear all stored handout history on this device?")) return;
+      localStorage.removeItem(HISTORY_KEY); renderHistory();
+    }
+    function deleteHistoryItem(i) { const h = getHistory(); h.splice(i, 1); saveHistory(h); renderHistory(); }
+
+    function prettyTime(iso) { return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+    function escapeHtml(s) { return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+
+    function renderHistory() {
+      const el = $("history"); const h = getHistory();
+      if (!h.length) { el.innerHTML = `<div class="empty">No handouts logged yet</div>`; return; }
+      el.innerHTML = "";
+      h.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "historyItem";
+        div.innerHTML = `
+          <div class="historyTop">
+            <span>${escapeHtml(item.bagId ? "Bag " + item.bagId : "Handout")}</span>
+            <span class="time">${prettyTime(item.timestamp)}</span>
+            <button class="deleteNoteBtn" type="button" aria-label="Delete">×</button>
+          </div>
+          ${item.contents ? `<div class="did">💊 ${escapeHtml(item.contents)}</div>` : ""}
+          ${item.note ? `<div class="did">📝 ${escapeHtml(item.note)}</div>` : ""}
+          ${item.street ? `<div class="did">📍 ${escapeHtml(item.street)}</div>` : ""}
+          ${item.user ? `<div class="did">👤 ${escapeHtml(item.user)}</div>` : ""}
+        `;
+        div.querySelector(".deleteNoteBtn").addEventListener("click", () => deleteHistoryItem(i));
+        el.appendChild(div);
       });
     }
 
-    // ---- Buttons ----
-    $("addItemBtn").addEventListener("click", () => {
-      items.push({ n: "", q: "", s: "", exp: "", lot: "" });
-      renderItems();
-    });
-    ["bagId","madeDate","preparedBy","bagNote","resolverUrl"].forEach(id => $(id).addEventListener("input", () => {
-      if (id === "resolverUrl") store.set(RESOLVER_KEY, $("resolverUrl").value.trim());
-      if (id === "preparedBy") store.set(PREP_KEY, $("preparedBy").value.trim());
-      buildQr();
-    }));
-    $("downloadBtn").addEventListener("click", () => {
-      if (!lastDataUrl) return;
-      const a = document.createElement("a");
-      const obj = buildPayloadObj();
-      a.href = lastDataUrl;
-      a.download = `pillbag-${(obj.bag || "qr").replace(/[^a-z0-9_-]/gi,"")}.gif`;
-      a.click();
-    });
-    $("copyLinkBtn").addEventListener("click", async () => {
-      const link = currentLink();
-      if (!link) return;
-      try { await navigator.clipboard.writeText(link); $("copyLinkBtn").textContent = "copied!"; setTimeout(()=>$("copyLinkBtn").textContent="copy link",1200); }
-      catch { prompt("Copy this link:", link); }
-    });
-    $("testBtn").addEventListener("click", () => {
-      const link = currentLink();
-      if (link) window.open(link, "_blank", "noopener");
-    });
-    $("printBtn").addEventListener("click", () => {
-      document.body.classList.remove("mode-batch");
-      document.body.classList.add("mode-single");
-      window.print();
-    });
-
-    $("addBatchBtn").addEventListener("click", addToBatch);
-    $("printBatchBtn").addEventListener("click", printBatch);
-    $("downloadCsvBtn").addEventListener("click", downloadCsv);
-    $("copyTsvBtn").addEventListener("click", copyTsv);
-    $("clearBatchBtn").addEventListener("click", clearBatch);
-    $("pillfillFormBtn").addEventListener("click", sendCurrentBagToPillfill);
-
-    function syncResolverLink() {
-      const l = currentLink() || resolverBase();
-      $("openResolverLink").href = l;
+    // ---------- location (ported from Street Memory) ----------
+    function setLocationStatus(t) { locationStatus.textContent = t; }
+    function renderLocationTitle() {
+      const s = streetInput.value.trim();
+      const label = s.length > 34 ? s.slice(0, 31) + "…" : s;
+      $("locationTitle").textContent = label ? `Location · ${label}` : "Location";
     }
-    document.addEventListener("input", syncResolverLink);
+    function getLastLocation() { try { return JSON.parse(localStorage.getItem(LAST_LOCATION_KEY) || "null"); } catch { return null; } }
+    function saveLastLocation(p) { localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(p)); }
+    function loadLastStreet() { const s = localStorage.getItem(LAST_STREET_KEY) || ""; if (s) { streetInput.value = s; streetWasAuto = true; } }
 
-    loadSaved();
-    renderItems();
-    buildQr();
-    renderBatch();
-    if (!pillfillFormConfigured()) $("pillfillFormBtn").style.display = "none";
-    syncResolverLink();
+    function forceMapBoxVisible() {
+      const m = $("map"); m.classList.add("active"); m.style.display = "block";
+      m.style.height = "190px"; m.style.minHeight = "190px"; m.style.width = "100%";
+    }
+    function setMapExpanded(expanded) {
+      mapVisible = expanded;
+      const m = $("map"); const controls = $("mapControls"); const hint = $("mapHint"); const btn = $("toggleMapBtn");
+      controls.classList.toggle("active", mapVisible); hint.classList.toggle("active", mapVisible);
+      btn.textContent = mapVisible ? "hide map" : "map";
+      if (!mapVisible) { m.classList.remove("active"); m.style.display = "none"; return; }
+      forceMapBoxVisible();
+      const last = getLastLocation() || routePath[routePath.length - 1] || { lat: DEFAULT_MAP_LAT, lon: DEFAULT_MAP_LON, accuracy: 0, timestamp: new Date().toISOString() };
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        updateMap(last, false);
+        if (map) {
+          map.invalidateSize(true);
+          const line = routePath.map(p => [p.lat, p.lon]);
+          if (line.length > 1) map.fitBounds(line, { padding: [18, 18], maxZoom: 18 });
+          else map.setView([last.lat, last.lon], 16);
+        }
+      }));
+    }
+    function toggleMapSize() { setMapExpanded(!mapVisible); }
+
+    function showDemoNotice() {
+      const t = $("demoToast"); t.classList.add("active");
+      clearTimeout(demoToastTimer); demoToastTimer = setTimeout(() => t.classList.remove("active"), 5200);
+    }
+
+    function startLocationOnce() {
+      if (!navigator.geolocation) { setLocationStatus("Geolocation not supported."); return; }
+      setMapExpanded(true); setLocationStatus("Getting current location...");
+      navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+    }
+    function toggleTracking() {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId); watchId = null;
+        $("gpsTrackBtn").textContent = "track";
+        setLocationStatus("Route tracking stopped. Saved route remains until cleared."); return;
+      }
+      if (!navigator.geolocation) { setLocationStatus("Geolocation not supported."); return; }
+      setMapExpanded(true); $("gpsTrackBtn").textContent = "stop"; setLocationStatus("Tracking route...");
+      watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+    }
+    function handleLocationError(error) {
+      let msg = "GPS unavailable. Check permission or step outside.";
+      if (error && error.code === 1) msg = "Location permission denied.";
+      if (error && error.code === 2) msg = "Location unavailable.";
+      if (error && error.code === 3) msg = "Location request timed out.";
+      setLocationStatus(msg);
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; $("gpsTrackBtn").textContent = "track"; }
+    }
+    function updateLocation(position) {
+      const point = { lat: position.coords.latitude, lon: position.coords.longitude, accuracy: position.coords.accuracy, timestamp: new Date().toISOString() };
+      saveLastLocation(point); addRoutePoint(point); updateMap(point);
+      setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Estimating cross streets...`);
+      maybeUpdateStreetEstimate(point);
+    }
+    function addRoutePoint(point) {
+      const last = routePath[routePath.length - 1];
+      if (!last || calculateDistance(last.lat, last.lon, point.lat, point.lon) > 3) {
+        routePath.push(point); routePath = routePath.slice(-700); saveRoutePath();
+      }
+    }
+    function initMap(lat, lon) {
+      if (map) return;
+      const m = $("map"); forceMapBoxVisible();
+      if (typeof L === "undefined") {
+        m.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:14px;text-align:center;font-weight:950;color:#6b6b88;background:white;border-radius:18px;">Map library did not load. Check connection, then reload.</div>`;
+        setLocationStatus("Map library did not load. Check connection, then reload."); return;
+      }
+      map = L.map("map", { zoomControl: false, attributionControl: true }).setView([lat, lon], 16);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", { attribution: "&copy; OpenStreetMap &copy; CARTO", maxZoom: 20 }).addTo(map);
+      routeLine = L.polyline([], { color: "#ff4f8b", weight: 7, opacity: 0.72, lineCap: "round" }).addTo(map);
+      currentMarker = L.circleMarker([lat, lon], { color: "#ffffff", weight: 3, fillColor: "#77c8ff", fillOpacity: 1, radius: 8 }).addTo(map);
+      setTimeout(() => map.invalidateSize(true), 120);
+    }
+    function updateMap(point, pan = true) {
+      initMap(point.lat, point.lon);
+      if (!map || !routeLine || !currentMarker) return;
+      routeLine.setLatLngs(routePath.map(p => [p.lat, p.lon]));
+      currentMarker.setLatLng([point.lat, point.lon]);
+      if (pan) map.setView([point.lat, point.lon], Math.max(map.getZoom(), 17));
+      if (mapVisible && map) setTimeout(() => map.invalidateSize(true), 120);
+    }
+    function clearRoute() {
+      if (!confirm("Clear local route memory and last GPS/cross-street estimate?")) return;
+      routePath = [];
+      localStorage.removeItem(ROUTE_KEY); localStorage.removeItem(LAST_LOCATION_KEY); localStorage.removeItem(LAST_STREET_KEY);
+      if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; $("gpsTrackBtn").textContent = "track"; }
+      streetInput.value = ""; streetWasAuto = true; renderLocationTitle();
+      lastGeocodePoint = null; lastGeocodeAt = 0;
+      if (routeLine) routeLine.setLatLngs([]);
+      setLocationStatus("Local route memory cleared.");
+    }
+
+    function shouldGeocode(point, force = false) {
+      if (force) return true;
+      if (!lastGeocodePoint) return true;
+      if (Date.now() - lastGeocodeAt < 15000) return false;
+      return calculateDistance(lastGeocodePoint.lat, lastGeocodePoint.lon, point.lat, point.lon) > 25;
+    }
+    async function refreshStreetEstimate() {
+      const point = getLastLocation() || routePath[routePath.length - 1];
+      if (!point) { setLocationStatus("No GPS point yet. Tap locate first."); return; }
+      setLocationStatus("Refreshing cross-street estimate...");
+      await maybeUpdateStreetEstimate(point, true);
+    }
+    async function maybeUpdateStreetEstimate(point, force = false) {
+      if (!shouldGeocode(point, force)) {
+        const s = streetInput.value.trim();
+        setLocationStatus(s ? `GPS acquired: ±${Math.round(point.accuracy || 0)}m. Cross streets: ${s}` : `GPS acquired: ±${Math.round(point.accuracy || 0)}m.`);
+        return;
+      }
+      lastGeocodeAt = Date.now(); lastGeocodePoint = point;
+      try {
+        const estimate = await estimateCrossStreets(point.lat, point.lon);
+        if (estimate) {
+          localStorage.setItem(LAST_STREET_KEY, estimate);
+          if (streetWasAuto || !streetInput.value.trim() || force) { streetInput.value = estimate; streetWasAuto = true; }
+          renderLocationTitle();
+          setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Cross-street estimate updated.`);
+        } else setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. No cross-street estimate; type it manually.`);
+      } catch (err) { console.warn(err); setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Street lookup failed; type it manually.`); }
+    }
+    async function estimateCrossStreets(lat, lon) {
+      const reverse = await reverseGeocode(lat, lon).catch(() => null);
+      const primaryRoad = pickRoadName(reverse && reverse.address);
+      const displayName = reverse && reverse.display_name ? reverse.display_name : "";
+      const nearbyRoads = await nearbyNamedRoadsMultiRadius(lat, lon).catch(() => []);
+      const distinct = distinctRoads(nearbyRoads);
+      if (distinct.length >= 2) {
+        let first = distinct[0].name, second = distinct[1].name;
+        const primaryMatch = primaryRoad ? distinct.find(r => sameStreetName(r.name, primaryRoad)) : null;
+        if (primaryMatch) {
+          first = primaryMatch.name;
+          const cross = distinct.find(r => !sameStreetName(r.name, first));
+          if (cross) second = cross.name;
+        } else if (primaryRoad && !sameStreetName(primaryRoad, first) && !sameStreetName(primaryRoad, second)) {
+          first = primaryRoad; second = distinct[0].name;
+        }
+        return `${first} & ${second} (est.)`;
+      }
+      if (distinct.length === 1) {
+        const only = distinct[0].name;
+        if (primaryRoad && !sameStreetName(primaryRoad, only)) return `${primaryRoad} & ${only} (est.)`;
+        return `${only} — add nearest cross street if known`;
+      }
+      if (primaryRoad) return `${primaryRoad} — add nearest cross street if known`;
+      return displayName.split(",").slice(0, 3).join(", ").trim();
+    }
+    async function reverseGeocode(lat, lon) {
+      const url = new URL("https://nominatim.openstreetmap.org/reverse");
+      url.searchParams.set("format", "jsonv2"); url.searchParams.set("lat", String(lat));
+      url.searchParams.set("lon", String(lon)); url.searchParams.set("zoom", "18"); url.searchParams.set("addressdetails", "1");
+      const res = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
+      if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
+      return res.json();
+    }
+    async function nearbyNamedRoadsMultiRadius(lat, lon) {
+      const radii = [90, 180, 320, 500]; let best = [];
+      for (const radius of radii) {
+        const roads = await nearbyNamedRoads(lat, lon, radius).catch(() => []);
+        if (roads.length > best.length) best = roads;
+        if (distinctRoads(roads).length >= 2) return roads;
+      }
+      return best;
+    }
+    async function nearbyNamedRoads(lat, lon, radiusMeters) {
+      const query = `[out:json][timeout:10];way(around:${radiusMeters},${lat},${lon})["highway"]["name"];out tags geom;`;
+      const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!res.ok) throw new Error(`Overpass lookup failed: ${res.status}`);
+      const data = await res.json();
+      const byName = new Map();
+      for (const el of data.elements || []) {
+        if (!el.tags || !el.tags.name || !Array.isArray(el.geometry)) continue;
+        const name = el.tags.name; const roadClass = el.tags.highway || "road";
+        const d = minDistanceToWayMeters(lat, lon, el.geometry);
+        const candidate = { name, distance: d, roadClass, priority: roadClassPriority(roadClass) };
+        const old = byName.get(name);
+        if (!old || candidateScore(candidate) < candidateScore(old)) byName.set(name, candidate);
+      }
+      return Array.from(byName.values()).sort((a, b) => candidateScore(a) - candidateScore(b));
+    }
+    function distinctRoads(roads) {
+      const out = [];
+      for (const road of roads) {
+        if (!road.name) continue;
+        if (!out.some(r => sameStreetName(r.name, road.name))) out.push(road);
+      }
+      return out.sort((a, b) => candidateScore(a) - candidateScore(b));
+    }
+    function candidateScore(r) { return r.distance + (r.priority || 0); }
+    function roadClassPriority(highway) {
+      const h = String(highway || "");
+      if (["primary","secondary","tertiary","residential","unclassified","living_street"].includes(h)) return 0;
+      if (["service","track"].includes(h)) return 25;
+      if (["footway","path","cycleway","pedestrian","steps"].includes(h)) return 45;
+      if (["motorway","trunk"].includes(h)) return 60;
+      return 10;
+    }
+    function pickRoadName(address) {
+      if (!address) return "";
+      return address.road || address.pedestrian || address.footway || address.cycleway || address.path || address.neighbourhood || address.suburb || address.city_district || "";
+    }
+    function sameStreetName(a, b) { return normalizeStreetName(a) === normalizeStreetName(b); }
+    function normalizeStreetName(s) {
+      return String(s || "").toLowerCase()
+        .replace(/\b(street|st|avenue|ave|road|rd|boulevard|blvd|drive|dr|lane|ln|place|pl|court|ct|way|circle|cir|parkway|pkwy)\b/g, "")
+        .replace(/[^a-z0-9]/g, "").trim();
+    }
+    function minDistanceToWayMeters(lat, lon, geometry) {
+      if (!geometry.length) return Infinity;
+      if (geometry.length === 1) return calculateDistance(lat, lon, geometry[0].lat, geometry[0].lon);
+      let best = Infinity;
+      for (let i = 1; i < geometry.length; i++)
+        best = Math.min(best, pointToSegmentDistanceMeters({ lat, lon }, { lat: geometry[i-1].lat, lon: geometry[i-1].lon }, { lat: geometry[i].lat, lon: geometry[i].lon }));
+      return best;
+    }
+    function pointToSegmentDistanceMeters(p, a, b) {
+      const lat0 = p.lat * Math.PI / 180, mLat = 111320, mLon = 111320 * Math.cos(lat0);
+      const px = p.lon * mLon, py = p.lat * mLat, ax = a.lon * mLon, ay = a.lat * mLat, bx = b.lon * mLon, by = b.lat * mLat;
+      const dx = bx - ax, dy = by - ay;
+      if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay);
+      const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+      return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+    }
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3, p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+      const dp = (lat2-lat1)*Math.PI/180, dl = (lon2-lon1)*Math.PI/180;
+      const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // ---------- wire up ----------
+    $("saveBtn").addEventListener("click", logHandout);
+    $("clearHistoryBtn").addEventListener("click", clearHistory);
+    $("demoNoticeBtn").addEventListener("click", showDemoNotice);
+    $("qrBtn").addEventListener("click", showQr);
+    $("qrCloseBtn").addEventListener("click", closeQr);
+    $("toggleMapBtn").addEventListener("click", toggleMapSize);
+    $("hideMapBtn").addEventListener("click", () => setMapExpanded(false));
+    $("gpsOnceBtn").addEventListener("click", startLocationOnce);
+    $("gpsTrackBtn").addEventListener("click", toggleTracking);
+    $("refreshStreetsBtn").addEventListener("click", refreshStreetEstimate);
+    $("clearRouteBtn").addEventListener("click", clearRoute);
+    $("qrOverlay").addEventListener("click", e => { if (e.target.id === "qrOverlay") closeQr(); });
+    $("saveUserBtn").addEventListener("click", saveUserName);
+    $("changeUserBtn").addEventListener("click", changeUserName);
+    $("userNameInput").addEventListener("keydown", e => { if (e.key === "Enter") saveUserName(); });
+    streetInput.addEventListener("input", () => { streetWasAuto = false; localStorage.setItem(LAST_STREET_KEY, streetInput.value.trim()); renderLocationTitle(); });
+
+    bag = readBagFromUrl();
+    loadUserName();
+    loadLastStreet();
+    renderBag();
+    renderHistory();
+    renderLocationTitle();
+    if (routePath.length > 0) setLocationStatus(`Saved route loaded: ${routePath.length} point(s).`);
   </script>
 </body>
 </html>
