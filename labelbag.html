@@ -60,6 +60,7 @@
       min-height: 44px; touch-action: manipulation; transition: transform .08s ease, filter .08s ease;
     }
     button:active { transform: scale(.97); }
+    button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
     .addBtn { background: linear-gradient(135deg, var(--mint), var(--sky)); }
     .mainBtn { width:100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color:white; font-size:1.08rem; }
     .tinyBtn { padding:8px 11px; font-size:.82rem; border-radius:999px; background:white; box-shadow:none; min-height:34px; white-space:nowrap; }
@@ -83,14 +84,41 @@
     .note { color:var(--muted); font-size:.8rem; font-weight:850; line-height:1.3; margin-top:8px; }
     .warn { background:#fff0f7; color:var(--hot); border-radius:14px; padding:8px 10px;
       font-weight:950; font-size:.82rem; line-height:1.3; }
+
+    /* ---- Batch collection ---- */
+    .count { font-weight:900; color:var(--muted); font-size:.82rem; }
+    .batchList { display:grid; gap:8px; max-height:min(40vh,320px); overflow:auto; overscroll-behavior:contain; }
+    .batchItem { background:white; border-radius:16px; padding:10px 12px; box-shadow:0 8px 18px rgba(101,78,163,.09); }
+    .batchTop { display:flex; justify-content:space-between; align-items:center; gap:8px; font-weight:1000; }
+    .batchSub { color:var(--muted); font-weight:850; font-size:.82rem; margin-top:3px; line-height:1.3; word-break:break-word; }
+
+    /* ---- Batch print sheet (hidden on screen, shown only when printing a batch) ---- */
+    #batchSheet { display:none; }
+    .labelGrid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+    .label { border:1px solid #cfcfe0; border-radius:14px; padding:10px 10px 8px; text-align:center;
+      page-break-inside:avoid; break-inside:avoid; }
+    .label .lHead { font-weight:1000; font-size:1.02rem; }
+    .label .lMeta { color:#555; font-size:.72rem; font-weight:800; margin-top:1px; }
+    .label .lQr img { width:150px; height:150px; image-rendering:pixelated; margin:6px 0 4px; }
+    .label .lItems { text-align:left; font-size:.78rem; font-weight:800; line-height:1.3; }
+    .label .lItem { margin:1px 0; }
+    .label .lNote { text-align:left; font-size:.74rem; margin-top:4px; }
+    .label .lScan { color:#888; font-size:.66rem; font-weight:800; margin-top:6px; text-transform:uppercase; letter-spacing:.05em; }
+
     @media print {
       body { background:white; }
-      .banner, .app > .card:not(#printCard), .btnRow, .note, #cfgCard { display:none !important; }
-      #printCard { box-shadow:none; border:none; background:white; }
+      .banner, .btnRow, .note { display:none !important; }
+      /* single-label mode: show only the QR preview card */
+      body.mode-single .app > .card:not(#printCard) { display:none !important; }
+      body.mode-single #printCard { box-shadow:none; border:none; background:white; }
+      body.mode-single #batchSheet { display:none !important; }
+      /* batch mode: hide the whole app, show the label sheet */
+      body.mode-batch .app { display:none !important; }
+      body.mode-batch #batchSheet { display:block !important; padding:6px; }
     }
   </style>
 </head>
-<body>
+<body class="mode-single">
   <div class="banner">
     <span>💊 Pill Bag QR Maker</span>
     <a href="#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
@@ -139,22 +167,82 @@
         <div class="qrMeta" id="qrMeta"></div>
       </div>
       <div class="btnRow">
-        <button class="tinyBtn" id="downloadBtn">download PNG</button>
+        <button class="tinyBtn addBtn" id="addBatchBtn">+ add to batch</button>
+        <button class="tinyBtn" id="downloadBtn">download image</button>
         <button class="tinyBtn" id="copyLinkBtn">copy link</button>
-        <button class="tinyBtn" id="printBtn">print label</button>
+        <button class="tinyBtn" id="printBtn">print this label</button>
         <button class="tinyBtn" id="testBtn">test in resolver ↗</button>
       </div>
       <div class="note">The QR encodes only what is in the bag (meds, counts, strength, expiration, lot, bag ID, prep info). It contains <strong>no patient or recipient information</strong>. Who handed it out and where is captured by the resolver at scan time.</div>
     </section>
 
+    <section class="card" id="batchCard">
+      <div class="sectionTitle">
+        <span>Batch <span class="count" id="batchCount"></span></span>
+      </div>
+      <div id="batchList" class="batchList"></div>
+      <div class="btnRow" style="justify-content:flex-start;">
+        <button class="tinyBtn" id="printBatchBtn">print batch labels</button>
+        <button class="tinyBtn" id="downloadCsvBtn">download pillfill CSV</button>
+        <button class="tinyBtn" id="copyTsvBtn">copy rows (TSV)</button>
+        <button class="tinyBtn" id="pillfillFormBtn">send bag to pillfill form ↗</button>
+        <button class="tinyBtn dangerTinyBtn" id="clearBatchBtn">clear batch</button>
+      </div>
+      <div class="note"><strong>Add to batch</strong> snapshots the bag above. Build as many as you like, then <strong>print batch labels</strong> for one sheet of QR labels, or send them to your <strong>pillfill</strong> spreadsheet: <strong>download pillfill CSV</strong> (open or import in Excel / Google Sheets) or <strong>copy rows (TSV)</strong> (paste straight into the sheet). Each spreadsheet row is one medication line. The batch lives only on this device until you clear it. No patient info is included.</div>
+    </section>
+
   </main>
+
+  <!-- Hidden label sheet, filled and shown only when printing a batch -->
+  <div id="batchSheet" aria-hidden="true"></div>
 
   <!-- Client-side QR generation: payload never leaves the device -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
     const RESOLVER_KEY = "pillbag_maker_resolver_url_v1";
     const PREP_KEY = "pillbag_maker_preparedby_v1";
+    const BATCH_KEY = "pillbag_maker_batch_v1";
     const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag.html";
+
+    // Safe storage: uses localStorage when available, falls back to memory otherwise.
+    const _mem = {};
+    const store = {
+      get(k) { try { return localStorage.getItem(k); } catch { return (k in _mem) ? _mem[k] : null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch { _mem[k] = v; } },
+      remove(k) { try { localStorage.removeItem(k); } catch { delete _mem[k]; } }
+    };
+
+    // ===== OPTIONAL: live "pillfill" form logging (mirrors the resolver's form pattern) =====
+    // Leave PILLFILL_FORM_BASE = "" to keep this off (CSV/TSV export still works without it).
+    // To enable: in your pillfill form, make one question per spreadsheet column below, grab a
+    // "Get pre-filled link", paste everything up to (not including) the first & into PILLFILL_FORM_BASE,
+    // and paste each question's field id into PILLFILL_FIELDS. One form response = one medication line.
+    const PILLFILL_FORM_BASE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUMjZVTDc0MjJGMExLWEk0VE5PWVdISVY2Vi4u";
+    const PILLFILL_FIELDS = {
+      bag:     "rf2a7f04bad174ef3bc8162853fe0e683", // Bag/Lot ID
+      made:    "reae8824530bf476d8b41fa5f0cbfbcb8", // Prep date
+      by:      "r7531e86a56094fe995d34fe7fdb6caa6", // Prepared by
+      bagNote: "rf2f5bc58efdf4758880aa539c2c47b1e", // Bag note
+      med:     "r2f63cef4246845e2bff511dabf9f4530", // Medication
+      dose:    "r819e0f406cbe4b33a1c1ddead04fa11a", // Strength/Dose
+      qty:     "rbc23dbf06e744c84a48ba8a0d0cf1c1f", // Quantity
+      exp:     "r271f32611fa0473c912629c5697d0e83", // Expiration  (Date-type question)
+      lot:     "r269e7ea4dc5a4c7ba7ad92dd9e5f0a43", // Med lot #
+      status:  "r4ad63199eca848baa1e033e1de1e1761", // Expiry status
+      link:    "r4c8a3b0bde9b44ee96ffeb69245f7e79"  // Bag QR link
+    };
+    // Your form's Expiration question is a Date question, so it needs a full YYYY-MM-DD value.
+    // The label only carries month/year, so the form is sent the 1st of that month.
+    // If you change that question to a short-answer (text) question, set this to false so it
+    // sends plain YYYY-MM (matching the CSV/TSV export exactly).
+    const PILLFILL_EXP_IS_DATE = true;
+
+    // Column order for the pillfill spreadsheet / CSV / TSV (one row per medication line)
+    const PILLFILL_COLUMNS = [
+      "Bag/Lot ID", "Prep date", "Prepared by", "Bag note",
+      "Medication", "Strength/Dose", "Quantity", "Expiration",
+      "Med lot #", "Expiry status", "Bag QR link"
+    ];
 
     // ---- Payload contract (must match the resolver exactly) ----
     // { v:1, bag, by, made, note, items:[{n,q,s,exp,lot}] }
@@ -172,14 +260,14 @@
     function todayISO() { return new Date().toISOString().slice(0, 10); }
 
     function loadSaved() {
-      let saved = localStorage.getItem(RESOLVER_KEY) || "";
+      let saved = store.get(RESOLVER_KEY) || "";
       // Self-heal: earlier versions defaulted to pillbag-qr-resolver.html, which 404s on the deployed site.
       if (saved.includes("pillbag-qr-resolver.html")) {
         saved = DEFAULT_RESOLVER;
-        localStorage.setItem(RESOLVER_KEY, saved);
+        store.set(RESOLVER_KEY, saved);
       }
       $("resolverUrl").value = saved || DEFAULT_RESOLVER;
-      $("preparedBy").value = localStorage.getItem(PREP_KEY) || "";
+      $("preparedBy").value = store.get(PREP_KEY) || "";
       $("madeDate").value = todayISO();
     }
 
@@ -272,10 +360,14 @@
       return v || DEFAULT_RESOLVER;
     }
 
+    function linkForObj(obj) {
+      return resolverBase().split("#")[0] + "#m=" + encodePayload(obj);
+    }
+
     function currentLink() {
       const obj = buildPayloadObj();
       if (!obj.items.length) return "";
-      return resolverBase().split("#")[0] + "#m=" + encodePayload(obj);
+      return linkForObj(obj);
     }
 
     function expBadge(exp) {
@@ -287,6 +379,18 @@
       if (monthsOut < 0) return ` <span class="expBad">⚠ EXPIRED</span>`;
       if (monthsOut <= 2) return ` <span class="expBad">⚠ expires soon</span>`;
       return "";
+    }
+
+    // Plain-text expiry status used in the spreadsheet rows
+    function expStatusText(exp) {
+      if (!exp) return "";
+      const d = new Date(exp.length === 7 ? exp + "-01" : exp);
+      if (isNaN(d)) return "";
+      const now = new Date();
+      const m = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
+      if (m < 0) return "EXPIRED";
+      if (m <= 2) return "expires soon";
+      return "in date";
     }
 
     function renderSummary(obj) {
@@ -343,14 +447,197 @@
       meta.textContent = `${link.length} chars in link`;
     }
 
+    // ================= Batch collection =================
+    function getBatch() { try { return JSON.parse(store.get(BATCH_KEY) || "[]"); } catch { return []; } }
+    function saveBatch(b) { store.set(BATCH_KEY, JSON.stringify(b)); }
+
+    function addToBatch() {
+      const obj = buildPayloadObj();
+      if (!obj.items.length) { alert("Add at least one medication before adding the bag to the batch."); return; }
+      const batch = getBatch();
+      batch.push({ id: "b" + Date.now() + Math.random().toString(36).slice(2, 6), ts: new Date().toISOString(), obj });
+      saveBatch(batch);
+      renderBatch();
+      const btn = $("addBatchBtn"); const t = btn.textContent;
+      btn.textContent = "added ✓"; setTimeout(() => btn.textContent = t, 1100);
+    }
+
+    function removeBatchItem(id) {
+      saveBatch(getBatch().filter(e => e.id !== id));
+      renderBatch();
+    }
+
+    function clearBatch() {
+      if (!getBatch().length) return;
+      if (!confirm("Remove all bags from the local batch? (Anything you already exported to the spreadsheet is unaffected.)")) return;
+      store.remove(BATCH_KEY);
+      renderBatch();
+    }
+
+    function renderBatch() {
+      const el = $("batchList"); const b = getBatch();
+      $("batchCount").textContent = b.length ? `${b.length} bag${b.length > 1 ? "s" : ""}` : "";
+      const has = b.length > 0;
+      ["printBatchBtn", "downloadCsvBtn", "copyTsvBtn", "clearBatchBtn"].forEach(id => { $(id).disabled = !has; });
+      if (pillfillFormConfigured()) $("pillfillFormBtn").disabled = false;
+      if (!has) {
+        el.innerHTML = `<div class="empty">No bags in the batch yet. Fill in a bag above and tap "add to batch".</div>`;
+        return;
+      }
+      el.innerHTML = "";
+      b.forEach(entry => {
+        const o = entry.obj;
+        const n = (o.items || []).length;
+        const meds = (o.items || []).map(i => i.n).filter(Boolean);
+        const summary = meds.length ? escapeHtml(meds.join(", ")) : "(no meds)";
+        const div = document.createElement("div");
+        div.className = "batchItem";
+        div.innerHTML = `
+          <div class="batchTop">
+            <span>${escapeHtml(o.bag || "Untitled bag")}</span>
+            <button class="tinyBtn dangerTinyBtn" data-del="${entry.id}">remove</button>
+          </div>
+          <div class="batchSub">${n} med${n === 1 ? "" : "s"} · ${summary}</div>`;
+        el.appendChild(div);
+      });
+      el.querySelectorAll("[data-del]").forEach(btn => btn.addEventListener("click", () => removeBatchItem(btn.dataset.del)));
+    }
+
+    // ---- pillfill rows (one row per medication line) ----
+    function pillfillRows() {
+      const rows = [];
+      getBatch().forEach(entry => {
+        const o = entry.obj;
+        const link = linkForObj(o);
+        (o.items || []).forEach(it => {
+          rows.push([
+            o.bag || "", o.made || "", o.by || "", o.note || "",
+            it.n || "", it.s || "", it.q || "", it.exp || "",
+            it.lot || "", expStatusText(it.exp), link
+          ]);
+        });
+      });
+      return rows;
+    }
+    function csvCell(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    function toCSV() {
+      const head = PILLFILL_COLUMNS.map(csvCell).join(",");
+      const body = pillfillRows().map(r => r.map(csvCell).join(",")).join("\n");
+      return head + "\n" + body;
+    }
+    function toTSV() {
+      const clean = s => String(s ?? "").replace(/\t/g, " ").replace(/\r?\n/g, " ");
+      return [PILLFILL_COLUMNS.join("\t"), ...pillfillRows().map(r => r.map(clean).join("\t"))].join("\n");
+    }
+
+    function downloadCsv() {
+      if (!getBatch().length) return;
+      const csv = "\uFEFF" + toCSV(); // BOM so Excel reads UTF-8 correctly
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "pillfill.csv";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+    async function copyTsv() {
+      if (!getBatch().length) return;
+      const tsv = toTSV();
+      try {
+        await navigator.clipboard.writeText(tsv);
+        const b = $("copyTsvBtn"); b.textContent = "copied!";
+        setTimeout(() => b.textContent = "copy rows (TSV)", 1200);
+      } catch { prompt("Copy these rows, then paste into your pillfill spreadsheet:", tsv); }
+    }
+
+    // ---- batch label printing ----
+    function printBatch() {
+      const batch = getBatch();
+      if (!batch.length) { alert("Add at least one bag to the batch first."); return; }
+      let html = `<div class="labelGrid">`;
+      batch.forEach(entry => {
+        const o = entry.obj;
+        const link = linkForObj(o);
+        let img = "";
+        for (const ec of ["M", "L"]) {
+          try { const qr = qrcode(0, ec); qr.addData(link); qr.make(); img = qr.createImgTag(5, 6); break; }
+          catch (e) { /* try lower EC for more capacity */ }
+        }
+        const meta = [];
+        if (o.made) meta.push("prepped " + escapeHtml(o.made));
+        if (o.by) meta.push("by " + escapeHtml(o.by));
+        const itemsHtml = (o.items || []).map(it => {
+          const bits = [escapeHtml(it.n)];
+          if (it.s) bits.push(escapeHtml(it.s));
+          const q = it.q ? " ×" + escapeHtml(it.q) : "";
+          const e = it.exp ? " · exp " + escapeHtml(it.exp) : "";
+          const l = it.lot ? " · lot " + escapeHtml(it.lot) : "";
+          return `<div class="lItem">${bits.join(" ")}${q}${e}${l}</div>`;
+        }).join("");
+        html += `<div class="label">
+          <div class="lHead">${escapeHtml(o.bag || "Pill bag")}</div>
+          ${meta.length ? `<div class="lMeta">${meta.join(" · ")}</div>` : ""}
+          <div class="lQr">${img || '<span style="color:#c00;font-weight:900;">QR too large — fewer meds</span>'}</div>
+          <div class="lItems">${itemsHtml}</div>
+          ${o.note ? `<div class="lNote">📝 ${escapeHtml(o.note)}</div>` : ""}
+          <div class="lScan">Scan to view contents</div>
+        </div>`;
+      });
+      html += `</div>`;
+      $("batchSheet").innerHTML = html;
+      document.body.classList.remove("mode-single");
+      document.body.classList.add("mode-batch");
+      window.print();
+    }
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("mode-batch");
+      document.body.classList.add("mode-single");
+    });
+
+    // ---- optional live pillfill form ----
+    function pillfillFormConfigured() {
+      return !!PILLFILL_FORM_BASE && Object.values(PILLFILL_FIELDS).some(Boolean);
+    }
+    function buildPillfillUrl(vals) {
+      const parts = [PILLFILL_FORM_BASE];
+      for (const k in PILLFILL_FIELDS) {
+        const id = PILLFILL_FIELDS[k]; const v = vals[k];
+        if (!id || v === undefined || v === null || v === "") continue;
+        parts.push(id + "=" + encodeURIComponent(v));
+      }
+      return parts.join("&");
+    }
+    // Expiration is a Date question in this form, which needs a full quoted YYYY-MM-DD value.
+    function fmtExpForForm(exp) {
+      if (!exp) return "";
+      if (!PILLFILL_EXP_IS_DATE) return exp;              // short-answer text question
+      const full = exp.length === 7 ? exp + "-01" : exp;  // month/year -> 1st of that month
+      return '"' + full + '"';                            // Microsoft Forms date prefill format
+    }
+    function sendCurrentBagToPillfill() {
+      if (!pillfillFormConfigured()) { alert("No pillfill form is configured. See the comment near the top of the script to enable it, or use the CSV / TSV export."); return; }
+      const o = buildPayloadObj();
+      if (!o.items.length) { alert("Add at least one medication first."); return; }
+      if (o.items.length > 5 && !confirm(`This bag has ${o.items.length} meds and will open ${o.items.length} form tabs. For larger jobs use the CSV/TSV export instead. Continue?`)) return;
+      const link = linkForObj(o);
+      o.items.forEach(it => {
+        const url = buildPillfillUrl({
+          bag: o.bag || "", made: o.made || "", by: o.by || "", bagNote: o.note || "",
+          med: it.n || "", dose: it.s || "", qty: it.q || "", exp: fmtExpForForm(it.exp),
+          lot: it.lot || "", status: expStatusText(it.exp), link
+        });
+        window.open(url, "_blank", "noopener,noreferrer");
+      });
+    }
+
     // ---- Buttons ----
     $("addItemBtn").addEventListener("click", () => {
       items.push({ n: "", q: "", s: "", exp: "", lot: "" });
       renderItems();
     });
     ["bagId","madeDate","preparedBy","bagNote","resolverUrl"].forEach(id => $(id).addEventListener("input", () => {
-      if (id === "resolverUrl") localStorage.setItem(RESOLVER_KEY, $("resolverUrl").value.trim());
-      if (id === "preparedBy") localStorage.setItem(PREP_KEY, $("preparedBy").value.trim());
+      if (id === "resolverUrl") store.set(RESOLVER_KEY, $("resolverUrl").value.trim());
+      if (id === "preparedBy") store.set(PREP_KEY, $("preparedBy").value.trim());
       buildQr();
     }));
     $("downloadBtn").addEventListener("click", () => {
@@ -371,7 +658,19 @@
       const link = currentLink();
       if (link) window.open(link, "_blank", "noopener");
     });
-    $("printBtn").addEventListener("click", () => window.print());
+    $("printBtn").addEventListener("click", () => {
+      document.body.classList.remove("mode-batch");
+      document.body.classList.add("mode-single");
+      window.print();
+    });
+
+    $("addBatchBtn").addEventListener("click", addToBatch);
+    $("printBatchBtn").addEventListener("click", printBatch);
+    $("downloadCsvBtn").addEventListener("click", downloadCsv);
+    $("copyTsvBtn").addEventListener("click", copyTsv);
+    $("clearBatchBtn").addEventListener("click", clearBatch);
+    $("pillfillFormBtn").addEventListener("click", sendCurrentBagToPillfill);
+
     function syncResolverLink() {
       const l = currentLink() || resolverBase();
       $("openResolverLink").href = l;
@@ -381,6 +680,8 @@
     loadSaved();
     renderItems();
     buildQr();
+    renderBatch();
+    if (!pillfillFormConfigured()) $("pillfillFormBtn").style.display = "none";
     syncResolverLink();
   </script>
 </body>
