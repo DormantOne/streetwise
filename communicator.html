@@ -101,6 +101,52 @@
             border: none;
         }
 
+        /* --- NATIVE MOBILE MESSAGE FEED STYLES --- */
+        .feed-container {
+            height: calc(100vh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            overflow-y: auto;
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        .message-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .message-body {
+            font-size: 16px;
+            color: #222;
+            white-space: pre-wrap; /* Preserves line breaks and wraps long text */
+            word-break: break-word;
+        }
+
+        .message-email {
+            font-size: 12px;
+            color: #0056b3;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .loading-text {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            font-size: 16px;
+        }
+
+        /* --- SHARE MODAL --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -131,11 +177,6 @@
             height: 180px;
             margin: 15px 0;
             border-radius: 8px;
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            color: #333;
         }
 
         .install-instructions {
@@ -179,9 +220,10 @@
         </div>
     </div>
 
+    <!-- REPLACED SHEET IFRAME WITH A NATIVE MOBILE FEED -->
     <div id="read" class="tab-content">
-        <div class="iframe-container">
-            <iframe id="sheet-iframe" src="https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/htmlembed?rm=minimal&gid=684759766"></iframe>
+        <div class="feed-container" id="messageFeed">
+            <div class="loading-text">Loading messages...</div>
         </div>
     </div>
 
@@ -216,11 +258,98 @@
                 event.currentTarget.classList.add('active');
             }
 
+            // If they open the message board, fetch fresh data instantly!
             if (tabId === 'read') {
-                const sheetIframe = document.getElementById('sheet-iframe');
-                const baseUrl = "https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/htmlembed?rm=minimal&gid=684759766";
-                sheetIframe.src = baseUrl + "&ts=" + new Date().getTime();
+                fetchMessages();
             }
+        }
+
+        // FETCH MESSAGES DIRECTLY FROM THE GOOGLE SHEET (CSV EXPORT)
+        function fetchMessages() {
+            const feed = document.getElementById('messageFeed');
+            
+            // This URL downloads your specific sorted tab as a CSV cleanly in the background
+            const csvUrl = "https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/export?format=csv&gid=684759766&t=" + new Date().getTime();
+
+            fetch(csvUrl)
+                .then(response => response.text())
+                .then(data => {
+                    parseCSV(data);
+                })
+                .catch(error => {
+                    feed.innerHTML = '<div class="loading-text" style="color: red;">Could not load messages. Check sheet sharing permissions.</div>';
+                });
+        }
+
+        // PARSE CSV AND BUILD CLEAN MOBILE CARDS
+        function parseCSV(text) {
+            const feed = document.getElementById('messageFeed');
+            
+            // Simple CSV line parser handling basic quotes
+            let rows = [];
+            let row = [];
+            let insideQuote = false;
+            let current = '';
+
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                let nextC = text[i+1];
+                if (c === '"' && insideQuote && nextC === '"') {
+                    current += '"';
+                    i++;
+                } else if (c === '"') {
+                    insideQuote = !insideQuote;
+                } else if (c === ',' && !insideQuote) {
+                    row.push(current);
+                    current = '';
+                } else if ((c === '\r' || c === '\n') && !insideQuote) {
+                    if (c === '\r' && nextC === '\n') { i++; }
+                    row.push(current);
+                    rows.push(row);
+                    row = [];
+                    current = '';
+                } else {
+                    current += c;
+                }
+            }
+            if (current !== '' || row.length > 0) {
+                row.push(current);
+                rows.push(row);
+            }
+
+            // Filter out empty rows and check if we have data past the header
+            rows = rows.filter(r => r.some(cell => cell.trim() !== ''));
+
+            if (rows.length <= 1) {
+                feed.innerHTML = '<div class="loading-text">No messages yet. Be the first to send one!</div>';
+                return;
+            }
+
+            // Build HTML cards (skip header row index 0)
+            let html = '';
+            for (let i = 1; i < rows.length; i++) {
+                let cols = rows[i];
+                let timestamp = cols[0] || '';
+                let message = cols[1] || '';
+                let email = cols[2] || '';
+
+                html += `
+                    <div class="message-card">
+                        <div class="message-time">🕒 ${escapeHTML(timestamp)}</div>
+                        <div class="message-body">${escapeHTML(message)}</div>
+                        ${email ? `<div class="message-email">✉️ ${escapeHTML(email)}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            feed.innerHTML = html;
+        }
+
+        // Security helper to prevent HTML injection in user messages
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag)
+            );
         }
 
         function toggleShare(show) {
@@ -231,6 +360,11 @@
                 modal.style.display = 'none';
             }
         }
+
+        // Automatically fetch messages on page load so it's ready instantly
+        window.onload = function() {
+            fetchMessages();
+        };
     </script>
 
 </body>
