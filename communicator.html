@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Communicator">
+    
+    <title>The Communicator</title>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            overscroll-behavior-y: none; 
+        }
+
+        /* --- NEW: TOP APP HEADER --- */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0056b3;
+            color: white;
+            padding: 15px;
+            padding-top: calc(15px + env(safe-area-inset-top)); /* Safe area for notches */
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 200;
+        }
+
+        .share-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-bar {
+            display: flex;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky; 
+            top: 0;
+            z-index: 100;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: 0.2s;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .tab-button.active {
+            color: #0056b3;
+            border-bottom: 3px solid #0056b3;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            /* Adjusted slightly to account for the new header */
+            height: calc(100vh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); 
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* --- NEW: SHARE POPUP (MODAL) --- */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal-content img {
+            width: 180px;
+            height: 180px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .install-instructions {
+            text-align: left;
+            font-size: 14px;
+            color: #555;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NEW: TOP APP HEADER -->
+    <div class="app-header">
+        <div>Communicator</div>
+        <button class="share-btn" onclick="toggleShare(true)">🔗 Share App</button>
+    </div>
+
+    <!-- THE TABS -->
+    <div class="tab-bar">
+        <button class="tab-button active" onclick="openTab('send', event)">✏️ Send Message</button>
+        <button class="tab-button" onclick="openTab('read', event)">📋 Message Board</button>
+    </div>
+
+    <!-- TAB 1: SEND MESSAGE -->
+    <div id="send" class="tab-content active">
+        <div class="iframe-container">
+            <iframe src="https://forms.gle/UTdFQALBP8aKf4kLA"></iframe>
+        </div>
+    </div>
+
+    <!-- TAB 2: CHECK MESSAGE BOARD -->
+    <div id="read" class="tab-content">
+        <div class="iframe-container">
+            <iframe id="sheet-iframe" src="https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/htmlembed?rm=minimal&gid=684759766"></iframe>
+        </div>
+    </div>
+
+    <!-- NEW: THE SHARE POPUP OVERLAY -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content">
+            <h3>Share Communicator</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Scan to open on a new device</p>
+            
+            <!-- Generates a live QR code pointing exactly to your GitHub link -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://dormantone.github.io/streetwise/communictor.html" alt="QR Code">
+            
+            <div class="install-instructions">
+                <strong>📥 How to install:</strong><br>
+                <span style="display: block; margin-top: 8px;"><b>iPhone:</b> Open in Safari, tap the <b>Share</b> icon at the bottom, and select "Add to Home Screen".</span>
+                <span style="display: block; margin-top: 8px;"><b>Android:</b> Open in Chrome, tap the <b>Menu (⋮)</b> at the top, and select "Add to Home screen".</span>
+            </div>
+
+            <button class="close-btn" onclick="toggleShare(false)">Close</button>
+        </div>
+    </div>
+
+    <!-- THE JAVASCRIPT LOGIC -->
+    <script>
+        function openTab(tabId, event) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            if(event) {
+                event.currentTarget.classList.add('active');
+            }
+
+            if (tabId === 'read') {
+                const sheetIframe = document.getElementById('sheet-iframe');
+                const baseUrl = "https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/htmlembed?rm=minimal&gid=684759766";
+                sheetIframe.src = baseUrl + "&ts=" + new Date().getTime();
+            }
+        }
+
+        // NEW: Function to open and close the share popup
+        function toggleShare(show) {
+            const modal = document.getElementById('shareModal');
+            if (show) {
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+
+</body>
+</html>
