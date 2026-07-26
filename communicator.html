@@ -82,10 +82,28 @@
             display: block;
         }
 
+        /* --- PHI WARNING BANNER STYLES --- */
+        .warning-banner {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .warning-banner strong {
+            color: #533f03;
+        }
+
         .iframe-container {
             position: relative;
             width: 100%;
-            height: calc(100vh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); 
+            /* Adjusted height to fit the warning banner nicely */
+            height: calc(100vh - 190px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); 
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -128,7 +146,7 @@
         .message-body {
             font-size: 16px;
             color: #222;
-            white-space: pre-wrap; /* Preserves line breaks and wraps long text */
+            white-space: pre-wrap;
             word-break: break-word;
         }
 
@@ -214,19 +232,25 @@
         <button class="tab-button" onclick="openTab('read', event)">📋 Message Board</button>
     </div>
 
+    <!-- TAB 1: SEND MESSAGE -->
     <div id="send" class="tab-content active">
+        <!-- NON-SENSITIVE / NO PHI WARNING BANNER -->
+        <div class="warning-banner">
+            ⚠️ <strong>Notice:</strong> For non-sensitive communication only. <strong>Do not enter PHI</strong> or confidential data.
+        </div>
         <div class="iframe-container">
             <iframe src="https://forms.gle/UTdFQALBP8aKf4kLA"></iframe>
         </div>
     </div>
 
-    <!-- REPLACED SHEET IFRAME WITH A NATIVE MOBILE FEED -->
+    <!-- TAB 2: CHECK MESSAGE BOARD -->
     <div id="read" class="tab-content">
         <div class="feed-container" id="messageFeed">
             <div class="loading-text">Loading messages...</div>
         </div>
     </div>
 
+    <!-- SHARE MODAL -->
     <div class="modal-overlay" id="shareModal">
         <div class="modal-content">
             <h3>Share Communicator</h3>
@@ -258,17 +282,13 @@
                 event.currentTarget.classList.add('active');
             }
 
-            // If they open the message board, fetch fresh data instantly!
             if (tabId === 'read') {
                 fetchMessages();
             }
         }
 
-        // FETCH MESSAGES DIRECTLY FROM THE GOOGLE SHEET (CSV EXPORT)
         function fetchMessages() {
             const feed = document.getElementById('messageFeed');
-            
-            // This URL downloads your specific sorted tab as a CSV cleanly in the background
             const csvUrl = "https://docs.google.com/spreadsheets/d/1TrqsyMRP8IaO_YAeD0QIHpBXvl_zpvMPQOapAxNL9d8/export?format=csv&gid=684759766&t=" + new Date().getTime();
 
             fetch(csvUrl)
@@ -281,11 +301,8 @@
                 });
         }
 
-        // PARSE CSV AND BUILD CLEAN MOBILE CARDS
         function parseCSV(text) {
             const feed = document.getElementById('messageFeed');
-            
-            // Simple CSV line parser handling basic quotes
             let rows = [];
             let row = [];
             let insideQuote = false;
@@ -317,7 +334,6 @@
                 rows.push(row);
             }
 
-            // Filter out empty rows and check if we have data past the header
             rows = rows.filter(r => r.some(cell => cell.trim() !== ''));
 
             if (rows.length <= 1) {
@@ -325,7 +341,6 @@
                 return;
             }
 
-            // Build HTML cards (skip header row index 0)
             let html = '';
             for (let i = 1; i < rows.length; i++) {
                 let cols = rows[i];
@@ -345,7 +360,6 @@
             feed.innerHTML = html;
         }
 
-        // Security helper to prevent HTML injection in user messages
         function escapeHTML(str) {
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag)
@@ -361,7 +375,6 @@
             }
         }
 
-        // Automatically fetch messages on page load so it's ready instantly
         window.onload = function() {
             fetchMessages();
         };
