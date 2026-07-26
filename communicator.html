@@ -6,18 +6,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Communicator">
-    
     <title>The Communicator</title>
-    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f2f5;
-            overscroll-behavior-y: none; 
+            overscroll-behavior-y: none;
         }
-
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -30,7 +27,6 @@
             font-size: 18px;
             z-index: 200;
         }
-
         .share-btn {
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
@@ -41,16 +37,14 @@
             font-weight: bold;
             cursor: pointer;
         }
-
         .tab-bar {
             display: flex;
             background-color: #ffffff;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky; 
+            position: sticky;
             top: 0;
             z-index: 100;
         }
-        
         .tab-button {
             flex: 1;
             padding: 15px;
@@ -63,30 +57,24 @@
             color: #555;
             cursor: pointer;
             transition: 0.2s;
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-tap-highlight-color: transparent;
         }
-        
         .tab-button.active {
             color: #0056b3;
             border-bottom: 3px solid #0056b3;
         }
-
         .tab-content {
             display: none;
             padding: 15px;
             max-width: 800px;
             margin: 0 auto;
-            /* Allows natural scrolling on mobile so banners and long forms never get cut off */
-            overflow-y: auto; 
+            overflow-y: auto;
             height: calc(100vh - 100px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
             box-sizing: border-box;
         }
-        
         .tab-content.active {
             display: block;
         }
-
-        /* --- PHI WARNING BANNER STYLES --- */
         .warning-banner {
             background-color: #fff3cd;
             color: #856404;
@@ -98,22 +86,19 @@
             line-height: 1.4;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
-
         .warning-banner strong {
             color: #533f03;
         }
-
         .iframe-container {
             position: relative;
             width: 100%;
-            height: 750px; /* Generous fixed height allowing smooth internal form scrolling */
+            height: 750px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             overflow: hidden;
             margin-bottom: 30px;
         }
-        
         iframe {
             position: absolute;
             top: 0;
@@ -122,8 +107,6 @@
             height: 100%;
             border: none;
         }
-
-        /* --- NATIVE MOBILE MESSAGE FEED STYLES --- */
         .feed-container {
             width: 100%;
             background: #f0f2f5;
@@ -131,7 +114,6 @@
             padding-bottom: 30px;
             box-sizing: border-box;
         }
-
         .message-card {
             background: white;
             padding: 15px;
@@ -139,35 +121,23 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
         .message-time {
             font-size: 12px;
             color: #888;
             margin-bottom: 5px;
         }
-
         .message-body {
             font-size: 16px;
             color: #222;
             white-space: pre-wrap;
             word-break: break-word;
         }
-
-        .message-email {
-            font-size: 12px;
-            color: #0056b3;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
         .loading-text {
             text-align: center;
             color: #666;
             margin-top: 40px;
             font-size: 16px;
         }
-
-        /* --- SHARE MODAL --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -182,7 +152,6 @@
             padding: 20px;
             box-sizing: border-box;
         }
-
         .modal-content {
             background: white;
             padding: 25px;
@@ -192,14 +161,12 @@
             width: 100%;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
         .modal-content img {
             width: 180px;
             height: 180px;
             margin: 15px 0;
             border-radius: 8px;
         }
-
         .install-instructions {
             text-align: left;
             font-size: 14px;
@@ -209,7 +176,6 @@
             border-radius: 8px;
             margin-bottom: 20px;
         }
-
         .close-btn {
             background-color: #0056b3;
             color: white;
@@ -224,20 +190,15 @@
     </style>
 </head>
 <body>
-
     <div class="app-header">
         <div>Communicator</div>
         <button class="share-btn" onclick="toggleShare(true)">🔗 Share App</button>
     </div>
-
     <div class="tab-bar">
         <button class="tab-button active" onclick="openTab('send', event)">✏️ Send Message</button>
         <button class="tab-button" onclick="openTab('read', event)">📋 Message Board</button>
     </div>
-
-    <!-- TAB 1: SEND MESSAGE -->
     <div id="send" class="tab-content active">
-        <!-- NON-SENSITIVE / NO PHI WARNING BANNER -->
         <div class="warning-banner">
             ⚠️ <strong>Notice:</strong> For non-sensitive communication only. <strong>Do not enter PHI</strong> or confidential data.
         </div>
@@ -245,32 +206,24 @@
             <iframe src="https://forms.gle/UTdFQALBP8aKf4kLA"></iframe>
         </div>
     </div>
-
-    <!-- TAB 2: CHECK MESSAGE BOARD -->
     <div id="read" class="tab-content">
         <div class="feed-container" id="messageFeed">
             <div class="loading-text">Loading messages...</div>
         </div>
     </div>
-
-    <!-- SHARE MODAL -->
     <div class="modal-overlay" id="shareModal">
         <div class="modal-content">
             <h3>Share Communicator</h3>
             <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Scan to open on a new device</p>
-            
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://dormantone.github.io/streetwise/communicator.html" alt="QR Code">
-            
             <div class="install-instructions">
                 <strong>📥 How to install:</strong><br>
                 <span style="display: block; margin-top: 8px;"><b>iPhone:</b> Open in Safari, tap the <b>Share</b> icon at the bottom, and select "Add to Home Screen".</span>
                 <span style="display: block; margin-top: 8px;"><b>Android:</b> Open in Chrome, tap the <b>Menu (⋮)</b> at the top, and select "Add to Home screen".</span>
             </div>
-
             <button class="close-btn" onclick="toggleShare(false)">Close</button>
         </div>
     </div>
-
     <script>
         function openTab(tabId, event) {
             const contents = document.querySelectorAll('.tab-content');
@@ -280,7 +233,6 @@
             buttons.forEach(button => button.classList.remove('active'));
 
             document.getElementById(tabId).classList.add('active');
-
             if(event) {
                 event.currentTarget.classList.add('active');
             }
@@ -332,6 +284,7 @@
                     current += c;
                 }
             }
+
             if (current !== '' || row.length > 0) {
                 row.push(current);
                 rows.push(row);
@@ -349,13 +302,11 @@
                 let cols = rows[i];
                 let timestamp = cols[0] || '';
                 let message = cols[1] || '';
-                let email = cols[2] || '';
 
                 html += `
                     <div class="message-card">
                         <div class="message-time">🕒 ${escapeHTML(timestamp)}</div>
                         <div class="message-body">${escapeHTML(message)}</div>
-                        ${email ? `<div class="message-email">✉️ ${escapeHTML(email)}</div>` : ''}
                     </div>
                 `;
             }
@@ -382,6 +333,5 @@
             fetchMessages();
         };
     </script>
-
 </body>
 </html>
