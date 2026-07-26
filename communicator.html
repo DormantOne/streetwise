@@ -76,6 +76,10 @@
             padding: 15px;
             max-width: 800px;
             margin: 0 auto;
+            /* Allows natural scrolling on mobile so banners and long forms never get cut off */
+            overflow-y: auto; 
+            height: calc(100vh - 100px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            box-sizing: border-box;
         }
         
         .tab-content.active {
@@ -102,12 +106,12 @@
         .iframe-container {
             position: relative;
             width: 100%;
-            /* Adjusted height to fit the warning banner nicely */
-            height: calc(100vh - 190px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); 
+            height: 750px; /* Generous fixed height allowing smooth internal form scrolling */
             background: white;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-bottom: 30px;
         }
         
         iframe {
@@ -121,11 +125,10 @@
 
         /* --- NATIVE MOBILE MESSAGE FEED STYLES --- */
         .feed-container {
-            height: calc(100vh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-            overflow-y: auto;
+            width: 100%;
             background: #f0f2f5;
             border-radius: 8px;
-            padding: 5px;
+            padding-bottom: 30px;
             box-sizing: border-box;
         }
 
