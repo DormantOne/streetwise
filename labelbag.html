@@ -1,10 +1,12 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Pill Bag QR Maker</title>
+  <title>labelbag</title>
   <style>
     :root {
       --pink: #ff7eb6; --hot: #ff4f8b; --peach: #ffb86b; --banana: #ffe66d;
@@ -13,6 +15,7 @@
       --shadow: 0 16px 40px rgba(56, 42, 111, 0.16); --radius: 26px;
     }
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html, body { min-height: 100%; }
     body {
       margin: 0;
@@ -70,6 +73,33 @@
       font-weight:950; font-size:.82rem; line-height:1.3; }
     .miniRow { display:flex; gap:6px; flex-wrap:wrap; }
 
+    /* ---- QR resolver view ---- */
+    .resolverView { max-width:540px; margin:0 auto; padding:18px 14px calc(22px + env(safe-area-inset-bottom)); }
+    .resolverCard {
+      background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.96);
+      border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;
+    }
+    .resolverEyebrow { color:var(--muted); font-size:.76rem; font-weight:1000;
+      text-transform:uppercase; letter-spacing:.08em; }
+    .resolverBag { margin:3px 0 12px; font-size:1.55rem; font-weight:1000; line-height:1.12; }
+    .resolverMed { background:white; border-radius:20px; padding:14px;
+      box-shadow:inset 0 0 0 2px rgba(36,36,58,.06); }
+    .resolverMedName { font-size:1.25rem; font-weight:1000; line-height:1.2; }
+    .resolverDose { margin-top:4px; font-size:1rem; font-weight:950; }
+    .resolverMeta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .resolverCell { background:rgba(255,255,255,.7); border-radius:15px; padding:10px; }
+    .resolverCell .k { color:var(--muted); font-size:.68rem; font-weight:1000;
+      text-transform:uppercase; letter-spacing:.05em; }
+    .resolverCell .v { margin-top:2px; font-weight:950; word-break:break-word; }
+    .resolverNote { margin-top:10px; border-radius:15px; padding:10px 12px;
+      background:#fff8dc; font-weight:900; line-height:1.35; }
+    .resolverFooter { margin-top:13px; color:var(--muted); font-size:.75rem;
+      font-weight:850; line-height:1.35; }
+    .makerLink { display:inline-block; margin-top:13px; color:var(--ink); background:white;
+      text-decoration:none; font-weight:1000; padding:9px 12px; border-radius:999px; }
+    .badPayload { background:#fff0f7; color:var(--hot); border-radius:16px;
+      padding:12px; font-weight:950; line-height:1.4; }
+
     /* ---- growing QR list ---- */
     .count { font-weight:900; color:var(--muted); font-size:.84rem; }
     .qrList { display:grid; gap:9px; margin-top:10px; }
@@ -112,7 +142,7 @@
 </head>
 <body>
   <div class="banner">
-    <span>💊 Pill Bag QR Maker</span>
+    <span>💊 labelbag</span>
     <a href="#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
   </div>
 
@@ -165,8 +195,8 @@
         </div>
       </div>
 
-      <button class="mainBtn" id="commitBtn">2 · Submit form + create QR</button>
-      <div class="note" id="commitNote">Opens your pillfill form to submit, then adds the QR to the batch below and advances the Bag ID. Your medication and prep details stay filled in for the next bag.</div>
+      <button class="mainBtn" id="commitBtn">2 · Open Google Form + create QR</button>
+      <div class="note" id="commitNote">Opens the prefilled labelbag Google Form for review and submission, then adds the QR to the batch below and advances the Bag ID. Your medication and prep details stay filled in for the next bag.</div>
     </section>
 
     <section class="card" id="batchCard">
@@ -178,7 +208,7 @@
         </div>
       </div>
       <div class="miniRow">
-        <button class="tinyBtn" id="downloadCsvBtn">download pillfill CSV</button>
+        <button class="tinyBtn" id="downloadCsvBtn">download labelbag CSV</button>
         <button class="tinyBtn" id="copyTsvBtn">copy rows (TSV)</button>
       </div>
       <div id="qrList" class="qrList"></div>
@@ -187,16 +217,24 @@
 
   </main>
 
+  <!-- The same file becomes a read-only bag viewer when opened with #m=... -->
+  <main class="resolverView" id="resolverView" hidden>
+    <section class="resolverCard">
+      <div id="resolverContent"></div>
+      <a class="makerLink" id="makerLink" href="https://dormantone.github.io/streetwise/labelbag.html">open labelbag maker</a>
+    </section>
+  </main>
+
   <!-- Hidden label sheet, filled and shown only when printing -->
   <div id="batchSheet" aria-hidden="true"></div>
 
   <!-- Client-side QR generation: payload never leaves the device -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script>
-    const RESOLVER_KEY = "pillbag_maker_resolver_url_v1";
-    const PREP_KEY = "pillbag_maker_preparedby_v1";
-    const BATCH_KEY = "pillbag_maker_batch_v1";
-    const CURRENT_KEY = "pillbag_maker_current_v1";
+    const RESOLVER_KEY = "labelbag_maker_resolver_url_v1";
+    const PREP_KEY = "labelbag_maker_preparedby_v1";
+    const BATCH_KEY = "labelbag_maker_batch_v1";
+    const CURRENT_KEY = "labelbag_maker_current_v1";
     const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag.html";
 
     // Safe storage: uses localStorage when available, falls back to memory otherwise.
@@ -207,31 +245,29 @@
       remove(k) { try { localStorage.removeItem(k); } catch { delete _mem[k]; } }
     };
 
-    // ===== "pillfill" form logging =====
-    const PILLFILL_FORM_BASE = "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=eARvaE0pNUy_KbeVdKQh_r51T9s3RLFHo0TAdLxWv1xUMjZVTDc0MjJGMExLWEk0VE5PWVdISVY2Vi4u";
-    const PILLFILL_FIELDS = {
-      bag:     "rf2a7f04bad174ef3bc8162853fe0e683", // Bag/Lot ID
-      made:    "reae8824530bf476d8b41fa5f0cbfbcb8", // Prep date
-      by:      "r7531e86a56094fe995d34fe7fdb6caa6", // Prepared by
-      bagNote: "rf2f5bc58efdf4758880aa539c2c47b1e", // Bag note
-      med:     "r2f63cef4246845e2bff511dabf9f4530", // Medication
-      dose:    "r819e0f406cbe4b33a1c1ddead04fa11a", // Strength/Dose
-      qty:     "rbc23dbf06e744c84a48ba8a0d0cf1c1f", // Quantity
-      exp:     "r271f32611fa0473c912629c5697d0e83", // Expiration  (Date-type question)
-      lot:     "r269e7ea4dc5a4c7ba7ad92dd9e5f0a43", // Med lot #
-      status:  "r4ad63199eca848baa1e033e1de1e1761", // Expiry status
-      link:    "r4c8a3b0bde9b44ee96ffeb69245f7e79"  // Bag QR link
-    };
-    // The Expiration question is a Date question, so it needs a full YYYY-MM-DD value.
-    // The label only carries month/year, so the form is sent the 1st of that month.
-    // If you change that question to a short-answer (text) question, set this to false.
-    const PILLFILL_EXP_IS_DATE = true;
+    // ===== labelbag Google Form logging =====
+    const LABELBAG_FORM_BASE =
+      "https://docs.google.com/forms/d/e/1FAIpQLScvuttzJUcXAZ1YqR_O5V_MOvpwvxcmuVCryqEEWUTlKiw7PA/viewform?usp=pp_url";
 
-    // Column order for CSV / TSV (one row per bag, one med per bag)
-    const PILLFILL_COLUMNS = [
+    const LABELBAG_FIELDS = {
+      bag:     "entry.958701922",   // Bag / Lot ID
+      made:    "entry.1787319969",  // Prep date
+      by:      "entry.1317034513",  // Prepared by
+      bagNote: "entry.1317154156",  // Bag note
+      med:     "entry.1725324056",  // Medication
+      dose:    "entry.219800133",   // Strength / Dose
+      qty:     "entry.1808565648",  // Quantity
+      exp:     "entry.1264616216",  // Expiration
+      lot:     "entry.354245454",   // Medication lot number
+      status:  "entry.927275323",   // Expiry status
+      link:    "entry.1828469137"   // Bag QR link
+    };
+
+    // Column order for CSV / TSV (one row per bag, one medication per bag)
+    const LABELBAG_COLUMNS = [
       "Bag/Lot ID", "Prep date", "Prepared by", "Bag note",
       "Medication", "Strength/Dose", "Quantity", "Expiration",
-      "Med lot #", "Expiry status", "Bag QR link"
+      "Medication lot number", "Expiry status", "Bag QR link"
     ];
 
     const $ = id => document.getElementById(id);
@@ -256,6 +292,94 @@
     }
     function resolverBase() { return ($("resolverUrl").value.trim()) || DEFAULT_RESOLVER; }
     function linkForObj(obj) { return resolverBase().split("#")[0] + "#m=" + encodePayload(obj); }
+
+    function decodePayload(encoded) {
+      let b64 = String(encoded || "").replace(/-/g, "+").replace(/_/g, "/");
+      while (b64.length % 4) b64 += "=";
+
+      const binary = atob(b64);
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      const text = new TextDecoder().decode(bytes);
+      const fields = text.split(SEP);
+
+      if (fields[0] !== "1" || fields.length < 10) {
+        throw new Error("Unsupported or incomplete labelbag payload.");
+      }
+
+      return {
+        v: 1,
+        bag: fields[1] || "",
+        made: fields[2] || "",
+        by: fields[3] || "",
+        note: fields[4] || "",
+        items: [{
+          n: fields[5] || "",
+          s: fields[6] || "",
+          q: fields[7] || "",
+          exp: fields[8] || "",
+          lot: fields[9] || ""
+        }]
+      };
+    }
+
+    function renderResolverFromHash() {
+      if (!location.hash.startsWith("#m=")) return false;
+
+      const content = $("resolverContent");
+      const viewer = $("resolverView");
+      const maker = document.querySelector(".app");
+      const baseUrl = location.href.split("#")[0];
+
+      $("makerLink").href = baseUrl;
+      $("openResolverLink").href = baseUrl;
+      $("openResolverLink").textContent = "maker ↗";
+
+      try {
+        const obj = decodePayload(location.hash.slice(3));
+        const it = (obj.items && obj.items[0]) || {};
+        const status = expStatusText(it.exp);
+        const statusClass = status === "EXPIRED" ? "bad" : (status === "expires soon" ? "soon" : "ok");
+        const statusText = status === "EXPIRED" ? "⚠ EXPIRED" : status;
+
+        const cells = [
+          ["Quantity", it.q],
+          ["Expiration", it.exp],
+          ["Medication lot", it.lot],
+          ["Prepared", obj.made],
+          ["Prepared by", obj.by]
+        ].filter(([, value]) => value);
+
+        content.innerHTML = `
+          <div class="resolverEyebrow">labelbag contents</div>
+          <div class="resolverBag">${escapeHtml(obj.bag || "Medication bag")}</div>
+          <div class="resolverMed">
+            <div class="resolverMedName">${escapeHtml(it.n || "Medication not listed")}</div>
+            ${it.s ? `<div class="resolverDose">${escapeHtml(it.s)}</div>` : ""}
+            ${status ? `<span class="flag ${statusClass}">${escapeHtml(statusText)}</span>` : ""}
+          </div>
+          ${cells.length ? `<div class="resolverMeta">${cells.map(([key, value]) => `
+            <div class="resolverCell">
+              <div class="k">${escapeHtml(key)}</div>
+              <div class="v">${escapeHtml(value)}</div>
+            </div>`).join("")}</div>` : ""}
+          ${obj.note ? `<div class="resolverNote">📝 ${escapeHtml(obj.note)}</div>` : ""}
+          <div class="resolverFooter">
+            This QR describes the labeled bag only. It contains no patient or recipient information.
+          </div>`;
+
+        maker.hidden = true;
+        viewer.hidden = false;
+      } catch (error) {
+        content.innerHTML = `
+          <div class="resolverEyebrow">labelbag</div>
+          <div class="resolverBag">QR could not be read</div>
+          <div class="badPayload">${escapeHtml(error.message || "Invalid QR payload.")}</div>`;
+        maker.hidden = true;
+        viewer.hidden = false;
+      }
+
+      return true;
+    }
 
     // Crisp, print-reliable QR as inline SVG (vector renders instantly, with no image-decode
     // step that the print dialog can outrun). Error-correction L = the lowest module count,
@@ -353,13 +477,21 @@
       const obj = buildPayloadObj();
       if (!obj.items.length) { alert("Enter the medication name first."); $("medName").focus(); return; }
 
-      // 1) open the pillfill form to submit (if configured)
-      if (pillfillFormConfigured()) {
+      // 1) open the prefilled labelbag Google Form for review and submission
+      if (labelbagFormConfigured()) {
         const it = obj.items[0];
-        const url = buildPillfillUrl({
-          bag: obj.bag || "", made: obj.made || "", by: obj.by || "", bagNote: obj.note || "",
-          med: it.n || "", dose: it.s || "", qty: it.q || "", exp: fmtExpForForm(it.exp),
-          lot: it.lot || "", status: expStatusText(it.exp), link: linkForObj(obj)
+        const url = buildLabelbagUrl({
+          bag: obj.bag || "",
+          made: obj.made || "",
+          by: obj.by || "",
+          bagNote: obj.note || "",
+          med: it.n || "",
+          dose: it.s || "",
+          qty: it.q || "",
+          exp: fmtDateForGoogleForm(it.exp),
+          lot: it.lot || "",
+          status: expStatusText(it.exp),
+          link: linkForObj(obj)
         });
         window.open(url, "_blank", "noopener,noreferrer");
       }
@@ -421,8 +553,8 @@
       el.querySelectorAll("[data-del]").forEach(btn => btn.addEventListener("click", () => removeItem(btn.dataset.del)));
     }
 
-    // ---- pillfill rows (one row per bag) ----
-    function pillfillRows() {
+    // ---- labelbag rows (one row per bag) ----
+    function labelbagRows() {
       const rows = [];
       getBatch().forEach(entry => {
         const o = entry.obj; const it = (o.items && o.items[0]) || {};
@@ -436,20 +568,20 @@
     }
     function csvCell(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
     function toCSV() {
-      const head = PILLFILL_COLUMNS.map(csvCell).join(",");
-      const body = pillfillRows().map(r => r.map(csvCell).join(",")).join("\n");
+      const head = LABELBAG_COLUMNS.map(csvCell).join(",");
+      const body = labelbagRows().map(r => r.map(csvCell).join(",")).join("\n");
       return head + "\n" + body;
     }
     function toTSV() {
       const clean = s => String(s ?? "").replace(/\t/g, " ").replace(/\r?\n/g, " ");
-      return [PILLFILL_COLUMNS.join("\t"), ...pillfillRows().map(r => r.map(clean).join("\t"))].join("\n");
+      return [LABELBAG_COLUMNS.join("\t"), ...labelbagRows().map(r => r.map(clean).join("\t"))].join("\n");
     }
     function downloadCsv() {
       if (!getBatch().length) return;
       const csv = "\uFEFF" + toCSV();
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = "pillfill.csv"; a.click();
+      a.href = URL.createObjectURL(blob); a.download = "labelbag.csv"; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }
     async function copyTsv() {
@@ -491,23 +623,35 @@
       setTimeout(() => window.print(), 50);
     }
 
-    // ---- pillfill form helpers ----
-    function pillfillFormConfigured() { return !!PILLFILL_FORM_BASE && Object.values(PILLFILL_FIELDS).some(Boolean); }
-    function buildPillfillUrl(vals) {
-      const parts = [PILLFILL_FORM_BASE];
-      for (const k in PILLFILL_FIELDS) {
-        const id = PILLFILL_FIELDS[k]; const v = vals[k];
-        if (!id || v === undefined || v === null || v === "") continue;
-        parts.push(id + "=" + encodeURIComponent(v));
-      }
-      return parts.join("&");
+    // ---- labelbag Google Form helpers ----
+    function labelbagFormConfigured() {
+      return Boolean(LABELBAG_FORM_BASE) &&
+        Object.values(LABELBAG_FIELDS).every(Boolean);
     }
-    // Expiration is a Date question, which needs a full quoted YYYY-MM-DD value.
-    function fmtExpForForm(exp) {
-      if (!exp) return "";
-      if (!PILLFILL_EXP_IS_DATE) return exp;              // short-answer text question
-      const full = exp.length === 7 ? exp + "-01" : exp;  // month/year -> 1st of that month
-      return '"' + full + '"';                            // Microsoft Forms date prefill format
+
+    function buildLabelbagUrl(values) {
+      const url = new URL(LABELBAG_FORM_BASE);
+
+      Object.entries(LABELBAG_FIELDS).forEach(([key, entryId]) => {
+        const value = values[key];
+        if (
+          !entryId ||
+          value === undefined ||
+          value === null ||
+          String(value).trim() === ""
+        ) return;
+
+        url.searchParams.set(entryId, String(value));
+      });
+
+      return url.toString();
+    }
+
+    // The app stores expiration as YYYY-MM. Google Forms Date questions
+    // require YYYY-MM-DD, so the first day of the month is used.
+    function fmtDateForGoogleForm(value) {
+      if (!value) return "";
+      return value.length === 7 ? value + "-01" : value;
     }
 
     function syncResolverLink() { $("openResolverLink").href = resolverBase(); }
@@ -525,14 +669,23 @@
     }));
     $("resolverUrl").addEventListener("input", () => { store.set(RESOLVER_KEY, $("resolverUrl").value.trim()); syncResolverLink(); });
 
-    loadSaved();
-    loadCurrent();
-    if (!pillfillFormConfigured()) {
-      $("commitBtn").textContent = "Create QR + add to batch";
-      $("commitNote").textContent = "Generates the QR and adds it to the batch below, then advances the Bag ID. Your medication and prep details stay filled in for the next bag.";
+    const isResolverView = renderResolverFromHash();
+
+    if (!isResolverView) {
+      loadSaved();
+      loadCurrent();
+      if (!labelbagFormConfigured()) {
+        $("commitBtn").textContent = "Create QR + add to batch";
+        $("commitNote").textContent = "Generates the QR and adds it to the batch below, then advances the Bag ID. Your medication and prep details stay filled in for the next bag.";
+      }
+      renderList();
+      syncResolverLink();
     }
-    renderList();
-    syncResolverLink();
+
+    window.addEventListener("hashchange", () => {
+      if (location.hash.startsWith("#m=")) renderResolverFromHash();
+      else location.reload();
+    });
   </script>
 </body>
 </html>
