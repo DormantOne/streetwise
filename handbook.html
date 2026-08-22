@@ -5,7 +5,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0b3f9c" />
-<title>Street Medicine Handbook</title>
+<title>Street Medicine Reference</title>
 <style>
 :root{
   --blue:#0b3f9c;
@@ -61,6 +61,9 @@ h1{margin:3px 0 7px;font-size:clamp(1.7rem,5vw,2.55rem);line-height:1.0;letter-s
 .shareCard{display:flex;align-items:flex-start;justify-content:flex-end}
 .shareLink{border:1px solid var(--line);background:#f7faff;color:var(--blue);font:inherit;font-size:.74rem;font-weight:900;cursor:pointer;padding:8px 10px;border-radius:999px;white-space:nowrap}
 .shareLink:hover{background:#eef4fb}
+.phoneLink{border:1px solid var(--line);background:#fffaf0;color:#7b5600;font:inherit;font-size:.74rem;font-weight:900;cursor:pointer;padding:8px 10px;border-radius:999px;white-space:nowrap}
+.phoneLink:hover{background:#fff3cf}
+.topTools{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .shareModal[hidden]{display:none!important}
 .shareModal{position:fixed;inset:0;z-index:3000;background:rgba(7,28,61,.45);display:flex;align-items:center;justify-content:center;padding:18px}
 .sharePanel{width:min(300px,92vw);background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.24);padding:15px;text-align:center}
@@ -71,6 +74,14 @@ h1{margin:3px 0 7px;font-size:clamp(1.7rem,5vw,2.55rem);line-height:1.0;letter-s
 #shareQr svg{display:block;width:100%;height:100%}
 .shareActions{display:flex;gap:8px;justify-content:center;margin-top:10px}
 .shareAction{border:0;border-radius:999px;padding:8px 11px;font:inherit;font-size:.76rem;font-weight:900;cursor:pointer}
+.phoneModal[hidden]{display:none!important}
+.phoneModal{position:fixed;inset:0;z-index:3000;background:rgba(7,28,61,.45);display:flex;align-items:center;justify-content:center;padding:18px}
+.phonePanel{width:min(360px,94vw);background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.24);padding:15px}
+.phoneTitle{font-size:.8rem;font-weight:950;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.phoneSection{margin-top:12px;padding:11px 12px;border-radius:14px;background:#f7faff;border:1px solid var(--line)}
+.phoneSection b{display:block;color:var(--blue);margin-bottom:5px}
+.phoneSection ol{margin:0;padding-left:20px;color:var(--ink);font-size:.82rem;font-weight:700;line-height:1.45}
+.phoneNote{margin-top:10px;color:var(--muted);font-size:.72rem;font-weight:700;line-height:1.35}
 .copyAction{background:var(--blue);color:white}
 .nativeAction{background:#eef3f8;color:var(--ink)}
 .sectionTitle{margin:22px 3px 9px;font-size:.76rem;font-weight:950;text-transform:uppercase;letter-spacing:.10em;color:var(--muted)}
@@ -127,17 +138,19 @@ h1{margin:3px 0 7px;font-size:clamp(1.7rem,5vw,2.55rem);line-height:1.0;letter-s
       </a>
       <div class="heroText">
         <div class="kicker">Street Medicine</div>
-        <h1>Handbook</h1>
+        <h1>Reference</h1>
         <p class="sub">Quick access to the tools and links used in the field.</p>
         <a class="mainSite" href="https://www.streetmedatpitt.org/" target="_blank" rel="noopener noreferrer">Street Medicine at Pitt <span aria-hidden="true">↗</span></a>
       </div>
     </div>
     <div class="shareCard">
-      <button class="shareLink" id="shareBtn" type="button">share / copy link</button>
+      <div class="topTools">
+        <button class="phoneLink" id="phoneBtn" type="button">add to phone</button>
+        <button class="shareLink" id="shareBtn" type="button">share / copy link</button>
+      </div>
     </div>
   </section>
 
-  <div class="sectionTitle">Start here</div>
   <a class="tool billing" href="https://www.streetmedatpitt.org/resources" target="_blank" rel="noopener noreferrer">
     <div class="icon" aria-hidden="true">📚</div>
     <div class="toolText"><div class="name">Resources</div><div class="desc">Street Medicine at Pitt</div></div>
@@ -173,19 +186,27 @@ h1{margin:3px 0 7px;font-size:clamp(1.7rem,5vw,2.55rem);line-height:1.0;letter-s
     <div class="arrow" aria-hidden="true">↗</div>
   </a>
 
-  <div class="footer">prototype</div>
+  <div class="footer">experimental prototype, no phi</div>
 </div>
-<div class="shareModal" id="shareModal" hidden aria-modal="true" role="dialog" aria-label="Share Street Medicine Handbook">
+<div class="shareModal" id="shareModal" hidden aria-modal="true" role="dialog" aria-label="Share Street Medicine Reference">
   <div class="sharePanel">
-    <div class="sharePanelTop"><div class="shareTitle">Share handbook</div><button class="closeShare" id="closeShare" type="button" aria-label="Close">×</button></div>
-    <div id="shareQr" aria-label="QR code for Street Medicine Handbook"></div>
+    <div class="sharePanelTop"><div class="shareTitle">Share reference</div><button class="closeShare" id="closeShare" type="button" aria-label="Close">×</button></div>
+    <div id="shareQr" aria-label="QR code for Street Medicine Reference"></div>
     <div class="shareActions">
       <button class="shareAction copyAction" id="copyLinkBtn" type="button">copy link</button>
       <button class="shareAction nativeAction" id="nativeShareBtn" type="button">share</button>
     </div>
   </div>
 </div>
-<div class="copyToast" id="toast">Handbook link copied</div>
+<div class="phoneModal" id="phoneModal" hidden aria-modal="true" role="dialog" aria-label="Add Reference to phone">
+  <div class="phonePanel">
+    <div class="sharePanelTop"><div class="phoneTitle">Add Reference to your phone</div><button class="closeShare" id="closePhone" type="button" aria-label="Close">×</button></div>
+    <div class="phoneSection"><b>iPhone / iPad · Safari</b><ol><li>Open this page in Safari.</li><li>Tap the Share button.</li><li>Choose <strong>Add to Home Screen</strong>.</li><li>Tap <strong>Add</strong>.</li></ol></div>
+    <div class="phoneSection"><b>Android · Chrome</b><ol><li>Open this page in Chrome.</li><li>Tap the ⋮ menu.</li><li>Choose <strong>Add to Home screen</strong> (or <strong>Install app</strong> if offered).</li><li>Confirm <strong>Add</strong>.</li></ol></div>
+    <div class="phoneNote">This creates a quick-launch icon. A true installable progressive web app can be added later.</div>
+  </div>
+</div>
+<div class="copyToast" id="toast">Reference link copied</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
@@ -211,6 +232,7 @@ function qrSvg(text){
 }
 const qrBox=document.getElementById('shareQr');
 const shareModal=document.getElementById('shareModal');
+const phoneModal=document.getElementById('phoneModal');
 const toast=document.getElementById('toast');
 let qrBuilt=false;
 function buildQrOnce(){
@@ -222,17 +244,22 @@ function buildQrOnce(){
 function showToast(){toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1400)}
 function openShare(){buildQrOnce();shareModal.hidden=false;}
 function closeShare(){shareModal.hidden=true;}
+function openPhone(){phoneModal.hidden=false;}
+function closePhone(){phoneModal.hidden=true;}
 document.getElementById('shareBtn').addEventListener('click',openShare);
+document.getElementById('phoneBtn').addEventListener('click',openPhone);
+document.getElementById('closePhone').addEventListener('click',closePhone);
 document.getElementById('closeShare').addEventListener('click',closeShare);
 shareModal.addEventListener('click',e=>{if(e.target===shareModal)closeShare();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!shareModal.hidden)closeShare();});
+phoneModal.addEventListener('click',e=>{if(e.target===phoneModal)closePhone();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!shareModal.hidden)closeShare();if(!phoneModal.hidden)closePhone();}});
 document.getElementById('copyLinkBtn').addEventListener('click',async()=>{
   try{await navigator.clipboard.writeText(HANDBOOK_URL);showToast();}
   catch(e){window.prompt('Copy this link:',HANDBOOK_URL);}
 });
 document.getElementById('nativeShareBtn').addEventListener('click',async()=>{
   if(navigator.share){
-    try{await navigator.share({title:'Street Medicine Handbook',url:HANDBOOK_URL});}
+    try{await navigator.share({title:'Street Medicine Reference',url:HANDBOOK_URL});}
     catch(e){}
   }else{
     try{await navigator.clipboard.writeText(HANDBOOK_URL);showToast();}
