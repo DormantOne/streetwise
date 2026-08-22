@@ -4,827 +4,467 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>labelbag · Smarties dry run</title>
+<title>labelbag · LabelBagSig</title>
 <style>
 :root {
---pink: #ff7eb6; --hot: #ff4f8b; --peach: #ffb86b; --banana: #ffe66d;
---mint: #7ee7c8; --sky: #77c8ff; --lav: #b69cff; --ink: #24243a;
---soft: rgba(255,255,255,0.78); --muted: #6b6b88; --danger: #ff4f72;
---shadow: 0 16px 40px rgba(56, 42, 111, 0.16); --radius: 26px;
+  --pink:#ff7eb6; --hot:#ff4f8b; --peach:#ffb86b; --banana:#ffe66d;
+  --mint:#7ee7c8; --sky:#77c8ff; --lav:#b69cff; --ink:#24243a;
+  --soft:rgba(255,255,255,.80); --muted:#6b6b88; --danger:#ff4f72;
+  --shadow:0 16px 40px rgba(56,42,111,.16); --radius:26px;
 }
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-html, body { min-height: 100%; }
-body {
-margin: 0;
-font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-color: var(--ink);
-background:
-radial-gradient(circle at top left, #ffe0ef 0, transparent 34%),
-radial-gradient(circle at top right, #ddf7ff 0, transparent 32%),
-linear-gradient(135deg, #fff8d8, #f3e8ff 45%, #dcfce7);
--webkit-tap-highlight-color: transparent;
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{
+  margin:0; font-family:ui-rounded,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top left,#ffe0ef 0,transparent 34%),
+    radial-gradient(circle at top right,#ddf7ff 0,transparent 32%),
+    linear-gradient(135deg,#fff8d8,#f3e8ff 45%,#dcfce7);
+  -webkit-tap-highlight-color:transparent;
 }
-.banner {
-position: sticky; top: 0; z-index: 1500;
-padding: calc(7px + env(safe-area-inset-top)) 12px 7px;
-display: flex; align-items: center; justify-content: space-between; gap: 8px;
-color: white;
-background: linear-gradient(90deg, var(--sky), var(--mint), var(--banana));
-box-shadow: 0 8px 20px rgba(0,0,0,.12);
+.banner{
+  position:sticky;top:0;z-index:1500;
+  padding:calc(7px + env(safe-area-inset-top)) 12px 7px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:white;background:linear-gradient(90deg,var(--sky),var(--mint),var(--banana));
+  box-shadow:0 8px 20px rgba(0,0,0,.12)
 }
-.banner span { font-weight: 1000; font-size: 1.08rem; letter-spacing: .02em; }
-.banner a { color: white; font-weight: 1000; text-decoration: none; font-size: .8rem;
-background: rgba(255,255,255,.22); padding: 7px 11px; border-radius: 999px; }
-.app { max-width: 540px; margin: 0 auto; padding: 14px 14px calc(18px + env(safe-area-inset-bottom)); }
-.card {
-background: var(--soft); border: 1px solid rgba(255,255,255,.92);
-border-radius: var(--radius); box-shadow: var(--shadow);
-padding: 12px; margin: 10px 0; backdrop-filter: blur(14px);
-}
-.sectionTitle { font-weight: 1000; font-size: 1rem; margin-bottom: 8px;
-display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
-label.lbl { display:block; font-weight:950; font-size:.78rem; color:var(--muted);
-text-transform:uppercase; letter-spacing:.05em; margin:8px 2px 4px; }
-input, textarea {
-width: 100%; border: 0; outline: 0; border-radius: 16px; padding: 11px 12px;
-background: white; color: var(--ink); font-size: 1rem;
-box-shadow: inset 0 0 0 2px rgba(36,36,58,.06); font-family: inherit;
-}
-textarea { min-height: 56px; resize: vertical; }
-.grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-.grid3 { display:grid; grid-template-columns: 2fr 1fr; gap:8px; }
-button {
-border: 0; border-radius: 16px; padding: 11px 12px; font-weight: 1000;
-color: var(--ink); cursor: pointer; font-size: .98rem;
-box-shadow: 0 8px 16px rgba(0,0,0,.09); font-family: inherit;
-min-height: 44px; touch-action: manipulation; transition: transform .08s ease, filter .08s ease;
-}
-button:active { transform: scale(.97); }
-button:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
-.mainBtn { width:100%; background: linear-gradient(135deg, var(--pink), var(--peach)); color:white; font-size:1.08rem; margin-top:4px; }
-.tinyBtn { padding:8px 11px; font-size:.82rem; border-radius:999px; background:white; box-shadow:none; min-height:34px; white-space:nowrap; }
-.dangerTinyBtn { color: var(--hot); background:#fff0f7; }
-.empty { text-align:center; color:var(--muted); padding:14px; font-weight:900; line-height:1.4; }
-.note { color:var(--muted); font-size:.8rem; font-weight:850; line-height:1.3; margin-top:8px; }
-.warn { background:#fff0f7; color:var(--hot); border-radius:14px; padding:8px 10px;
-font-weight:950; font-size:.82rem; line-height:1.3; }
-.miniRow { display:flex; gap:6px; flex-wrap:wrap; }
+.banner span{font-weight:1000;font-size:1.08rem;letter-spacing:.02em}
+.banner a{color:white;font-weight:1000;text-decoration:none;font-size:.8rem;background:rgba(255,255,255,.22);padding:7px 11px;border-radius:999px}
+.app{max-width:540px;margin:0 auto;padding:14px 14px calc(18px + env(safe-area-inset-bottom))}
+.card{background:var(--soft);border:1px solid rgba(255,255,255,.92);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px;margin:10px 0;backdrop-filter:blur(14px)}
+.sectionTitle{font-weight:1000;font-size:1rem;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+label.lbl{display:block;font-weight:950;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:8px 2px 4px}
+input,textarea{width:100%;border:0;outline:0;border-radius:16px;padding:11px 12px;background:white;color:var(--ink);font-size:1rem;box-shadow:inset 0 0 0 2px rgba(36,36,58,.06);font-family:inherit}
+textarea{min-height:62px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+button{border:0;border-radius:16px;padding:11px 12px;font-weight:1000;color:var(--ink);cursor:pointer;font-size:.98rem;box-shadow:0 8px 16px rgba(0,0,0,.09);font-family:inherit;min-height:44px;touch-action:manipulation;transition:transform .08s ease,filter .08s ease}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.mainBtn{width:100%;background:linear-gradient(135deg,var(--pink),var(--peach));color:white;font-size:1.08rem;margin-top:8px}
+.tinyBtn{padding:8px 11px;font-size:.82rem;border-radius:999px;background:white;box-shadow:none;min-height:34px;white-space:nowrap}
+.dangerTinyBtn{color:var(--hot);background:#fff0f7}
+.addSigBtn{margin-top:8px;background:#eefbff;color:#24627b;box-shadow:none;width:100%}
+.sigSlot{position:relative;margin-top:6px}
+.sigSlot .sigNum{position:absolute;right:10px;top:8px;font-size:.68rem;color:var(--muted);font-weight:1000;pointer-events:none}
+.empty{text-align:center;color:var(--muted);padding:14px;font-weight:900;line-height:1.4}
+.note{color:var(--muted);font-size:.8rem;font-weight:850;line-height:1.35;margin-top:8px}
+.warn{background:#fff0f7;color:var(--hot);border-radius:14px;padding:8px 10px;font-weight:950;font-size:.82rem;line-height:1.3}
+.miniRow{display:flex;gap:6px;flex-wrap:wrap}
+.count{font-weight:900;color:var(--muted);font-size:.84rem}
+.qrList{display:grid;gap:9px;margin-top:10px}
+.qrItem{background:white;border-radius:18px;padding:10px;box-shadow:0 8px 18px rgba(101,78,163,.09);display:flex;gap:11px;align-items:center}
+.qrThumb{background:white;border-radius:12px;padding:5px;box-shadow:inset 0 0 0 2px rgba(36,36,58,.06);flex:0 0 auto}
+.qrThumb .qrsvg{display:block;width:136px;height:136px}
+.qrInfo{min-width:0;flex:1}.qrName{font-weight:1000;font-size:1rem;line-height:1.2;word-break:break-word}.qrLine{font-weight:900;font-size:.86rem;margin-top:2px}.qrLine.muted{color:var(--muted);font-weight:850;font-size:.8rem}
+.flag{display:inline-block;margin-top:5px;padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:1000}.flag.bad{background:#ffe1ea;color:var(--danger)}.flag.soon{background:#fff3d6;color:#b8860b}.flag.ok{background:#e3f9ee;color:#1c9c6b}
+.iconX{flex:0 0 auto;align-self:flex-start;width:30px;min-width:30px;height:30px;min-height:30px;padding:0;border-radius:999px;background:#fff0f7;color:var(--hot);box-shadow:none;font-size:1rem;line-height:1}
 
-/* ---- QR resolver view ---- */
-.resolverView { max-width:540px; margin:0 auto; padding:18px 14px calc(22px + env(safe-area-inset-bottom)); }
-.resolverCard {
-background:rgba(255,255,255,.9); border:1px solid rgba(255,255,255,.96);
-border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;
+/* QR resolver */
+.resolverView{max-width:540px;margin:0 auto;padding:18px 14px calc(22px + env(safe-area-inset-bottom))}
+.resolverCard{background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.96);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.resolverEyebrow{color:var(--muted);font-size:.76rem;font-weight:1000;text-transform:uppercase;letter-spacing:.08em}
+.resolverBag{margin:3px 0 12px;font-size:1.55rem;font-weight:1000;line-height:1.12}
+.resolverMed{background:white;border-radius:20px;padding:14px;box-shadow:inset 0 0 0 2px rgba(36,36,58,.06)}
+.resolverMedName{font-size:1.25rem;font-weight:1000;line-height:1.2}
+.resolverMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.resolverCell{background:rgba(255,255,255,.7);border-radius:15px;padding:10px}.resolverCell .k{color:var(--muted);font-size:.68rem;font-weight:1000;text-transform:uppercase;letter-spacing:.05em}.resolverCell .v{margin-top:2px;font-weight:950;word-break:break-word}
+.resolverFooter{margin-top:13px;color:var(--muted);font-size:.75rem;font-weight:850;line-height:1.35}.makerLink{display:inline-block;margin-top:13px;color:var(--ink);background:white;text-decoration:none;font-weight:1000;padding:9px 12px;border-radius:999px}.badPayload{background:#fff0f7;color:var(--hot);border-radius:16px;padding:12px;font-weight:950;line-height:1.4}
+
+/* Print sheet */
+#batchSheet{display:none}
+.labelGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.12in;padding:.18in}
+.label{border:1px solid #bdbdca;border-radius:.10in;padding:.08in;page-break-inside:avoid;break-inside:avoid;display:grid;grid-template-columns:1.16in minmax(0,1fr);gap:.10in;align-items:center;min-height:1.30in;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.label .lQr{width:1.12in;min-width:1.12in;display:flex;align-items:center;justify-content:center;overflow:hidden}.label .lQr .qrsvg{width:1.12in;height:1.12in;max-width:1.12in;max-height:1.12in;display:block;flex:0 0 1.12in}.label>div:last-child{min-width:0;overflow:hidden}.label .lHead{font-weight:900;font-size:10.5pt;line-height:1.06;overflow-wrap:anywhere;word-break:break-word}.label .lLine{font-size:8pt;font-weight:800;line-height:1.2;margin-top:.03in;overflow-wrap:anywhere;word-break:break-word}.label .lKey{font-size:6.4pt;color:#666;text-transform:uppercase;letter-spacing:.04em;font-weight:900}.label .lScan{font-size:5.8pt;color:#777;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin-top:.04in}
+
+/* One Letter-landscape sheet per bag: doctor receipt + patient fold card. */
+.carePage{width:11in;height:8.5in;display:grid;grid-template-columns:5.5in 5.5in;page-break-after:always;break-after:page;background:#fff;color:#111;position:relative;overflow:hidden}
+.carePage:last-child{page-break-after:auto;break-after:auto}.cutLine{position:absolute;left:5.5in;top:0;bottom:0;border-left:1.5px dashed #777;z-index:5}.cutTag{position:absolute;left:5.5in;top:.12in;transform:translateX(-50%);background:white;padding:0 .08in;font:700 8pt/1 Arial,sans-serif;letter-spacing:.08em;color:#666;z-index:6}
+.doctorHalf,.patientHalf{width:5.5in;height:8.5in;position:relative;font-family:Arial,Helvetica,sans-serif}.doctorHalf{padding:.32in}.patientHalf{display:grid;grid-template-rows:4.25in 4.25in;padding:0}.patientPanel{padding:.25in .30in;position:relative;overflow:hidden}.patientFront{border-bottom:1.5px dashed #777}.patientBack{transform:rotate(180deg);transform-origin:center center}.foldTag{position:absolute;left:50%;top:4.25in;transform:translate(-50%,-50%);z-index:8;background:white;padding:0 .08in;font:700 8pt/1 Arial,sans-serif;letter-spacing:.06em;color:#666;white-space:nowrap}
+.printBoxTitle{border:2px solid #111;padding:.07in .1in;text-align:center;font-weight:900;font-size:17pt;letter-spacing:.02em;margin-bottom:.08in}.printKicker{text-align:center;font-weight:800;font-size:9pt;margin:.01in 0 .07in}.simOnly{text-align:center;font-size:8pt;font-style:italic;margin-bottom:.08in}.printRule{border-top:1px solid #222;margin:.08in 0 .10in}.medNameBig{font-weight:900;font-size:16pt;line-height:1.05;margin-bottom:.02in}.medMetaBig{font-weight:800;font-size:10pt;line-height:1.2}.blankLine{margin-top:.12in;font-size:9pt;font-weight:800}.blankLine span{display:inline-block;border-bottom:1px solid #111;min-width:3.35in;height:.18in;vertical-align:bottom}
+.sigLabel{font-weight:900;font-size:8pt;text-transform:uppercase;letter-spacing:.06em;margin-top:.13in}.sigChoice{border:1px solid #777;border-radius:.05in;padding:.055in .075in;margin-top:.045in;font-size:9.4pt;font-weight:800;line-height:1.16;min-height:.28in}.checkBox{display:inline-block;width:.16in;height:.16in;border:1.5px solid #111;margin-right:.06in;vertical-align:-.02in}.writeSig{border:1px solid #777;border-radius:.05in;min-height:.55in;padding:.06in .075in;margin-top:.05in;font-size:8pt;color:#444}.writeLines{height:.30in;border-bottom:1px solid #aaa;margin-top:.02in}.printGrid2{display:grid;grid-template-columns:1fr 1fr;gap:.10in;margin-top:.11in}.printCell{border-top:1px solid #777;padding-top:.04in;font-size:8.6pt;line-height:1.25}.printCell b{display:block;font-size:6.7pt;text-transform:uppercase;letter-spacing:.05em;color:#444}.doctorSign{margin-top:.13in;font-size:9pt;font-weight:800}.doctorSign span{display:inline-block;border-bottom:1px solid #111;min-width:2.75in;height:.18in;vertical-align:bottom}.traceBox{margin-top:.13in;border:1px solid #aaa;padding:.07in;font-size:7.7pt;line-height:1.3}.patientFront .smallBottom{position:absolute;left:.30in;right:.30in;bottom:.16in;font-size:7pt;color:#555;text-align:center}.helpTitle{border:2px solid #111;padding:.05in .08in;text-align:center;font-weight:900;font-size:15pt;margin-bottom:.07in}.helpSub{text-align:center;font-weight:800;font-size:8.5pt;margin-bottom:.08in}.helpList{border-top:1px solid #222;padding-top:.06in;font-size:7.8pt;line-height:1.20}.helpRow{margin:.038in 0}.helpRow b{font-weight:900}.helpFooter{border-top:1px solid #222;margin-top:.06in;padding-top:.05in;text-align:center;font-size:6.6pt;font-style:italic}
+
+@page{size:Letter landscape;margin:0}
+@media print{
+  html,body{width:11in;margin:0!important;padding:0!important;background:white}
+  .app,.banner,.resolverView{display:none!important}
+  #batchSheet{display:block!important;padding:0!important;margin:0!important}
 }
-.resolverEyebrow { color:var(--muted); font-size:.76rem; font-weight:1000;
-text-transform:uppercase; letter-spacing:.08em; }
-.resolverBag { margin:3px 0 12px; font-size:1.55rem; font-weight:1000; line-height:1.12; }
-.resolverMed { background:white; border-radius:20px; padding:14px;
-box-shadow:inset 0 0 0 2px rgba(36,36,58,.06); }
-.resolverMedName { font-size:1.25rem; font-weight:1000; line-height:1.2; }
-.resolverDose { margin-top:4px; font-size:1rem; font-weight:950; }
-.resolverMeta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
-.resolverCell { background:rgba(255,255,255,.7); border-radius:15px; padding:10px; }
-.resolverCell .k { color:var(--muted); font-size:.68rem; font-weight:1000;
-text-transform:uppercase; letter-spacing:.05em; }
-.resolverCell .v { margin-top:2px; font-weight:950; word-break:break-word; }
-.resolverNote { margin-top:10px; border-radius:15px; padding:10px 12px;
-background:#fff8dc; font-weight:900; line-height:1.35; }
-.resolverFooter { margin-top:13px; color:var(--muted); font-size:.75rem;
-font-weight:850; line-height:1.35; }
-.makerLink { display:inline-block; margin-top:13px; color:var(--ink); background:white;
-text-decoration:none; font-weight:1000; padding:9px 12px; border-radius:999px; }
-.badPayload { background:#fff0f7; color:var(--hot); border-radius:16px;
-padding:12px; font-weight:950; line-height:1.4; }
-
-/* ---- growing QR list ---- */
-.count { font-weight:900; color:var(--muted); font-size:.84rem; }
-.qrList { display:grid; gap:9px; margin-top:10px; }
-.qrItem {
-background:white; border-radius:18px; padding:10px; box-shadow:0 8px 18px rgba(101,78,163,.09);
-display:flex; gap:11px; align-items:center;
-}
-.qrThumb { background:white; border-radius:12px; padding:5px; box-shadow:inset 0 0 0 2px rgba(36,36,58,.06); flex:0 0 auto; }
-.qrThumb .qrsvg { display:block; width:104px; height:104px; }
-.qrInfo { min-width:0; flex:1; }
-.qrName { font-weight:1000; font-size:1rem; line-height:1.2; word-break:break-word; }
-.qrLine { font-weight:900; font-size:.86rem; margin-top:2px; }
-.qrLine.muted { color:var(--muted); font-weight:850; font-size:.8rem; }
-.flag { display:inline-block; margin-top:5px; padding:3px 8px; border-radius:999px; font-size:.72rem; font-weight:1000; }
-.flag.bad { background:#ffe1ea; color:var(--danger); }
-.flag.soon { background:#fff3d6; color:#b8860b; }
-.flag.ok { background:#e3f9ee; color:#1c9c6b; }
-.iconX { flex:0 0 auto; align-self:flex-start; width:30px; min-width:30px; height:30px; min-height:30px;
-padding:0; border-radius:999px; background:#fff0f7; color:var(--hot); box-shadow:none; font-size:1rem; line-height:1; }
-
-/* ---- hidden print sheet: labels OR physician/patient care cards ---- */
-#batchSheet { display:none; }
-.labelGrid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
-.label { border:1px solid #cfcfe0; border-radius:14px; padding:10px 10px 8px; text-align:center;
-page-break-inside:avoid; break-inside:avoid; }
-.label .lHead { font-weight:1000; font-size:1.02rem; }
-.label .lMeta { color:#555; font-size:.72rem; font-weight:800; margin-top:1px; }
-.label .lQr .qrsvg { width:38mm; height:38mm; display:block; margin:6px auto 4px; }
-.label .lItems { text-align:left; font-size:.8rem; font-weight:800; line-height:1.3; }
-.label .lItem { margin:1px 0; }
-.label .lNote { text-align:left; font-size:.74rem; margin-top:4px; }
-.label .lScan { color:#888; font-size:.66rem; font-weight:800; margin-top:6px; text-transform:uppercase; letter-spacing:.05em; }
-
-/* One Letter-landscape sheet per bag: cut once vertically. Patient half folds once horizontally. */
-.carePage { width:11in; height:8.5in; display:grid; grid-template-columns:5.5in 5.5in;
-page-break-after:always; break-after:page; background:#fff; color:#111; position:relative; overflow:hidden; }
-.carePage:last-child { page-break-after:auto; break-after:auto; }
-.cutLine { position:absolute; left:5.5in; top:0; bottom:0; border-left:1.5px dashed #777; z-index:5; }
-.cutTag { position:absolute; left:5.5in; top:.12in; transform:translateX(-50%); background:white; padding:0 .08in;
-font:700 8pt/1 Arial,sans-serif; letter-spacing:.08em; color:#666; z-index:6; }
-.physicianHalf, .patientHalf { width:5.5in; height:8.5in; padding:.32in; position:relative; font-family:Arial,Helvetica,sans-serif; }
-.physicianHalf { border-right:0; }
-.patientHalf { display:grid; grid-template-rows:4.25in 4.25in; padding:0; }
-.patientPanel { padding:.28in .32in; position:relative; overflow:hidden; }
-.patientFront { border-bottom:1.5px dashed #777; }
-.patientBack { transform:rotate(180deg); transform-origin:center center; }
-.foldTag { position:absolute; left:50%; top:4.25in; transform:translate(-50%,-50%); z-index:8; background:white;
-padding:0 .08in; font:700 8pt/1 Arial,sans-serif; letter-spacing:.06em; color:#666; white-space:nowrap; }
-.printBoxTitle { border:2px solid #111; padding:.08in .1in; text-align:center; font-weight:900; font-size:18pt;
-letter-spacing:.02em; margin-bottom:.12in; }
-.printKicker { text-align:center; font-weight:800; font-size:10pt; margin:.02in 0 .1in; }
-.simOnly { text-align:center; font-size:8.5pt; font-style:italic; margin-bottom:.12in; }
-.printRule { border-top:1px solid #222; margin:.10in 0 .14in; }
-.medNameBig { font-weight:900; font-size:17pt; line-height:1.08; margin-bottom:.03in; }
-.medDoseBig { font-weight:800; font-size:11.5pt; }
-.sigLabel { font-weight:900; font-size:9pt; text-transform:uppercase; letter-spacing:.06em; margin-top:.18in; }
-.sigText { border:1.5px solid #222; min-height:.62in; padding:.10in; margin-top:.05in; font-size:13pt; font-weight:800; line-height:1.2; }
-.printGrid2 { display:grid; grid-template-columns:1fr 1fr; gap:.12in; margin-top:.14in; }
-.printCell { border-top:1px solid #777; padding-top:.05in; font-size:9pt; line-height:1.3; }
-.printCell b { display:block; font-size:7.5pt; text-transform:uppercase; letter-spacing:.05em; color:#444; }
-.signLine { margin-top:.18in; font-size:10pt; font-weight:700; }
-.signLine span { display:inline-block; border-bottom:1px solid #111; min-width:2.5in; height:.2in; vertical-align:bottom; }
-.traceBox { margin-top:.18in; border:1px solid #aaa; padding:.09in; font-size:8.5pt; line-height:1.35; }
-.physQR { position:absolute; right:.32in; bottom:.34in; width:1.18in; text-align:center; font-size:6.5pt; font-weight:700; color:#555; }
-.physQR .qrsvg { width:1.08in; height:1.08in; display:block; margin:0 auto .03in; }
-.patientFront .smallBottom { position:absolute; left:.32in; right:.32in; bottom:.20in; font-size:7.5pt; color:#555; text-align:center; }
-.helpTitle { border:2px solid #111; padding:.06in .08in; text-align:center; font-weight:900; font-size:16pt; margin-bottom:.09in; }
-.helpSub { text-align:center; font-weight:800; font-size:9pt; margin-bottom:.10in; }
-.helpList { border-top:1px solid #222; padding-top:.08in; font-size:8.2pt; line-height:1.23; }
-.helpRow { margin:.047in 0; }
-.helpRow b { font-weight:900; }
-.helpFooter { border-top:1px solid #222; margin-top:.08in; padding-top:.07in; text-align:center; font-size:7pt; font-style:italic; }
-
-@page { size: Letter landscape; margin:0; }
-@media print {
-html, body { width:11in; margin:0 !important; padding:0 !important; background:white; }
-.app, .banner, .resolverView { display:none !important; }
-#batchSheet { display:block !important; padding:0 !important; margin:0 !important; }
-}
+@media (max-width:420px){.grid2,.grid3{grid-template-columns:1fr}.labelGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="banner">
-<span>💊 labelbag · SMARTIES DRY RUN</span>
-<a href="https://dormantone.github.io/streetwise/labelbag.html#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
+  <span>💊 labelbag · LABELBAGSIG</span>
+  <a href="https://dormantone.github.io/streetwise/labelbag.html#" id="openResolverLink" target="_blank" rel="noopener">resolver ↗</a>
 </div>
 
 <main class="app">
-
 <section class="card" id="cfgCard">
-<div class="sectionTitle"><span>Resolver app link</span></div>
-<label class="lbl">URL of the deployed resolver page</label>
-<input id="resolverUrl" placeholder="https://dormantone.github.io/streetwise/scanbag.html" autocomplete="off" />
-<div class="note">Where each QR points. The bag's details are encoded into the link after <strong>#m=</strong>, so they never hit a server. Set once; remembered on this device.</div>
+  <div class="sectionTitle"><span>Resolver app link</span></div>
+  <label class="lbl">URL of the deployed resolver page</label>
+  <input id="resolverUrl" placeholder="https://dormantone.github.io/streetwise/scanbag.html" autocomplete="off" />
+  <div class="note">The QR carries only bag identity: medication name, quantity, Bag ID, and medication lot. No patient, physician, or SIG information is encoded.</div>
 </section>
 
 <section class="card">
-<div class="sectionTitle"><span>1 · Fill out the bag</span></div>
-<div class="grid2">
-<div>
-<label class="lbl">Bag / lot ID</label>
-<input id="bagId" placeholder="BAG-001" autocomplete="off" />
-</div>
-<div>
-<label class="lbl">Prep date</label>
-<input id="madeDate" type="date" autocomplete="off" />
-</div>
-</div>
-<label class="lbl">Prepared by</label>
-<input id="preparedBy" placeholder="Coordinator / pharmacy name" autocomplete="off" />
-<label class="lbl">Bag note (optional)</label>
-<input id="bagNote" placeholder="e.g. Keep cool, naloxone kit" autocomplete="off" />
+  <div class="sectionTitle"><span>1 · Package the bag</span></div>
+  <div class="grid2">
+    <div><label class="lbl">Bag ID</label><input id="bagId" placeholder="BAG-001" autocomplete="off" /></div>
+    <div><label class="lbl">Prep date</label><input id="madeDate" type="date" autocomplete="off" /></div>
+  </div>
+  <label class="lbl">Prepared by</label>
+  <input id="preparedBy" placeholder="Coordinator / pharmacy name" autocomplete="off" />
+  <label class="lbl">Bag note (optional)</label>
+  <input id="bagNote" placeholder="Internal packaging note" autocomplete="off" />
 
-<label class="lbl" style="margin-top:12px;">Dry-run item</label>
-<input id="medName" value="Smarties candy" placeholder="Smarties candy" autocomplete="off" />
-<div class="grid3" style="margin-top:6px;">
-<div>
-<label class="lbl">Strength / dose</label>
-<input id="medDose" placeholder="4 mg, 200 mg" autocomplete="off" />
-</div>
-<div>
-<label class="lbl">Qty</label>
-<input id="medQty" inputmode="numeric" placeholder="2" autocomplete="off" />
-</div>
-</div>
-<div class="grid2" style="margin-top:6px;">
-<div>
-<label class="lbl">Expiration</label>
-<input id="medExp" type="month" />
-</div>
-<div>
-<label class="lbl">Lot #</label>
-<input id="medLot" placeholder="optional" autocomplete="off" />
-</div>
-</div>
-<label class="lbl">Directions / SIG</label>
-<textarea id="medSig" placeholder="e.g. Take 1 Smartie by mouth three times daily as needed"></textarea>
-<label class="lbl">Physician</label>
-<input id="physician" placeholder="Physician name" autocomplete="off" />
-<div class="note warn" style="margin-top:10px;">SMARTIES DRY RUN · simulation only · not medication</div>
+  <label class="lbl" style="margin-top:12px;">Medication</label>
+  <input id="medName" placeholder="e.g. Acetaminophen 500 mg tablets" autocomplete="off" />
+  <div class="grid3" style="margin-top:6px;">
+    <div><label class="lbl">Strength / dose</label><input id="medDose" placeholder="e.g. 500 mg tablet" autocomplete="off" /></div>
+    <div><label class="lbl">Qty</label><input id="medQty" inputmode="numeric" placeholder="2" autocomplete="off" /></div>
+  </div>
+  <div class="grid2" style="margin-top:6px;">
+    <div><label class="lbl">Expiration</label><input id="medExp" type="month" /></div>
+    <div><label class="lbl">Medication lot ID</label><input id="medLot" placeholder="LOT-001" autocomplete="off" /></div>
+  </div>
 
-<button class="mainBtn" id="commitBtn">2 · Open Google Form + create QR</button>
-<div class="note" id="commitNote">Opens the prefilled labelbag Google Form for review and submission, then adds the QR to the batch below and advances the Bag ID. Your medication and prep details stay filled in for the next bag.</div>
+  <label class="lbl" style="margin-top:12px;">SIG option</label>
+  <div class="sigSlot" id="sigSlot1"><textarea id="sig1" placeholder="e.g. Take 1 tablet by mouth three times daily as needed"></textarea><span class="sigNum">SIG 1</span></div>
+  <div class="sigSlot" id="sigSlot2" hidden><textarea id="sig2" placeholder="Optional second SIG"></textarea><span class="sigNum">SIG 2</span></div>
+  <div class="sigSlot" id="sigSlot3" hidden><textarea id="sig3" placeholder="Optional third SIG"></textarea><span class="sigNum">SIG 3</span></div>
+  <button class="addSigBtn" id="addSigBtn" type="button">＋ add another SIG</button>
+  <div class="note">Enter one to three possible SIGs for later physician selection. The physician can check one or write a different SIG on both paper copies. Patient and physician are intentionally left blank at packaging time.</div>
+
+  <div class="note" style="margin-top:10px;"><strong>Scope:</strong> for non-scheduled medications only. LabelBagSig does not determine controlled-substance status.</div>
+  <button class="mainBtn" id="commitBtn">2 · Open LabelBagSig form + package bag</button>
+  <div class="note" id="commitNote">Opens the prefilled labelbag form for review, then freezes the QR for this bag, adds it to the local batch, and advances the Bag ID.</div>
 </section>
 
 <section class="card" id="batchCard">
-<div class="sectionTitle">
-<span>QR batch · <span class="count" id="batchCount">0</span></span>
-<div class="miniRow">
-<button class="tinyBtn" id="printCardsBtn">print physician + patient cards</button>
-<button class="tinyBtn" id="printBatchBtn">print bag labels</button>
-<button class="tinyBtn dangerTinyBtn" id="clearBatchBtn">clear all</button>
-</div>
-</div>
-<div class="miniRow">
-<button class="tinyBtn" id="downloadCsvBtn">download labelbag CSV</button>
-<button class="tinyBtn" id="copyTsvBtn">copy rows (TSV)</button>
-</div>
-<div id="qrList" class="qrList"></div>
-<div class="note">Each QR carries only what is in the bag — meds, count, strength, expiration, lot, bag ID, prep info. <strong>No patient or recipient information.</strong> The care-card printout makes one physician-retain half and one patient fold-card per bag. The batch stays on this device until you clear it.</div>
+  <div class="sectionTitle">
+    <span>Package batch · <span class="count" id="batchCount">0</span></span>
+    <div class="miniRow">
+      <button class="tinyBtn" id="printCardsBtn">print script considerations</button>
+      <button class="tinyBtn" id="printBatchBtn">print bag stickers</button>
+      <button class="tinyBtn dangerTinyBtn" id="clearBatchBtn">clear all</button>
+    </div>
+  </div>
+  <div class="miniRow">
+    <button class="tinyBtn" id="downloadCsvBtn">download LabelBagSig CSV</button>
+    <button class="tinyBtn" id="copyTsvBtn">copy rows (TSV)</button>
+  </div>
+  <div id="qrList" class="qrList"></div>
+  <div class="note">The sticker and QR carry bag identity only: medication name, quantity, Bag ID, and medication lot ID. SIG choices stay on the paper script considerations, not in the QR.</div>
 </section>
-
 </main>
 
-<!-- The same file becomes a read-only bag viewer when opened with #m=... -->
 <main class="resolverView" id="resolverView" hidden>
-<section class="resolverCard">
-<div id="resolverContent"></div>
-<a class="makerLink" id="makerLink" href="https://dormantone.github.io/streetwise/labelbag.html">open labelbag maker</a>
-</section>
+  <section class="resolverCard">
+    <div id="resolverContent"></div>
+    <a class="makerLink" id="makerLink" href="https://dormantone.github.io/streetwise/labelbag.html">open labelbag maker</a>
+  </section>
 </main>
 
-<!-- Hidden label sheet, filled and shown only when printing -->
 <div id="batchSheet" aria-hidden="true"></div>
-
-<!-- Client-side QR generation: payload never leaves the device -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
-const RESOLVER_KEY = "labelbag_maker_resolver_url_v1";
-const PREP_KEY = "labelbag_maker_preparedby_v1";
-const BATCH_KEY = "labelbag_maker_batch_v1";
-const CURRENT_KEY = "labelbag_maker_current_v1";
+const RESOLVER_KEY = "labelbagsig_maker_resolver_url_v1";
+const PREP_KEY = "labelbagsig_maker_preparedby_v1";
+const BATCH_KEY = "labelbagsig_maker_batch_v1";
+const CURRENT_KEY = "labelbagsig_maker_current_v2";
 const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag.html";
 
-// Safe storage: uses localStorage when available, falls back to memory otherwise.
 const _mem = {};
 const store = {
-get(k) { try { return localStorage.getItem(k); } catch { return (k in _mem) ? _mem[k] : null; } },
-set(k, v) { try { localStorage.setItem(k, v); } catch { _mem[k] = v; } },
-remove(k) { try { localStorage.removeItem(k); } catch { delete _mem[k]; } }
+  get(k){ try{return localStorage.getItem(k)}catch{return (k in _mem)?_mem[k]:null} },
+  set(k,v){ try{localStorage.setItem(k,v)}catch{_mem[k]=v} },
+  remove(k){ try{localStorage.removeItem(k)}catch{delete _mem[k]} }
 };
 
-// ===== labelbag Google Form logging =====
-const LABELBAG_FORM_BASE =
-"https://docs.google.com/forms/d/e/1FAIpQLScvuttzJUcXAZ1YqR_O5V_MOvpwvxcmuVCryqEEWUTlKiw7PA/viewform?usp=pp_url";
+// ===== Google Form logging =====
+// LabelBagSig form wiring. SIG 1 is required by the form; SIG 2 and SIG 3 are optional.
+const LABELBAGSIG_FORM_BASE =
+  "https://docs.google.com/forms/d/e/1FAIpQLScb3zr-Ec9AUQV2LK9Pc-TcYeGCo8O5tEO-V9RUtssfr1R9vQ/viewform?usp=pp_url";
 
-const LABELBAG_FIELDS = {
-bag:     "entry.958701922",   // Bag / Lot ID
-made:    "entry.1787319969",  // Prep date
-by:      "entry.1317034513",  // Prepared by
-bagNote: "entry.1317154156",  // Bag note
-med:     "entry.1725324056",  // Medication
-dose:    "entry.219800133",   // Strength / Dose
-qty:     "entry.1808565648",  // Quantity
-exp:     "entry.1264616216",  // Expiration
-lot:     "entry.354245454",   // Medication lot number
-status:  "entry.927275323",   // Expiry status
-link:    "entry.1828469137"   // Bag QR link
+const LABELBAGSIG_FIELDS = {
+  bag:     "entry.958701922",
+  made:    "entry.1787319969",
+  by:      "entry.1317034513",
+  bagNote: "entry.1317154156",
+  med:     "entry.1725324056",
+  dose:    "entry.219800133",
+  qty:     "entry.1808565648",
+  exp:     "entry.1264616216",
+  lot:     "entry.354245454",
+  status:  "entry.927275323",
+  link:    "entry.1828469137",
+  sig1:    "entry.1476577299",
+  sig2:    "entry.1883832190",
+  sig3:    "entry.860214851"
 };
 
-// Column order for CSV / TSV (one row per bag, one medication per bag)
-const LABELBAG_COLUMNS = [
-"Bag/Lot ID", "Prep date", "Prepared by", "Bag note",
-"Medication", "Strength/Dose", "Quantity", "Expiration",
-"Medication lot number", "Directions/SIG", "Physician", "Expiry status", "Bag QR link"
+const LABELBAGSIG_COLUMNS = [
+  "Bag ID","Prep date","Prepared by","Bag note","Medication","Strength/Dose",
+  "Quantity","Expiration","Medication lot ID","SIG 1","SIG 2","SIG 3","Expiry status","Bag QR link"
 ];
 
 const $ = id => document.getElementById(id);
-function todayISO() { return new Date().toISOString().slice(0, 10); }
-function escapeHtml(s) {
-return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+function localTodayISO(){
+  const d=new Date(), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function escapeHtml(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+
+// QR payload: keep the original v1 positional contract so the existing deployed scanbag
+// resolver remains compatible, but deliberately leave every non-identity field blank.
+// Encoded identity is therefore only: Bag ID, medication name, quantity, medication lot ID.
+const SEP="\u001f";
+function encodeQrPayload(obj){
+  const it=(obj.items&&obj.items[0])||{};
+  const fields=["1",obj.bag||"","","","",it.n||"","",it.q||"","",it.lot||""];
+  const str=fields.join(SEP);
+  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"" );
+}
+function resolverBase(){return ($("resolverUrl").value.trim())||DEFAULT_RESOLVER}
+function qrLinkForObj(obj,base){return String(base||resolverBase()).split("#")[0]+"#m="+encodeQrPayload(obj)}
+function decodeQrPayload(encoded){
+  let b64=String(encoded||"").replace(/-/g,"+").replace(/_/g,"/"); while(b64.length%4)b64+="=";
+  const binary=atob(b64); const bytes=Uint8Array.from(binary,ch=>ch.charCodeAt(0));
+  const text=new TextDecoder().decode(bytes); const f=text.split(SEP);
+  if(f[0]!=="1"||f.length<10) throw new Error("Unsupported or incomplete labelbag payload.");
+  return {v:1,bag:f[1]||"",items:[{n:f[5]||"",q:f[7]||"",lot:f[9]||""}]};
+}
+function renderResolverFromHash(){
+  if(!location.hash.startsWith("#m=")) return false;
+  const content=$("resolverContent"),viewer=$("resolverView"),maker=document.querySelector(".app"),baseUrl=location.href.split("#")[0];
+  $("makerLink").href=baseUrl; $("openResolverLink").href=baseUrl; $("openResolverLink").textContent="maker ↗";
+  try{
+    const obj=decodeQrPayload(location.hash.slice(3)),it=(obj.items&&obj.items[0])||{};
+    const cells=[["Quantity",it.q],["Medication lot ID",it.lot]].filter(([,v])=>v);
+    content.innerHTML=`
+      <div class="resolverEyebrow">labelbag identity</div>
+      <div class="resolverBag">${escapeHtml(obj.bag||"Labeled bag")}</div>
+      <div class="resolverMed"><div class="resolverMedName">${escapeHtml(it.n||"Medication not listed")}</div></div>
+      ${cells.length?`<div class="resolverMeta">${cells.map(([k,v])=>`<div class="resolverCell"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`).join("")}</div>`:""}
+      <div class="resolverFooter">Bag identity only. This QR contains no patient, physician, or SIG information.</div>`;
+    maker.hidden=true;viewer.hidden=false;
+  }catch(error){
+    content.innerHTML=`<div class="resolverEyebrow">labelbag</div><div class="resolverBag">QR could not be read</div><div class="badPayload">${escapeHtml(error.message||"Invalid QR payload.")}</div>`;
+    maker.hidden=true;viewer.hidden=false;
+  }
+  return true;
 }
 
-// ---- Payload contract (must match the resolver's decodePayload exactly) ----
-// Compact, positional, one med per bag. Fields joined by a unit-separator (\u001f),
-// then base64url. Order: v, bag, made, by, note, name, dose, qty, exp, lot.
-// This is far shorter than JSON, so the QR has far fewer modules and scans more easily.
-const SEP = "\u001f";
-function encodePayload(obj) {
-const it = (obj.items && obj.items[0]) || {};
-const fields = [
-"1", obj.bag || "", obj.made || "", obj.by || "", obj.note || "",
-it.n || "", it.s || "", it.q || "", it.exp || "", it.lot || ""
-];
-const str = fields.join(SEP);
-return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-function resolverBase() { return ($("resolverUrl").value.trim()) || DEFAULT_RESOLVER; }
-function linkForObj(obj) { return resolverBase().split("#")[0] + "#m=" + encodePayload(obj); }
-
-function decodePayload(encoded) {
-let b64 = String(encoded || "").replace(/-/g, "+").replace(/_/g, "/");
-while (b64.length % 4) b64 += "=";
-
-const binary = atob(b64);
-const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
-const text = new TextDecoder().decode(bytes);
-const fields = text.split(SEP);
-
-if (fields[0] !== "1" || fields.length < 10) {
-throw new Error("Unsupported or incomplete labelbag payload.");
+function qrSvg(text){
+  let qr=null; try{qr=qrcode(0,"M");qr.addData(text);qr.make()}catch(e){return ""}
+  const n=qr.getModuleCount(),margin=4,size=n+margin*2;let rects="";
+  for(let r=0;r<n;r++){let c=0;while(c<n){if(qr.isDark(r,c)){let run=1;while(c+run<n&&qr.isDark(r,c+run))run++;rects+=`<rect x="${c+margin}" y="${r+margin}" width="${run}" height="1"/>`;c+=run}else c++}}
+  return `<svg class="qrsvg" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
 }
 
-return {
-v: 1,
-bag: fields[1] || "",
-made: fields[2] || "",
-by: fields[3] || "",
-note: fields[4] || "",
-items: [{
-n: fields[5] || "",
-s: fields[6] || "",
-q: fields[7] || "",
-exp: fields[8] || "",
-lot: fields[9] || ""
-}]
-};
+function buildMed(){
+  const n=$("medName").value.trim(); if(!n)return null;
+  const o={n}; const q=$("medQty").value.trim();if(q)o.q=q;const s=$("medDose").value.trim();if(s)o.s=s;
+  const exp=$("medExp").value.trim();if(exp)o.exp=exp;const lot=$("medLot").value.trim();if(lot)o.lot=lot;return o;
+}
+function sigValues(){return [$("sig1").value.trim(),$("sig2").value.trim(),$("sig3").value.trim()].filter(Boolean)}
+function buildPayloadObj(){
+  const med=buildMed(),obj={v:2,items:med?[med]:[],sigs:sigValues()};
+  const bag=$("bagId").value.trim();if(bag)obj.bag=bag;const by=$("preparedBy").value.trim();if(by)obj.by=by;
+  const made=$("madeDate").value.trim();if(made)obj.made=made;const note=$("bagNote").value.trim();if(note)obj.note=note;return obj;
+}
+function expStatusText(exp){
+  if(!exp)return ""; const m=/^(\d{4})-(\d{2})/.exec(exp);if(!m)return "";
+  const ey=Number(m[1]),em=Number(m[2])-1,now=new Date();
+  const delta=(ey-now.getFullYear())*12+(em-now.getMonth());
+  if(delta<0)return "EXPIRED";if(delta<=2)return "expires soon";return "in date";
+}
+function statusBadge(exp){const t=expStatusText(exp);if(!t)return"";const cls=t==="EXPIRED"?"bad":(t==="expires soon"?"soon":"ok"),txt=t==="EXPIRED"?"⚠ EXPIRED":t;return `<span class="flag ${cls}">${txt}</span>`}
+
+const CURRENT_FIELDS=["bagId","madeDate","preparedBy","bagNote","medName","medDose","medQty","medExp","medLot","sig1","sig2","sig3"];
+function saveCurrent(){const o={};CURRENT_FIELDS.forEach(id=>o[id]=$(id).value);store.set(CURRENT_KEY,JSON.stringify(o))}
+function loadSaved(){let saved=store.get(RESOLVER_KEY)||"";$("resolverUrl").value=saved||DEFAULT_RESOLVER;$("preparedBy").value=store.get(PREP_KEY)||"";$("madeDate").value=localTodayISO()}
+function loadCurrent(){
+  let c=null;try{c=JSON.parse(store.get(CURRENT_KEY)||"null")}catch{}
+  if(c)CURRENT_FIELDS.forEach(id=>{if(id!=="madeDate"&&c[id])$(id).value=c[id]});
+  $("madeDate").value=localTodayISO();
+  syncSigVisibility();
+}
+function syncSigVisibility(){
+  const s2=$("sig2").value.trim(),s3=$("sig3").value.trim();
+  $("sigSlot2").hidden=!s2&&!s3; $("sigSlot3").hidden=!s3;
+  $("addSigBtn").hidden=!$("sigSlot3").hidden;
+}
+function addSig(){if($("sigSlot2").hidden){$("sigSlot2").hidden=false;$("sig2").focus()}else if($("sigSlot3").hidden){$("sigSlot3").hidden=false;$("sig3").focus();$("addSigBtn").hidden=true}}
+function bumpBagId(){const el=$("bagId"),m=el.value.match(/^(.*?)(\d+)(\D*)$/);if(!m)return;const next=String(parseInt(m[2],10)+1).padStart(m[2].length,"0");el.value=m[1]+next+m[3]}
+function clearBagSpecificAfterCommit(){
+  // Keep medication + SIG templates, but clear package-specific fields that are unsafe to carry forward.
+  $("bagNote").value=""; $("medLot").value=""; $("medExp").value=""; $("madeDate").value=localTodayISO();
 }
 
-function renderResolverFromHash() {
-if (!location.hash.startsWith("#m=")) return false;
+function getBatch(){try{return JSON.parse(store.get(BATCH_KEY)||"[]")}catch{return[]}}
+function saveBatch(b){store.set(BATCH_KEY,JSON.stringify(b))}
+function coreFormConfigured(){return Boolean(LABELBAGSIG_FORM_BASE)&&["bag","made","by","med","qty","lot","link"].every(k=>Boolean(LABELBAGSIG_FIELDS[k]))}
+function buildLabelBagSigUrl(values){
+  const url=new URL(LABELBAGSIG_FORM_BASE);
+  Object.entries(LABELBAGSIG_FIELDS).forEach(([key,entryId])=>{const value=values[key];if(!entryId||value===undefined||value===null||String(value).trim()==="")return;url.searchParams.set(entryId,String(value))});
+  return url.toString();
+}
+function fmtDateForGoogleForm(value){if(!value)return"";return value.length===7?value+"-01":value}
 
-const content = $("resolverContent");
-const viewer = $("resolverView");
-const maker = document.querySelector(".app");
-const baseUrl = location.href.split("#")[0];
+function commitBag(){
+  const obj=buildPayloadObj(); if(!obj.items.length){alert("Enter the medication name first.");$("medName").focus();return}
+  if(!obj.bag){alert("Enter a Bag ID first.");$("bagId").focus();return}
+  if(!obj.made){alert("Enter the prep date first.");$("madeDate").focus();return}
+  if(!obj.by){alert("Enter who prepared the bag first.");$("preparedBy").focus();return}
+  if(!obj.items[0].s){alert("Enter the strength / dose.");$("medDose").focus();return}
+  if(!obj.items[0].q){alert("Enter the bag quantity first.");$("medQty").focus();return}
+  if(!obj.items[0].exp){alert("Enter the expiration / best-by month first.");$("medExp").focus();return}
+  if(!obj.items[0].lot){alert("Enter the medication lot ID first.");$("medLot").focus();return}
+  if(!obj.sigs.length){alert("Enter at least one SIG option.");$("sig1").focus();return}
+  const existing=getBatch(); if(existing.some(e=>(e.obj&&e.obj.bag||"")===obj.bag)){alert("That Bag ID is already in this local batch.");$("bagId").focus();return}
 
-$("makerLink").href = baseUrl;
-$("openResolverLink").href = baseUrl;
-$("openResolverLink").textContent = "maker ↗";
+  const frozenQrLink=qrLinkForObj(obj,resolverBase());
 
-try {
-const obj = decodePayload(location.hash.slice(3));
-const it = (obj.items && obj.items[0]) || {};
-const status = expStatusText(it.exp);
-const statusClass = status === "EXPIRED" ? "bad" : (status === "expires soon" ? "soon" : "ok");
-const statusText = status === "EXPIRED" ? "⚠ EXPIRED" : status;
+  // Build and launch the Google Form while this function is still in the browser's
+  // direct click gesture. Doing this before DOM rendering avoids popup blocking.
+  // `noopener` intentionally prevents us from inspecting the returned window, so
+  // we do not mistake a null handle for a blocked popup.
+  let formOpenError=null;
+  if(coreFormConfigured()){
+    try{
+      const it=obj.items[0],s=obj.sigs;
+      const url=buildLabelBagSigUrl({bag:obj.bag||"",made:obj.made||"",by:obj.by||"",bagNote:obj.note||"",med:it.n||"",dose:it.s||"",qty:it.q||"",exp:fmtDateForGoogleForm(it.exp),lot:it.lot||"",status:expStatusText(it.exp),link:frozenQrLink,sig1:s[0]||"",sig2:s[1]||"",sig3:s[2]||""});
+      window.open(url,"_blank","noopener,noreferrer");
+    }catch(err){
+      formOpenError=err;
+      console.error("LabelBagSig form open failed; bag will still be saved locally.",err);
+    }
+  }
 
-const cells = [
-["Quantity", it.q],
-["Expiration", it.exp],
-["Medication lot", it.lot],
-["Prepared", obj.made],
-["Prepared by", obj.by]
-].filter(([, value]) => value);
+  // Freeze and save the bag locally regardless of Google Forms behavior.
+  existing.push({id:"b"+Date.now()+Math.random().toString(36).slice(2,6),ts:new Date().toISOString(),qrLink:frozenQrLink,obj});
+  saveBatch(existing);
+  renderList();
+  const newest=$("qrList").firstElementChild;
+  if(newest)newest.scrollIntoView({behavior:"smooth",block:"nearest"});
 
-content.innerHTML = `
-<div class="resolverEyebrow">labelbag contents</div>
-<div class="resolverBag">${escapeHtml(obj.bag || "Medication bag")}</div>
-<div class="resolverMed">
-<div class="resolverMedName">${escapeHtml(it.n || "Medication not listed")}</div>
-${it.s ? `<div class="resolverDose">${escapeHtml(it.s)}</div>` : ""}
-${status ? `<span class="flag ${statusClass}">${escapeHtml(statusText)}</span>` : ""}
-</div>
-${cells.length ? `<div class="resolverMeta">${cells.map(([key, value]) => `
-<div class="resolverCell">
-<div class="k">${escapeHtml(key)}</div>
-<div class="v">${escapeHtml(value)}</div>
-</div>`).join("")}</div>` : ""}
-${obj.note ? `<div class="resolverNote">📝 ${escapeHtml(obj.note)}</div>` : ""}
-<div class="resolverFooter">
-This QR describes the labeled bag only. It contains no patient or recipient information.
-</div>`;
+  if(formOpenError){
+    alert("Bag packaged and QR saved locally, but the LabelBagSig form could not be opened.");
+  }
 
-maker.hidden = true;
-viewer.hidden = false;
-} catch (error) {
-content.innerHTML = `
-<div class="resolverEyebrow">labelbag</div>
-<div class="resolverBag">QR could not be read</div>
-<div class="badPayload">${escapeHtml(error.message || "Invalid QR payload.")}</div>`;
-maker.hidden = true;
-viewer.hidden = false;
+  bumpBagId();clearBagSpecificAfterCommit();saveCurrent();
+}
+function removeItem(id){saveBatch(getBatch().filter(e=>e.id!==id));renderList()}
+function clearBatch(){if(!getBatch().length)return;if(!confirm("Remove every packaged bag from the local batch? Anything already submitted or exported is unaffected."))return;store.remove(BATCH_KEY);renderList()}
+function frozenLink(entry){return entry.qrLink||qrLinkForObj(entry.obj,resolverBase())}
+
+function renderList(){
+  const el=$("qrList"),stored=getBatch(),b=[...stored].reverse();$("batchCount").textContent=stored.length;const has=stored.length>0;
+  ["printCardsBtn","printBatchBtn","clearBatchBtn","downloadCsvBtn","copyTsvBtn"].forEach(id=>$(id).disabled=!has);
+  if(!has){el.innerHTML=`<div class="empty">No packaged bags yet. Fill out a bag above and tap <strong>Open LabelBagSig form + package bag</strong>.</div>`;return}
+  if(typeof qrcode==="undefined"){el.innerHTML=`<div class="warn">QR library did not load. Check connection and reload.</div>`;return}
+  el.innerHTML="";
+  b.forEach(entry=>{
+    const o=entry.obj,it=(o.items&&o.items[0])||{},svg=qrSvg(frozenLink(entry));const meta=[];if(it.q)meta.push("qty "+escapeHtml(it.q));if(it.lot)meta.push("lot "+escapeHtml(it.lot));
+    const div=document.createElement("div");div.className="qrItem";div.innerHTML=`
+      <div class="qrThumb">${svg||'<div style="width:136px;height:136px;display:flex;align-items:center;justify-content:center;color:#c00;font-size:.72rem;font-weight:900;text-align:center;">QR unavailable</div>'}</div>
+      <div class="qrInfo"><div class="qrName">${escapeHtml(o.bag||"Bag")} · ${escapeHtml(it.n||"")}</div>${meta.length?`<div class="qrLine">${meta.join(" · ")}</div>`:""}${it.s?`<div class="qrLine muted">${escapeHtml(it.s)} · ${o.sigs.length} SIG option${o.sigs.length===1?"":"s"}</div>`:""}${statusBadge(it.exp)}</div>
+      <button class="iconX" data-del="${entry.id}" aria-label="Remove">×</button>`;
+    el.appendChild(div);
+  });
+  el.querySelectorAll("[data-del]").forEach(btn=>btn.addEventListener("click",()=>removeItem(btn.dataset.del)));
 }
 
-return true;
+function labelBagSigRows(){
+  return getBatch().map(entry=>{const o=entry.obj,it=(o.items&&o.items[0])||{},s=o.sigs||[];return [o.bag||"",o.made||"",o.by||"",o.note||"",it.n||"",it.s||"",it.q||"",it.exp||"",it.lot||"",s[0]||"",s[1]||"",s[2]||"",expStatusText(it.exp),frozenLink(entry)]});
 }
+function csvCell(v){v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function toCSV(){return LABELBAGSIG_COLUMNS.map(csvCell).join(",")+"\n"+labelBagSigRows().map(r=>r.map(csvCell).join(",")).join("\n")}
+function toTSV(){const clean=s=>String(s??"").replace(/\t/g," ").replace(/\r?\n/g," ");return [LABELBAGSIG_COLUMNS.join("\t"),...labelBagSigRows().map(r=>r.map(clean).join("\t"))].join("\n")}
+function downloadCsv(){if(!getBatch().length)return;const blob=new Blob(["\uFEFF"+toCSV()],{type:"text/csv;charset=utf-8;"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="LabelBagSig.csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+async function copyTsv(){if(!getBatch().length)return;const tsv=toTSV();try{await navigator.clipboard.writeText(tsv);const b=$("copyTsvBtn");b.textContent="copied!";setTimeout(()=>b.textContent="copy rows (TSV)",1200)}catch{prompt("Copy these rows, then paste into your spreadsheet:",tsv)}}
 
-// Crisp, print-reliable QR as inline SVG (vector renders instantly, with no image-decode
-// step that the print dialog can outrun). Error-correction L = the lowest module count,
-// i.e. the least visually dense code that still holds the data.
-function qrSvg(text) {
-let qr = null;
-try { qr = qrcode(0, "L"); qr.addData(text); qr.make(); }
-catch (e) { return ""; } // data too large for a single QR
-const n = qr.getModuleCount(), margin = 2, size = n + margin * 2;
-let rects = "";
-for (let r = 0; r < n; r++) {
-let c = 0;
-while (c < n) {
-if (qr.isDark(r, c)) {
-let run = 1;
-while (c + run < n && qr.isDark(r, c + run)) run++;
-rects += `<rect x="${c + margin}" y="${r + margin}" width="${run}" height="1"/>`;
-c += run;
-} else c++;
+function sigChoicesHtml(sigs){
+  const vals=(sigs||[]).filter(Boolean); return vals.map(s=>`<div class="sigChoice"><span class="checkBox"></span>${escapeHtml(s)}</div>`).join("");
 }
-}
-return `<svg class="qrsvg" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
-}
-
-function buildMed() {
-const n = $("medName").value.trim();
-if (!n) return null;
-const o = { n };
-const q = $("medQty").value.trim(); if (q) o.q = q;
-const s = $("medDose").value.trim(); if (s) o.s = s;
-const exp = $("medExp").value.trim(); if (exp) o.exp = exp;
-const lot = $("medLot").value.trim(); if (lot) o.lot = lot;
-return o;
-}
-function buildPayloadObj() {
-const med = buildMed();
-const obj = { v: 1, items: med ? [med] : [] };
-const bag = $("bagId").value.trim(); if (bag) obj.bag = bag;
-const by = $("preparedBy").value.trim(); if (by) obj.by = by;
-const made = $("madeDate").value.trim(); if (made) obj.made = made;
-const note = $("bagNote").value.trim(); if (note) obj.note = note;
-const sig = $("medSig").value.trim(); if (sig) obj.sig = sig;
-const physician = $("physician").value.trim(); if (physician) obj.physician = physician;
-return obj;
-}
-
-function expStatusText(exp) {
-if (!exp) return "";
-const d = new Date(exp.length === 7 ? exp + "-01" : exp);
-if (isNaN(d)) return "";
-const now = new Date();
-const m = (d.getFullYear() - now.getFullYear()) * 12 + (d.getMonth() - now.getMonth());
-if (m < 0) return "EXPIRED";
-if (m <= 2) return "expires soon";
-return "in date";
-}
-function statusBadge(exp) {
-const t = expStatusText(exp);
-if (!t) return "";
-const cls = t === "EXPIRED" ? "bad" : (t === "expires soon" ? "soon" : "ok");
-const txt = t === "EXPIRED" ? "⚠ EXPIRED" : t;
-return `<span class="flag ${cls}">${txt}</span>`;
-}
-
-// ---- saved settings + in-progress fields ----
-function loadSaved() {
-let saved = store.get(RESOLVER_KEY) || "";
-if (saved.includes("pillbag-qr-resolver.html")) { saved = DEFAULT_RESOLVER; store.set(RESOLVER_KEY, saved); }
-$("resolverUrl").value = saved || DEFAULT_RESOLVER;
-$("preparedBy").value = store.get(PREP_KEY) || "";
-$("madeDate").value = todayISO();
-}
-const CURRENT_FIELDS = ["bagId","madeDate","preparedBy","bagNote","medName","medDose","medQty","medExp","medLot","medSig","physician"];
-function saveCurrent() {
-const o = {}; CURRENT_FIELDS.forEach(id => o[id] = $(id).value);
-store.set(CURRENT_KEY, JSON.stringify(o));
-}
-function loadCurrent() {
-let c = null; try { c = JSON.parse(store.get(CURRENT_KEY) || "null"); } catch {}
-if (c) CURRENT_FIELDS.forEach(id => { if (c[id]) $(id).value = c[id]; });
-if (!$("medName").value.trim()) $("medName").value = "Smarties candy";
-if (!$("medDose").value.trim()) $("medDose").value = "40 mg mock";
-if (!$("medSig").value.trim()) $("medSig").value = "Take 1 Smartie by mouth three times daily as needed";
-}
-function bumpBagId() {
-const el = $("bagId");
-const m = el.value.match(/^(.*?)(\d+)(\D*)$/);
-if (!m) return;
-const next = String(parseInt(m[2], 10) + 1).padStart(m[2].length, "0");
-el.value = m[1] + next + m[3];
-}
-
-// ---- batch storage ----
-function getBatch() { try { return JSON.parse(store.get(BATCH_KEY) || "[]"); } catch { return []; } }
-function saveBatch(b) { store.set(BATCH_KEY, JSON.stringify(b)); }
-
-// ---- the main action: submit form + create QR + add to list ----
-function commitBag() {
-const obj = buildPayloadObj();
-if (!obj.items.length) { alert("Enter the medication name first."); $("medName").focus(); return; }
-
-// 1) open the prefilled labelbag Google Form for review and submission
-if (labelbagFormConfigured()) {
-const it = obj.items[0];
-const url = buildLabelbagUrl({
-bag: obj.bag || "",
-made: obj.made || "",
-by: obj.by || "",
-bagNote: obj.note || "",
-med: it.n || "",
-dose: it.s || "",
-qty: it.q || "",
-exp: fmtDateForGoogleForm(it.exp),
-lot: it.lot || "",
-status: expStatusText(it.exp),
-link: linkForObj(obj)
-});
-window.open(url, "_blank", "noopener,noreferrer");
-}
-
-// 2) add the QR to the batch
-const batch = getBatch();
-batch.push({ id: "b" + Date.now() + Math.random().toString(36).slice(2, 6), ts: new Date().toISOString(), obj });
-saveBatch(batch);
-renderList();
-const last = $("qrList").lastElementChild;
-if (last) last.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
-// 3) advance the Bag ID, keep meds + prep for the next bag
-bumpBagId();
-saveCurrent();
-}
-
-function removeItem(id) { saveBatch(getBatch().filter(e => e.id !== id)); renderList(); }
-function clearBatch() {
-if (!getBatch().length) return;
-if (!confirm("Remove every QR from the batch on this device? (Anything already submitted to the form or exported is unaffected.)")) return;
-store.remove(BATCH_KEY); renderList();
-}
-
-function renderList() {
-const el = $("qrList"); const b = getBatch();
-$("batchCount").textContent = b.length;
-const has = b.length > 0;
-["printCardsBtn","printBatchBtn","clearBatchBtn","downloadCsvBtn","copyTsvBtn"].forEach(id => { $(id).disabled = !has; });
-if (!has) {
-el.innerHTML = `<div class="empty">No QRs yet. Fill out a bag above and tap <strong>Submit form + create QR</strong>.</div>`;
-return;
-}
-if (typeof qrcode === "undefined") { el.innerHTML = `<div class="warn">QR library did not load. Check connection and reload.</div>`; return; }
-el.innerHTML = "";
-b.forEach(entry => {
-const o = entry.obj; const it = (o.items && o.items[0]) || {};
-const link = linkForObj(o);
-const svg = qrSvg(link);
-const sub = [];
-if (it.s) sub.push(escapeHtml(it.s));
-if (it.q) sub.push("×" + escapeHtml(it.q));
-const meta = [];
-if (it.exp) meta.push("exp " + escapeHtml(it.exp));
-if (it.lot) meta.push("lot " + escapeHtml(it.lot));
-const div = document.createElement("div");
-div.className = "qrItem";
-div.innerHTML = `
-<div class="qrThumb">${svg || '<div style="width:104px;height:104px;display:flex;align-items:center;justify-content:center;color:#c00;font-size:.72rem;font-weight:900;text-align:center;">QR too large<br>(shorten text)</div>'}</div>
-<div class="qrInfo">
-<div class="qrName">${escapeHtml(o.bag || "Bag")} · ${escapeHtml(it.n || "")}</div>
-${sub.length ? `<div class="qrLine">${sub.join(" ")}</div>` : ""}
-${meta.length ? `<div class="qrLine muted">${meta.join(" · ")}</div>` : ""}
-${statusBadge(it.exp)}
-</div>
-<button class="iconX" data-del="${entry.id}" aria-label="Remove">×</button>`;
-el.appendChild(div);
-});
-el.querySelectorAll("[data-del]").forEach(btn => btn.addEventListener("click", () => removeItem(btn.dataset.del)));
-}
-
-// ---- labelbag rows (one row per bag) ----
-function labelbagRows() {
-const rows = [];
-getBatch().forEach(entry => {
-const o = entry.obj; const it = (o.items && o.items[0]) || {};
-rows.push([
-o.bag || "", o.made || "", o.by || "", o.note || "",
-it.n || "", it.s || "", it.q || "", it.exp || "",
-it.lot || "", o.sig || "", o.physician || "", expStatusText(it.exp), linkForObj(o)
-]);
-});
-return rows;
-}
-function csvCell(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
-function toCSV() {
-const head = LABELBAG_COLUMNS.map(csvCell).join(",");
-const body = labelbagRows().map(r => r.map(csvCell).join(",")).join("\n");
-return head + "\n" + body;
-}
-function toTSV() {
-const clean = s => String(s ?? "").replace(/\t/g, " ").replace(/\r?\n/g, " ");
-return [LABELBAG_COLUMNS.join("\t"), ...labelbagRows().map(r => r.map(clean).join("\t"))].join("\n");
-}
-function downloadCsv() {
-if (!getBatch().length) return;
-const csv = "\uFEFF" + toCSV();
-const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-const a = document.createElement("a");
-a.href = URL.createObjectURL(blob); a.download = "labelbag.csv"; a.click();
-setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-}
-async function copyTsv() {
-if (!getBatch().length) return;
-const tsv = toTSV();
-try { await navigator.clipboard.writeText(tsv); const b = $("copyTsvBtn"); b.textContent = "copied!"; setTimeout(() => b.textContent = "copy rows (TSV)", 1200); }
-catch { prompt("Copy these rows, then paste into your spreadsheet:", tsv); }
-}
-
-// ---- physician retain + patient fold-card printing ----
-function printCareCards() {
-const batch = getBatch();
-if (!batch.length) { alert("Add at least one bag to the batch first."); return; }
-
-const helpHtml = `
-<div class="helpTitle">LOCAL HELP</div>
-<div class="helpSub">Helpful Pittsburgh / Allegheny County numbers</div>
-<div class="helpList">
-  <div class="helpRow"><b>Emergency:</b> 911</div>
-  <div class="helpRow"><b>Mental health crisis:</b> 988</div>
-  <div class="helpRow"><b>Local crisis / mobile crisis:</b> re:solve 1-888-796-8226</div>
-  <div class="helpRow"><b>Housing / shelter:</b> Allegheny Link 1-866-730-2368</div>
-  <div class="helpRow"><b>Food, housing & general resources:</b> 211</div>
-  <div class="helpRow"><b>Free / low-cost medical care:</b><br>UPMC Second Avenue Commons 412-232-7544</div>
-  <div class="helpRow"><b>Drug & alcohol treatment:</b><br>PA Get Help Now 1-800-662-HELP (4357)</div>
-  <div class="helpRow"><b>Harm reduction / naloxone:</b><br>Prevention Point Pittsburgh 412-247-3404</div>
-</div>
-<div class="helpFooter">Numbers can change. For emergencies call 911.</div>`;
-
-let html = "";
-batch.forEach(entry => {
-  const o = entry.obj; const it = (o.items && o.items[0]) || {};
-  const link = linkForObj(o);
-  const svg = (typeof qrcode !== "undefined") ? qrSvg(link) : "";
-  const med = escapeHtml(it.n || "Smarties candy");
-  const dose = escapeHtml(it.s || "40 mg mock");
-  const sig = escapeHtml(o.sig || "Take 1 Smartie by mouth three times daily as needed");
-  const qty = escapeHtml(it.q || "—");
-  const bag = escapeHtml(o.bag || "—");
-  const date = escapeHtml(o.made || "—");
-  const physician = escapeHtml(o.physician || "");
-  const prepped = escapeHtml(o.by || "");
-  const exp = escapeHtml(it.exp || "—");
-  const lot = escapeHtml(it.lot || "—");
-
-  html += `<section class="carePage">
-    <div class="cutLine"></div><div class="cutTag">CUT HERE</div>
-
-    <div class="physicianHalf">
-      <div class="printBoxTitle">PHYSICIAN RETAIN</div>
-      <div class="printKicker">SMARTIES DRY RUN</div>
-      <div class="simOnly">Simulation only — not a real prescription</div>
-      <div class="printRule"></div>
+function printScriptConsiderations(){
+  const batch=getBatch();if(!batch.length){alert("Add at least one bag first.");return}
+  const helpHtml=`
+    <div class="helpTitle">LOCAL HELP</div>
+    <div class="helpSub">Helpful Pittsburgh / Allegheny County numbers</div>
+    <div class="helpList">
+      <div class="helpRow"><b>Emergency:</b> 911</div>
+      <div class="helpRow"><b>Mental health crisis:</b> 988</div>
+      <div class="helpRow"><b>Local crisis / mobile crisis:</b> re:solve 1-888-796-8226</div>
+      <div class="helpRow"><b>Housing / shelter:</b> Allegheny Link 1-866-730-2368</div>
+      <div class="helpRow"><b>Food, housing & general resources:</b> 211</div>
+      <div class="helpRow"><b>Free / low-cost medical care:</b><br>UPMC Second Avenue Commons 412-232-7544</div>
+      <div class="helpRow"><b>Drug & alcohol treatment:</b><br>PA Get Help Now 1-800-662-HELP (4357)</div>
+      <div class="helpRow"><b>Harm reduction / naloxone:</b><br>Prevention Point Pittsburgh 412-247-3404</div>
+    </div>
+    <div class="helpFooter">Numbers can change. For emergencies call 911.</div>`;
+  let html="";
+  batch.forEach(entry=>{
+    const o=entry.obj,it=(o.items&&o.items[0])||{},med=escapeHtml(it.n||"Medication"),dose=escapeHtml(it.s||""),qty=escapeHtml(it.q||"—"),bag=escapeHtml(o.bag||"—"),lot=escapeHtml(it.lot||"—"),choices=sigChoicesHtml(o.sigs||[]);
+    const common=`
       <div class="medNameBig">${med}</div>
-      <div class="medDoseBig">${dose}</div>
-      <div class="sigLabel">Directions / SIG</div>
-      <div class="sigText">${sig}</div>
-      <div class="printGrid2">
-        <div class="printCell"><b>Quantity dispensed</b>${qty}</div>
-        <div class="printCell"><b>Bag ID</b>${bag}</div>
-        <div class="printCell"><b>Date</b>${date}</div>
-        <div class="printCell"><b>Expiration</b>${exp}</div>
-        <div class="printCell"><b>Lot</b>${lot}</div>
-        <div class="printCell"><b>Prepared / dispensed by</b>${prepped || "________________"}</div>
+      ${dose?`<div class="medMetaBig">${dose}</div>`:""}
+      <div class="printGrid2"><div class="printCell"><b>Quantity in bag</b>${qty}</div><div class="printCell"><b>Bag / lot identity</b>${bag} · ${lot}</div></div>
+      <div class="blankLine">Patient: <span></span></div>
+      <div class="sigLabel">SIG — physician check one or write in</div>
+      ${choices}
+      <div class="writeSig"><b>Write-in SIG:</b><div class="writeLines"></div></div>
+      <div class="doctorSign">Physician: <span></span></div>`;
+    html+=`<section class="carePage">
+      <div class="cutLine"></div><div class="cutTag">CUT HERE</div>
+      <div class="doctorHalf">
+        <div class="printBoxTitle">PHYSICIAN RECEIPT</div><div class="printKicker">LABELBAGSIG · SCRIPT CONSIDERATION</div><div class="simOnly">Complete patient name, SIG, and physician name at handoff</div><div class="printRule"></div>
+        ${common}
+        <div class="traceBox"><b>Retain copy.</b> Complete patient name, select or write the SIG, and write physician name. Bag ID and medication lot tie this receipt to the packaged bag.</div>
       </div>
-      <div class="signLine">Physician: <span>${physician}</span></div>
-      <div class="traceBox"><b>Workflow copy.</b> Retain with the program record. Bag ID ties this card to the physical bag and labelbag entry.</div>
-      ${svg ? `<div class="physQR">${svg}<div>bag record</div></div>` : ""}
-    </div>
-
-    <div class="patientHalf">
-      <div class="patientPanel patientFront">
-        <div class="printBoxTitle">TO PATIENT</div>
-        <div class="printKicker">SMARTIES DRY RUN</div>
-        <div class="simOnly">Simulation only — not medication</div>
-        <div class="printRule"></div>
-        <div class="medNameBig">${med}</div>
-        <div class="medDoseBig">${dose}</div>
-        <div class="sigLabel">Directions / SIG</div>
-        <div class="sigText">${sig}</div>
-        <div class="printGrid2">
-          <div class="printCell"><b>Quantity</b>${qty}</div>
-          <div class="printCell"><b>Bag ID</b>${bag}</div>
-          <div class="printCell"><b>Date</b>${date}</div>
-          <div class="printCell"><b>Physician</b>${physician || "________________"}</div>
+      <div class="patientHalf">
+        <div class="patientPanel patientFront">
+          <div class="printBoxTitle">TO PATIENT</div><div class="printKicker">LABELBAGSIG · SCRIPT CONSIDERATION</div><div class="simOnly">Complete patient name, SIG, and physician name at handoff</div><div class="printRule"></div>
+          ${common}
+          <div class="smallBottom">Keep this with the bag. Local-help information is on the reverse after folding.</div>
         </div>
-        <div class="smallBottom">Keep this card with the bag. Local-help information is on the reverse after folding.</div>
+        <div class="foldTag">FOLD HERE · PRINTED SIDES OUT</div>
+        <div class="patientPanel patientBack">${helpHtml}</div>
       </div>
-      <div class="foldTag">FOLD HERE · PRINTED SIDES OUT</div>
-      <div class="patientPanel patientBack">${helpHtml}</div>
-    </div>
-  </section>`;
-});
-
-$("batchSheet").innerHTML = html;
-setTimeout(() => window.print(), 50);
+    </section>`;
+  });
+  $("batchSheet").innerHTML=html;setTimeout(()=>window.print(),50);
 }
 
-// ---- batch label printing ----
-function printBatch() {
-const batch = getBatch();
-if (!batch.length) { alert("Add at least one QR to the batch first."); return; }
-let html = `<div class="labelGrid">`;
-batch.forEach(entry => {
-const o = entry.obj; const it = (o.items && o.items[0]) || {};
-const link = linkForObj(o);
-const svg = qrSvg(link);
-const meta = [];
-if (o.made) meta.push("prepped " + escapeHtml(o.made));
-if (o.by) meta.push("by " + escapeHtml(o.by));
-const bits = [escapeHtml(it.n || "")];
-if (it.s) bits.push(escapeHtml(it.s));
-const q = it.q ? " ×" + escapeHtml(it.q) : "";
-const e = it.exp ? " · exp " + escapeHtml(it.exp) : "";
-const l = it.lot ? " · lot " + escapeHtml(it.lot) : "";
-html += `<div class="label">
-<div class="lHead">${escapeHtml(o.bag || "Pill bag")}</div>
-${meta.length ? `<div class="lMeta">${meta.join(" · ")}</div>` : ""}
-<div class="lQr">${svg || '<span style="color:#c00;font-weight:900;">QR too large</span>'}</div>
-<div class="lItems"><div class="lItem">${bits.join(" ")}${q}${e}${l}</div></div>
-${o.note ? `<div class="lNote">📝 ${escapeHtml(o.note)}</div>` : ""}
-<div class="lScan">Scan to view contents</div>
-</div>`;
-});
-html += `</div>`;
-$("batchSheet").innerHTML = html;
-// let the injected SVG lay out before opening the print dialog
-setTimeout(() => window.print(), 50);
+function printBagStickers(){
+  const batch=getBatch();if(!batch.length){alert("Add at least one bag first.");return}
+  let html='<div class="labelGrid">';
+  batch.forEach(entry=>{
+    const o=entry.obj,it=(o.items&&o.items[0])||{},svg=qrSvg(frozenLink(entry));
+    html+=`<div class="label"><div class="lQr">${svg||'<span style="color:#c00;font-weight:900;">QR unavailable</span>'}</div><div><div class="lHead">${escapeHtml(it.n||"Medication")}</div><div class="lLine"><span class="lKey">Qty</span> ${escapeHtml(it.q||"—")}</div><div class="lLine"><span class="lKey">Bag</span> ${escapeHtml(o.bag||"—")}</div><div class="lLine"><span class="lKey">Lot</span> ${escapeHtml(it.lot||"—")}</div><div class="lScan">scan bag identity</div></div></div>`;
+  });
+  html+='</div>';$("batchSheet").innerHTML=html;setTimeout(()=>window.print(),50);
 }
 
-// ---- labelbag Google Form helpers ----
-function labelbagFormConfigured() {
-return Boolean(LABELBAG_FORM_BASE) &&
-Object.values(LABELBAG_FIELDS).every(Boolean);
-}
+function syncResolverLink(){$("openResolverLink").href=resolverBase()}
+$("commitBtn").addEventListener("click",commitBag);
+$("printCardsBtn").addEventListener("click",printScriptConsiderations);
+$("printBatchBtn").addEventListener("click",printBagStickers);
+$("clearBatchBtn").addEventListener("click",clearBatch);
+$("downloadCsvBtn").addEventListener("click",downloadCsv);
+$("copyTsvBtn").addEventListener("click",copyTsv);
+$("addSigBtn").addEventListener("click",addSig);
+CURRENT_FIELDS.forEach(id=>$(id).addEventListener("input",()=>{if(id==="preparedBy")store.set(PREP_KEY,$("preparedBy").value.trim());saveCurrent();if(id==="sig2"||id==="sig3")syncSigVisibility()}));
+$("resolverUrl").addEventListener("input",()=>{store.set(RESOLVER_KEY,$("resolverUrl").value.trim());syncResolverLink()});
 
-function buildLabelbagUrl(values) {
-const url = new URL(LABELBAG_FORM_BASE);
-
-Object.entries(LABELBAG_FIELDS).forEach(([key, entryId]) => {
-const value = values[key];
-if (
-!entryId ||
-value === undefined ||
-value === null ||
-String(value).trim() === ""
-) return;
-
-url.searchParams.set(entryId, String(value));
-});
-
-return url.toString();
-}
-
-// The app stores expiration as YYYY-MM. Google Forms Date questions
-// require YYYY-MM-DD, so the first day of the month is used.
-function fmtDateForGoogleForm(value) {
-if (!value) return "";
-return value.length === 7 ? value + "-01" : value;
-}
-
-function syncResolverLink() { $("openResolverLink").href = resolverBase(); }
-
-// ---- wire up ----
-$("commitBtn").addEventListener("click", commitBag);
-$("printCardsBtn").addEventListener("click", printCareCards);
-$("printBatchBtn").addEventListener("click", printBatch);
-$("clearBatchBtn").addEventListener("click", clearBatch);
-$("downloadCsvBtn").addEventListener("click", downloadCsv);
-$("copyTsvBtn").addEventListener("click", copyTsv);
-
-CURRENT_FIELDS.forEach(id => $(id).addEventListener("input", () => {
-if (id === "preparedBy") store.set(PREP_KEY, $("preparedBy").value.trim());
-saveCurrent();
-}));
-$("resolverUrl").addEventListener("input", () => { store.set(RESOLVER_KEY, $("resolverUrl").value.trim()); syncResolverLink(); });
-
-const isResolverView = renderResolverFromHash();
-
-if (!isResolverView) {
-loadSaved();
-loadCurrent();
-if (!labelbagFormConfigured()) {
-$("commitBtn").textContent = "Create QR + add to batch";
-$("commitNote").textContent = "Generates the QR and adds it to the batch below, then advances the Bag ID. Your medication and prep details stay filled in for the next bag.";
-}
-renderList();
-syncResolverLink();
-}
-
-window.addEventListener("hashchange", () => {
-if (location.hash.startsWith("#m=")) renderResolverFromHash();
-else location.reload();
-});
+const isResolverView=renderResolverFromHash();
+if(!isResolverView){loadSaved();loadCurrent();if(!coreFormConfigured()){$("commitBtn").textContent="Package bag + create QR";$("commitNote").textContent="Freezes the QR for this bag, adds it to the batch, and advances the Bag ID. The LabelBagSig Google Form can be connected later."}renderList();syncResolverLink()}
+window.addEventListener("hashchange",()=>{if(location.hash.startsWith("#m="))renderResolverFromHash();else location.reload()});
 </script>
 </body>
 </html>
