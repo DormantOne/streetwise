@@ -1,0 +1,660 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>scanbag2</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!--
+  scanbag2 — bag scan resolver + handout log
+  v2.3.0
+
+  CHANGED IN 2.3.0
+  ------------------------------------------------------------------
+  · Google Form wired up. 10 fields, every one prefilled by the app.
+  · Logging is now ONE TAP. The outcome, resource-card, SIG and referral
+    chips are gone, along with their sheet columns:
+      - resource_card_given printed per bag and goes inside the bag, so
+        every handed-out bag contains one by construction. The column
+        would have read "Yes" on every row forever.
+      - outcome is carried by the scan itself. A bag handed over gets
+        scanned; one declined or left in the box never generates a row.
+        The absence is the record.
+      - which SIG was ticked, and any referral, live on the physician's
+        retained half. That copy is the signed one.
+    Collecting taps that go nowhere is worse than not asking, so the UI
+    lost them at the same time as the sheet did.
+  · Duplicate guard. With logging down to a single tap, a fat-fingered
+    double-tap would write two rows for the same bag — and since every
+    bag_id is unique, a duplicate is unambiguously wrong. Re-logging a
+    bag already logged on this device now asks first.
+
+  CHANGED IN 2.2.0
+  ------------------------------------------------------------------
+  · Reads QR payload v3 (bag_id, box_number, med_name, med_strength,
+    qty_in_bag) as well as v2, v1 and the oldest JSON form, so every
+    sticker ever printed still resolves.
+  · Lot and expiry left the QR in labelsig2 2.2.0 to buy scanning
+    margin, so they also left this sheet. Both still print on the
+    sticker, and VLOOKUP on bag_id against the packaging sheet recovers
+    them — that is where they authoritatively live.
+
+  CHANGED IN 2.0.0 (from scanbag v1)
+  ------------------------------------------------------------------
+  · Two audiences, one URL. A bag sticker can be scanned by a patient as
+    easily as a volunteer. v1 dropped everyone into a volunteer logging
+    page with a name field, a GPS map and a tracking button. Default is
+    now a plain patient view: what's in the bag, and a pointer to the
+    paper card. Volunteer view is one tap away, and becomes the default
+    on any device where a volunteer name has been saved.
+  · Patient view never requests location. No permission prompt, no map.
+  · Help / crisis numbers are NOT in this app. They print on the reverse
+    of the paper card by labelsig2. Paper needs no signal and makes no
+    promise a web page can't keep, and one list can't drift out of step
+    with another.
+  · gps_lat and gps_lon are SEPARATE numeric columns. v1 wrote one
+    "lat, lon" string, which is useless for mapping.
+  · Handout note demoted to a collapsed optional field with an explicit
+    no-names instruction. It was the primary input in v1, which invited
+    exactly the free text that shouldn't be recorded.
+
+  FIXED
+  · localStorage probes on load and warns rather than silently failing.
+  · Deleting a history row used its array index, which shifts. Now keyed.
+  · Visible keyboard focus.
+
+  PRIVACY
+  · No patient identifier is collected anywhere. Not a name, not initials.
+  · History is per-device and local. Only the 10 fields below are sent.
+-->
+<style>
+:root{
+  --pink:#ff7eb6; --hot:#ff4f8b; --peach:#ffb86b; --banana:#ffe66d;
+  --mint:#7ee7c8; --sky:#77c8ff; --lav:#b69cff; --ink:#24243a;
+  --soft:rgba(255,255,255,.78); --muted:#6b6b88; --danger:#ff4f72;
+  --shadow:0 16px 40px rgba(56,42,111,.16); --radius:26px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{
+  margin:0;font-family:ui-rounded,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at top left,#ffe0ef 0,transparent 34%),
+    radial-gradient(circle at top right,#ddf7ff 0,transparent 32%),
+    linear-gradient(135deg,#fff8d8,#f3e8ff 45%,#dcfce7);
+  -webkit-tap-highlight-color:transparent;
+}
+.banner{
+  position:sticky;top:0;z-index:1500;
+  padding:calc(7px + env(safe-area-inset-top)) 10px 7px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:white;background:linear-gradient(90deg,var(--danger),var(--lav),var(--sky));
+  box-shadow:0 8px 20px rgba(0,0,0,.12)
+}
+.banner span{font-weight:1000;font-size:1.06rem;letter-spacing:.02em}
+.banner button{min-height:34px;height:34px;padding:0 11px;border-radius:999px;
+  background:rgba(255,255,255,.22);color:white;box-shadow:none;font-size:.78rem;
+  font-weight:1000;letter-spacing:.04em;border:0;cursor:pointer;font-family:inherit}
+.app{max-width:560px;margin:0 auto;padding:14px 14px calc(20px + env(safe-area-inset-bottom))}
+.card{background:var(--soft);border:1px solid rgba(255,255,255,.92);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:13px;margin:10px 0;backdrop-filter:blur(14px)}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  margin-bottom:8px;font-weight:1000;font-size:1rem;flex-wrap:wrap}
+.lbl{display:block;font-weight:950;font-size:.78rem;color:var(--muted);letter-spacing:.03em;margin:8px 2px 5px}
+input,textarea{width:100%;border:0;border-radius:18px;padding:12px 13px;background:white;
+  color:var(--ink);font-size:1rem;box-shadow:inset 0 0 0 2px rgba(36,36,58,.06);font-family:inherit}
+input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--lav);outline-offset:2px}
+textarea{min-height:64px;resize:vertical}
+button{border:0;border-radius:18px;padding:11px 12px;font-weight:1000;color:var(--ink);cursor:pointer;
+  font-size:.98rem;box-shadow:0 8px 16px rgba(0,0,0,.09);font-family:inherit;min-height:44px;
+  touch-action:manipulation;transition:transform .08s ease}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+.mainBtn{width:100%;background:linear-gradient(135deg,var(--pink),var(--peach));color:white;
+  font-size:1.22rem;min-height:62px}
+.tinyBtn{padding:8px 11px;font-size:.82rem;border-radius:999px;background:white;box-shadow:none;min-height:34px;white-space:nowrap}
+.dangerTinyBtn{color:var(--hot);background:#fff0f7}
+.warn{background:#fff0f7;color:var(--hot);border-radius:14px;padding:9px 11px;font-weight:950;font-size:.82rem;line-height:1.35;margin:8px 0}
+.note{color:var(--muted);font-size:.8rem;font-weight:850;line-height:1.35;margin-top:8px}
+.miniRow{display:flex;gap:6px;flex-wrap:wrap}
+.okToast{background:#e3f9ee;color:#14795a;border-radius:14px;padding:11px 13px;font-weight:950;font-size:.9rem;margin:8px 0;line-height:1.35}
+
+/* bag identity */
+.bagCard{background:linear-gradient(135deg,#fff,#ecfdf6);border:1px solid rgba(126,231,200,.6)}
+.bagMedName{font-weight:1000;font-size:1.5rem;line-height:1.14;word-break:break-word}
+.bagStrength{font-weight:900;font-size:1.02rem;margin-top:2px}
+.bagGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.bagCell{background:white;border-radius:15px;padding:10px}
+.bagCell .k{color:var(--muted);font-size:.68rem;font-weight:1000;letter-spacing:.04em}
+.bagCell .v{margin-top:2px;font-weight:950;word-break:break-word}
+.noBag{text-align:center;color:var(--muted);padding:16px 8px;font-weight:900;line-height:1.45}
+
+/* patient view */
+.pWrap{max-width:560px;margin:0 auto;padding:16px 14px calc(24px + env(safe-area-inset-bottom))}
+.pHead{font-weight:1000;font-size:1.1rem;margin:4px 2px 10px;line-height:1.3}
+.pFoot{color:var(--muted);font-size:.86rem;font-weight:850;line-height:1.45;margin-top:14px;text-align:center}
+
+/* location + history */
+.locWrap{display:grid;gap:8px}
+.locStatus{color:var(--muted);font-weight:900;font-size:.84rem;min-height:1.1em;line-height:1.3}
+#map{display:none;height:180px;width:100%;border-radius:20px;overflow:hidden;
+  border:3px solid rgba(255,255,255,.9);background:#e6f7ff;
+  box-shadow:inset 0 0 0 2px rgba(36,36,58,.06),0 10px 22px rgba(101,78,163,.12)}
+#map.on{display:block}
+.leaflet-control-attribution{font-size:9px!important}
+.history{max-height:min(34vh,280px);overflow-y:auto;display:grid;gap:9px;overscroll-behavior:contain}
+.hItem{background:white;border-radius:18px;padding:11px 12px;box-shadow:0 8px 18px rgba(101,78,163,.09)}
+.hTop{display:flex;justify-content:space-between;gap:10px;font-weight:1000;align-items:flex-start}
+.hTime{color:var(--muted);font-size:.78rem;white-space:nowrap;padding-top:2px}
+.hLine{color:var(--muted);margin-top:4px;font-size:.88rem;line-height:1.3}
+.hDel{border-radius:999px;box-shadow:none;background:#fff0f7;color:var(--hot);
+  min-height:28px;height:28px;padding:0 9px;font-size:.8rem;flex:0 0 auto}
+.empty{text-align:center;color:var(--muted);padding:16px 10px;font-weight:900;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <span>💊 scanbag2</span>
+  <button id="viewToggle" type="button">volunteer</button>
+</div>
+
+<!-- ══════════════ PATIENT VIEW (default) ══════════════ -->
+<main class="pWrap" id="patientView">
+  <section class="card bagCard" id="pBag"></section>
+  <div class="pHead">Directions for taking this are on the paper card that came with the bag.</div>
+  <div class="pFoot">Phone numbers for help are printed on the back of that card.<br>In an emergency, call 911.</div>
+</main>
+
+<!-- ══════════════ VOLUNTEER VIEW ══════════════ -->
+<main class="app" id="volunteerView" hidden>
+
+  <div class="warn" id="storageWarn" hidden></div>
+  <div class="okToast" id="okToast" hidden></div>
+
+  <section class="card bagCard" id="vBag"></section>
+
+  <section class="card">
+    <button class="mainBtn" id="logBtn">Log handout</button>
+    <div class="note" id="logNote"></div>
+  </section>
+
+  <section class="card" id="nameCard">
+    <div class="sectionTitle"><span>You</span><button class="tinyBtn" id="changeNameBtn" type="button" hidden>change</button></div>
+    <div id="nameEdit">
+      <div class="miniRow" style="gap:8px;">
+        <input id="volunteerName" placeholder="Your name" autocomplete="off" style="flex:1;" aria-label="Your name" />
+        <button class="tinyBtn" id="saveNameBtn" type="button">save</button>
+      </div>
+      <div class="note">Saved on this device only, so you never retype it. Once saved, scanning a bag brings you straight here.</div>
+    </div>
+    <div id="nameShown" hidden style="font-weight:950;font-size:.95rem;color:var(--muted);">
+      logging as <strong id="nameEcho" style="color:var(--ink);"></strong>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sectionTitle">
+      <span>Where</span>
+      <div class="miniRow">
+        <button class="tinyBtn" id="locBtn" type="button">locate</button>
+        <button class="tinyBtn" id="mapBtn" type="button">map</button>
+      </div>
+    </div>
+    <div class="locWrap">
+      <label class="lbl" for="crossStreets" style="margin-top:0;">Cross streets</label>
+      <input id="crossStreets" placeholder="Estimated, or type it" autocomplete="off" />
+      <div class="locStatus" id="locStatus">Not located yet.</div>
+      <div id="map"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sectionTitle"><span>Note</span><button class="tinyBtn" id="noteToggle" type="button">add</button></div>
+    <div id="noteWrap" hidden>
+      <textarea id="handoutNote" placeholder="Optional. No names, no medical details."></textarea>
+      <div class="note">Keep it operational — "van, second pass", not anything about a person. Never a name, initials, or a diagnosis.</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="sectionTitle"><span>Today · <span id="hCount">0</span></span>
+      <div class="miniRow">
+        <button class="tinyBtn" id="copyLogBtn" type="button">copy rows</button>
+        <button class="tinyBtn dangerTinyBtn" id="clearLogBtn" type="button">clear</button>
+      </div>
+    </div>
+    <div class="history" id="history"></div>
+    <div class="note">Stored on this device only. Copying rows gives you the same 10 columns as the form, for pasting into the sheet.</div>
+  </section>
+
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+"use strict";
+
+/* ══════════════════════ SPREADSHEET HERE ══════════════════════
+   HANDOUT form + sheet. 10 fields, all prefilled by this app.
+
+   Form:  scanbag2 · handout log
+   Every question is Short answer except handout_note (Paragraph).
+   Nothing required, no validation, no email collection.
+
+   Google's own Timestamp takes column A, so these land in B..K:
+     B handout_local   C volunteer      D bag_id    E box_number
+     F med_name        G cross_streets
+     H gps_lat         I gps_lon        J gps_accuracy_m
+     K handout_note
+
+   BEFORE THE FIRST SUBMISSION: format H and I as Number with 5+ decimal
+   places, or the coordinates get rounded into uselessness.
+
+   Derived in the sheet rather than stored here:
+     location_source  =IF(H2<>"","gps",IF(G2<>"","typed","none"))
+     lot              =IFERROR(VLOOKUP($D2,PACKAGING!$C:$J,7,FALSE),"")
+     expiry           =IFERROR(VLOOKUP($D2,PACKAGING!$C:$J,8,FALSE),"")
+
+   D (bag_id) is the join key to the PACKAGING sheet, column C there.
+*/
+const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSecEgF4pAVEYzC9-6W9rpgJlMl6_hcWCnjC0q02UywEmZ9cOQ/viewform?usp=pp_url";
+
+const FIELDS = {
+  handout_local:  "entry.690037961",
+  volunteer:      "entry.675580896",
+  bag_id:         "entry.1277653122",
+  box_number:     "entry.1577656361",
+  med_name:       "entry.1954684147",
+  cross_streets:  "entry.1091582034",
+  gps_lat:        "entry.1994416978",
+  gps_lon:        "entry.1596241593",
+  gps_accuracy_m: "entry.1315966042",
+  handout_note:   "entry.848564841"
+};
+
+const COLUMNS = [
+  "handout_local","volunteer","bag_id","box_number","med_name",
+  "cross_streets","gps_lat","gps_lon","gps_accuracy_m","handout_note"
+];
+/* ════════════════════ END SPREADSHEET HERE ════════════════════ */
+
+const APP_VERSION = "scanbag2 2.3.0";
+
+const K = {
+  name:"sb2_name_v1", hist:"sb2_hist_v2", lastLoc:"sb2_lastloc_v1",
+  lastStreet:"sb2_laststreet_v1", dev:"sb2_dev_v1", view:"sb2_view_v1"
+};
+
+/* Help numbers deliberately do NOT live here. They print on the reverse
+   of the paper card by labelsig2, which needs no signal and makes no
+   promise this app can't keep. Keeping them in one file also stops the
+   two lists drifting apart. */
+
+/* ---------- storage ---------- */
+let storageOk = true;
+const _mem = Object.create(null);
+function storageFailed(){
+  if(!storageOk) return;
+  storageOk = false;
+  const el = document.getElementById("storageWarn");
+  if(el){
+    el.textContent = "This browser is not saving data (private mode or storage full). Your name and today's log will be lost on reload. Handouts still reach the form when you submit it.";
+    el.hidden = false;
+  }
+}
+const store = {
+  get(k){
+    if(storageOk){ try{ const v=localStorage.getItem(k); if(v!==null) return v; }catch{ storageFailed(); } }
+    return (k in _mem) ? _mem[k] : null;
+  },
+  set(k,v){ _mem[k]=v; if(!storageOk) return; try{ localStorage.setItem(k,v); }catch{ storageFailed(); } },
+  remove(k){ delete _mem[k]; if(!storageOk) return; try{ localStorage.removeItem(k); }catch{ storageFailed(); } }
+};
+(function(){ try{ localStorage.setItem("sb2_probe","1"); localStorage.removeItem("sb2_probe"); }catch{ storageFailed(); } })();
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s)
+  .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+  .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+function tsIso(d){
+  d=d||new Date(); const p=n=>String(n).padStart(2,"0");
+  const off=-d.getTimezoneOffset(), sign=off>=0?"+":"-", a=Math.abs(off);
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}${sign}${p(Math.floor(a/60))}:${p(a%60)}`;
+}
+function localStamp(d){
+  d=d||new Date(); const p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function rid(){ return "SB2-"+Math.floor(Date.now()/1000)+"-"+Math.random().toString(36).slice(2,6); }
+function deviceId(){
+  let d = store.get(K.dev);
+  if(!d){ d = "dev-"+Math.random().toString(36).slice(2,8); store.set(K.dev,d); }
+  return d;
+}
+
+/* ---------- payload decode: v3, v2, v1 positional, legacy JSON ---------- */
+const SEP="\u001f";
+function decodePayload(token){
+  let s = String(token||"").replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length%4) s+="=";
+  const text = decodeURIComponent(escape(atob(s)));
+  if(text.charAt(0)==="{"){
+    const o=JSON.parse(text), it=(o.items&&o.items[0])||{};
+    return {payload_version:0, bag_id:o.bag||"", box_number:"", med_name:it.n||"",
+            med_strength:it.s||"", qty_in_bag:it.q||"", med_exp_ym:it.exp||"", med_lot:it.lot||""};
+  }
+  const f = text.split(SEP);
+  if(f[0]==="3"){
+    // v3: 3, bag_id, box_number, med_name, med_strength, qty
+    return {payload_version:3, bag_id:f[1]||"", box_number:f[2]||"", med_name:f[3]||"",
+            med_strength:f[4]||"", qty_in_bag:f[5]||"", med_exp_ym:"", med_lot:""};
+  }
+  if(f[0]==="2"){
+    // v2: 2, bag_id, box, name, strength, qty, exp, lot, sig_count
+    return {payload_version:2, bag_id:f[1]||"", box_number:f[2]||"", med_name:f[3]||"",
+            med_strength:f[4]||"", qty_in_bag:f[5]||"", med_exp_ym:f[6]||"", med_lot:f[7]||""};
+  }
+  if(f[0]==="1"){
+    // v1: 1, bag, made, by, note, name, strength, qty, exp, lot
+    // labelbag v1 deliberately blanked 2,3,4,6,8 — blanks come through as "".
+    return {payload_version:1, bag_id:f[1]||"", box_number:"", med_name:f[5]||"",
+            med_strength:f[6]||"", qty_in_bag:f[7]||"", med_exp_ym:f[8]||"", med_lot:f[9]||""};
+  }
+  throw new Error("Unrecognised bag code.");
+}
+function readBag(){
+  const hash = (location.hash||"").replace(/^#/,"");
+  let token = new URLSearchParams(hash).get("m");
+  if(!token && location.search) token = new URLSearchParams(location.search).get("m");
+  if(!token) return null;
+  try{ return decodePayload(token); }
+  catch(e){ console.warn(e); return "ERROR"; }
+}
+
+let bag = readBag();
+
+/* ---------- bag rendering ---------- */
+function bagHtml(big){
+  if(bag==="ERROR"){
+    return `<div class="noBag">This code couldn't be read. The link may be cut off.<br>${big?"Ask the team for a new bag.":"You can still log a handout below."}</div>`;
+  }
+  if(!bag || !bag.med_name){
+    return `<div class="noBag">No bag scanned.<br>${big?"Scan the code on a bag.":"Scan a bag's code, or log a handout manually below."}</div>`;
+  }
+  // Expiry and lot are not in payload v3. They print on the sticker,
+  // which is the right place to read them from anyway, and the sheet
+  // recovers them by matching bag_id against the packaging sheet.
+  const cells = [];
+  if(bag.qty_in_bag)  cells.push(["How many","<strong>"+esc(bag.qty_in_bag)+"</strong>"]);
+  if(bag.bag_id)      cells.push(["Bag",esc(bag.bag_id)]);
+  if(bag.box_number)  cells.push(["Box",esc(bag.box_number)]);
+  if(bag.med_exp_ym)  cells.push(["Use before",esc(bag.med_exp_ym)]);
+  if(bag.med_lot)     cells.push(["Lot",esc(bag.med_lot)]);
+  return `
+    <div class="bagMedName">${esc(bag.med_name)}</div>
+    ${bag.med_strength?`<div class="bagStrength">${esc(bag.med_strength)}</div>`:""}
+    <div class="bagGrid">${cells.map(([k,v])=>
+      `<div class="bagCell"><div class="k">${esc(k)}</div><div class="v">${v}</div></div>`).join("")}</div>`;
+}
+function renderPatient(){ $("pBag").innerHTML = bagHtml(true); }
+
+/* ---------- volunteer name ---------- */
+function savedName(){ return (store.get(K.name)||"").trim(); }
+function renderName(editing){
+  const n = savedName();
+  if(n && !editing){
+    $("nameEdit").hidden=true; $("nameShown").hidden=false;
+    $("changeNameBtn").hidden=false; $("nameEcho").textContent=n;
+  }else{
+    $("nameEdit").hidden=false; $("nameShown").hidden=true;
+    $("changeNameBtn").hidden=true; $("volunteerName").value=n;
+  }
+}
+function saveName(){
+  const v=$("volunteerName").value.trim();
+  if(!v) return false;
+  store.set(K.name,v); store.set(K.view,"volunteer"); renderName(false); return true;
+}
+
+/* ---------- location ---------- */
+let map=null, marker=null, mapOn=false, geoAt=0, streetTyped=false;
+function lastLoc(){ try{ return JSON.parse(store.get(K.lastLoc)||"null"); }catch{ return null; } }
+function setStatus(t){ $("locStatus").textContent=t; }
+function locate(){
+  if(!navigator.geolocation){ setStatus("This device can't give a location. Type the cross streets."); return; }
+  setStatus("Finding you…");
+  navigator.geolocation.getCurrentPosition(onPos,onPosErr,{enableHighAccuracy:true,maximumAge:20000,timeout:12000});
+}
+function onPos(pos){
+  const p={lat:pos.coords.latitude,lon:pos.coords.longitude,
+           accuracy:pos.coords.accuracy,ts:tsIso()};
+  store.set(K.lastLoc,JSON.stringify(p));
+  setStatus("Located to about ±"+Math.round(p.accuracy||0)+"m.");
+  if(mapOn) drawMap(p);
+  estimateStreets(p);
+}
+function onPosErr(e){
+  const msgs={1:"Location permission is off. Type the cross streets instead.",
+              2:"Location unavailable right now. Type the cross streets.",
+              3:"Location timed out. Type the cross streets."};
+  setStatus(msgs[e&&e.code]||"No location. Type the cross streets.");
+}
+function toggleMap(){
+  mapOn=!mapOn;
+  $("map").classList.toggle("on",mapOn);
+  $("mapBtn").textContent = mapOn?"hide map":"map";
+  if(!mapOn) return;
+  const p = lastLoc() || {lat:40.4406,lon:-79.9959,accuracy:0};
+  requestAnimationFrame(()=>requestAnimationFrame(()=>drawMap(p)));
+}
+function drawMap(p){
+  const el=$("map");
+  if(typeof L==="undefined"){
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:14px;text-align:center;font-weight:950;color:#6b6b88;background:white;">Map didn\'t load. The cross-street field still works.</div>';
+    return;
+  }
+  if(!map){
+    map=L.map("map",{zoomControl:false}).setView([p.lat,p.lon],16);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+      {attribution:"&copy; OpenStreetMap &copy; CARTO",maxZoom:20}).addTo(map);
+    marker=L.circleMarker([p.lat,p.lon],{color:"#fff",weight:3,fillColor:"#77c8ff",fillOpacity:1,radius:8}).addTo(map);
+  }else{
+    marker.setLatLng([p.lat,p.lon]);
+    map.setView([p.lat,p.lon],Math.max(map.getZoom(),16));
+  }
+  setTimeout(()=>map.invalidateSize(true),120);
+}
+async function estimateStreets(p){
+  if(streetTyped && $("crossStreets").value.trim()) return;
+  if(Date.now()-geoAt < 12000) return;
+  geoAt=Date.now();
+  try{
+    const u=new URL("https://nominatim.openstreetmap.org/reverse");
+    u.searchParams.set("format","jsonv2"); u.searchParams.set("lat",String(p.lat));
+    u.searchParams.set("lon",String(p.lon)); u.searchParams.set("zoom","18");
+    u.searchParams.set("addressdetails","1");
+    const res=await fetch(u.toString(),{headers:{Accept:"application/json"}});
+    if(!res.ok) throw new Error("reverse geocode "+res.status);
+    const j=await res.json(), a=j.address||{};
+    const road=a.road||a.pedestrian||a.footway||a.neighbourhood||a.suburb||"";
+    const area=a.neighbourhood||a.suburb||a.city_district||"";
+    const guess=[road,area].filter(Boolean).join(", ");
+    if(guess && !streetTyped){
+      $("crossStreets").value=guess+" (est.)";
+      store.set(K.lastStreet,$("crossStreets").value);
+      setStatus("Located. Street estimated — correct it if it's wrong.");
+    }
+  }catch(e){
+    console.warn(e);
+    setStatus("Located, but street lookup failed. Type it if you know it.");
+  }
+}
+
+/* ---------- logging ---------- */
+function getHist(){ try{ return JSON.parse(store.get(K.hist)||"[]"); }catch{ return []; } }
+function setHist(h){ store.set(K.hist,JSON.stringify(h.slice(0,300))); }
+
+function buildRecord(){
+  const now=new Date();
+  const p=lastLoc();
+  const b=(bag&&bag!=="ERROR")?bag:{};
+  return {
+    record_id: rid(),              // internal: keys the delete button
+    app_version: APP_VERSION,      // internal: not sent to the sheet
+    handout_local: localStamp(now),
+    volunteer: savedName(),
+    bag_id: b.bag_id||"",
+    box_number: b.box_number||"",
+    med_name: b.med_name||"",
+    cross_streets: $("crossStreets").value.trim(),
+    gps_lat: p?Number(p.lat.toFixed(5)):"",
+    gps_lon: p?Number(p.lon.toFixed(5)):"",
+    gps_accuracy_m: p?String(Math.round(p.accuracy||0)):"",
+    handout_note: $("handoutNote").value.trim()
+  };
+}
+
+function logHandout(){
+  if(!savedName() && !saveName()){
+    alert("Enter your name first — it's the only thing that needs typing, and only once.");
+    $("volunteerName").focus(); return;
+  }
+
+  // Duplicate guard. One tap to log means a double-tap writes two rows,
+  // and every bag_id is unique, so a repeat is unambiguously wrong.
+  const thisBag = (bag && bag!=="ERROR" && bag.bag_id) || "";
+  if(thisBag){
+    const prior = getHist().find(r=>r.bag_id===thisBag);
+    if(prior && !confirm("Bag "+thisBag+" was already logged on this device at "+prior.handout_local+".\n\nLog it again?")) return;
+  }
+
+  const r=buildRecord();
+  setHist([r,...getHist()]);
+  renderHistory();
+
+  let sent=false;
+  if(FORM_BASE){
+    try{
+      const url=new URL(FORM_BASE);
+      Object.entries(FIELDS).forEach(([k,id])=>{
+        if(!id||id.indexOf("XXXX")>=0) return;
+        const v=r[k];
+        if(v==null||String(v).trim()==="") return;
+        url.searchParams.set(id,String(v));
+      });
+      window.open(url.toString(),"_blank","noopener,noreferrer");
+      sent=true;
+    }catch(e){ console.error("form open failed",e); }
+  }
+
+  const t=$("okToast");
+  t.textContent = sent
+    ? "Logged. The form opened in a new tab — submit it there."
+    : "Logged on this device. Copy the rows into the sheet later.";
+  t.hidden=false;
+  setTimeout(()=>{t.hidden=true;},6000);
+
+  $("handoutNote").value="";
+  $("noteWrap").hidden=true; $("noteToggle").textContent="add";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderHistory(){
+  const h=getHist(), el=$("history");
+  $("hCount").textContent=h.length;
+  const has=h.length>0;
+  $("copyLogBtn").disabled=!has; $("clearLogBtn").disabled=!has;
+  if(!has){ el.innerHTML=`<div class="empty">Nothing logged on this device yet.</div>`; return; }
+  el.innerHTML="";
+  h.forEach(r=>{
+    const div=document.createElement("div");
+    div.className="hItem";
+    div.innerHTML=`
+      <div class="hTop">
+        <span>${esc(r.bag_id||"manual")}${r.box_number?" · box "+esc(r.box_number):""}</span>
+        <span class="hTime">${esc(r.handout_local)}</span>
+        <button class="hDel" type="button" data-del="${esc(r.record_id)}" aria-label="Delete">×</button>
+      </div>
+      ${r.med_name?`<div class="hLine">${esc(r.med_name)}</div>`:""}
+      ${r.cross_streets?`<div class="hLine">📍 ${esc(r.cross_streets)}</div>`:""}
+      ${r.handout_note?`<div class="hLine">📝 ${esc(r.handout_note)}</div>`:""}`;
+    el.appendChild(div);
+  });
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    // keyed, not indexed — v1 used the array index, which shifts under you
+    setHist(getHist().filter(x=>x.record_id!==b.getAttribute("data-del")));
+    renderHistory();
+  });
+}
+function copyLog(){
+  const h=getHist(); if(!h.length) return;
+  const clean=v=>String(v==null?"":v).replace(/\t/g," ").replace(/\r?\n/g," ");
+  const tsv=[COLUMNS.join("\t"),...h.map(r=>COLUMNS.map(c=>clean(r[c])).join("\t"))].join("\n");
+  navigator.clipboard.writeText(tsv).then(()=>{
+    const b=$("copyLogBtn"); b.textContent="copied"; setTimeout(()=>b.textContent="copy rows",1300);
+  }).catch(()=>prompt("Copy this:",tsv));
+}
+function clearLog(){
+  if(!getHist().length) return;
+  if(!confirm("Clear this device's handout log? Anything already submitted to the form is unaffected.")) return;
+  store.remove(K.hist); renderHistory();
+}
+
+/* ---------- view switching ---------- */
+function setView(v){
+  const vol = v==="volunteer";
+  $("volunteerView").hidden = !vol;
+  $("patientView").hidden = vol;
+  $("viewToggle").textContent = vol ? "done" : "volunteer";
+  store.set(K.view, v);
+  if(vol){
+    renderName(!savedName());
+    renderHistory();
+    $("vBag").innerHTML = bagHtml(false);
+    const p=lastLoc();
+    if(p){
+      setStatus("Using your last location (±"+Math.round(p.accuracy||0)+"m). Tap locate to refresh.");
+      const s=store.get(K.lastStreet); if(s && !$("crossStreets").value) $("crossStreets").value=s;
+    }
+    // Volunteers get a location attempt; patients never do.
+    locate();
+    $("logNote").textContent = FORM_BASE
+      ? "One tap. Saves here and opens the form to submit."
+      : "One tap. Saves on this device only.";
+  }else{
+    renderPatient();
+  }
+}
+
+/* ---------- wiring ---------- */
+$("viewToggle").addEventListener("click",()=>
+  setView($("volunteerView").hidden ? "volunteer" : "patient"));
+$("saveNameBtn").addEventListener("click",()=>{ if(!saveName()) $("volunteerName").focus(); });
+$("volunteerName").addEventListener("keydown",e=>{ if(e.key==="Enter") saveName(); });
+$("changeNameBtn").addEventListener("click",()=>renderName(true));
+$("locBtn").addEventListener("click",locate);
+$("mapBtn").addEventListener("click",toggleMap);
+$("noteToggle").addEventListener("click",()=>{
+  const w=$("noteWrap");
+  w.hidden=!w.hidden;
+  $("noteToggle").textContent = w.hidden?"add":"hide";
+  if(!w.hidden) $("handoutNote").focus();
+});
+$("crossStreets").addEventListener("input",()=>{
+  streetTyped=true; store.set(K.lastStreet,$("crossStreets").value.trim());
+});
+$("logBtn").addEventListener("click",logHandout);
+$("copyLogBtn").addEventListener("click",copyLog);
+$("clearLogBtn").addEventListener("click",clearLog);
+window.addEventListener("hashchange",()=>location.reload());
+
+// A device with a saved volunteer name goes straight to logging.
+renderPatient();
+setView(savedName() ? "volunteer" : "patient");
+</script>
+</body>
+</html>
