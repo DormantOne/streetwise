@@ -7,7 +7,26 @@
 <title>labelsig2 · package bags</title>
 <!--
   labelsig2 — street medicine bag packaging + sticker/receipt printing
-  v2.2.0
+  v2.3.0
+
+  CHANGED IN 2.3.0
+  ------------------------------------------------------------------
+  · Packaging a SINGLE bag now opens the prefilled form automatically,
+    the way v1 did, as well as freezing the QR. A run of more than one
+    bag still does not, because that would be one browser tab per bag;
+    it tells you to use the CSV instead.
+  · Patient card back panel overflowed. Ten help entries with hours on
+    their own line needed ~4.70in inside a 3.61in panel, and
+    overflow:hidden clipped the rest silently — the emergency numbers
+    ran off the card. Now two columns of five with the hours inline,
+    which measures 2.12in.
+  · "Phone numbers are on the other side" was absolutely positioned and
+    landed on top of the signature lines. Now in normal flow.
+  · Patient half no longer prints Print name / License. Those are the
+    physician's record and they were crowding a 4.25in panel. The
+    patient copy keeps Physician + Date, so it still shows who
+    authorised it and when. Worst case (3 SIG options) now measures
+    3.35in of 3.61in.
 
   CHANGED IN 2.2.0
   ------------------------------------------------------------------
@@ -111,6 +130,7 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 .sigSlot .sigNum{position:absolute;right:10px;top:8px;font-size:.68rem;color:var(--muted);font-weight:1000;pointer-events:none}
 .empty{text-align:center;color:var(--muted);padding:14px;font-weight:900;line-height:1.4}
 .note{color:var(--muted);font-size:.8rem;font-weight:850;line-height:1.35;margin-top:8px}
+.okToast{background:#e3f9ee;color:#14795a;border-radius:14px;padding:10px 12px;font-weight:950;font-size:.85rem;line-height:1.35;margin:8px 0}
 .warn{background:#fff0f7;color:var(--hot);border-radius:14px;padding:9px 11px;font-weight:950;font-size:.82rem;line-height:1.35;margin:8px 0}
 .miniRow{display:flex;gap:6px;flex-wrap:wrap}
 .count{font-weight:900;color:var(--muted);font-size:.84rem}
@@ -192,14 +212,20 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 .docSignGrid .u{border-bottom:1px solid #111;height:.2in}
 .docSignGrid .k{font-size:6.9pt;letter-spacing:.03em;color:#444;font-weight:900;margin-top:.02in}
 .traceBox{margin-top:.12in;border:1px solid #aaa;padding:.07in;font-size:7.9pt;line-height:1.32}
-.smallBottom{position:absolute;left:.36in;right:.36in;bottom:.3in;font-size:7.6pt;color:#444;text-align:center;line-height:1.25}
-.helpTitle{border:2px solid #111;padding:.05in .08in;text-align:center;font-weight:900;font-size:14pt;margin-bottom:.06in}
-.helpSub{text-align:center;font-weight:700;font-size:8.6pt;margin-bottom:.07in}
-.helpList{border-top:1px solid #222;padding-top:.06in;font-size:9.4pt;line-height:1.24}
-.helpRow{margin:.05in 0}
-.helpRow b{font-weight:900}
-.helpRow i{font-style:normal;font-size:7.8pt;color:#444}
-.helpFooter{border-top:1px solid #222;margin-top:.07in;padding-top:.05in;text-align:center;font-size:7.6pt;font-style:italic}
+/* In normal flow. Absolute positioning put this on top of the
+   signature lines whenever the content above grew. */
+.smallBottom{margin-top:.10in;font-size:7.6pt;color:#444;text-align:center;line-height:1.25}
+.helpTitle{border:2px solid #111;padding:.04in .08in;text-align:center;font-weight:900;font-size:13pt;margin-bottom:.05in}
+.helpSub{text-align:center;font-weight:700;font-size:8pt;margin-bottom:.06in}
+/* Two columns of five, hours inline. Single column with the hours on
+   their own line needed ~4.70in inside a 3.61in panel and was silently
+   clipped by overflow:hidden — the emergency numbers ran off the card. */
+.helpList{border-top:1px solid #222;padding-top:.06in;font-size:8.4pt;line-height:1.2;
+  display:grid;grid-template-rows:repeat(5,auto);grid-auto-flow:column;gap:.04in .16in}
+.helpRow{break-inside:avoid}
+.helpRow b{font-weight:900;display:block}
+.helpRow i{font-style:normal;font-size:7.2pt;color:#444}
+.helpFooter{border-top:1px solid #222;margin-top:.07in;padding-top:.05in;text-align:center;font-size:7.4pt;font-style:italic}
 
 @media print{
   html,body{margin:0!important;padding:0!important;background:white}
@@ -218,6 +244,7 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 <main class="app">
 
 <div class="warn" id="storageWarn" hidden></div>
+<div class="okToast" id="okToast" hidden></div>
 <div class="warn" id="qrWarn" hidden>QR library did not load. Packaging and printing are disabled until you reload with a connection — otherwise stickers would print without a code.</div>
 
 <section class="card">
@@ -360,7 +387,7 @@ const COLUMNS = [
 ];
 /* ════════════════════ END SPREADSHEET HERE ════════════════════ */
 
-const APP_VERSION = "labelsig2 2.2.0";
+const APP_VERSION = "labelsig2 2.3.0";
 const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag2.html";
 const MAKE_MAX = 60;
 
@@ -529,22 +556,22 @@ function qrSvg(text){
    than no number. 988 from an Allegheny County area code routes to
    re:solve, so those two are the same service. */
 const HELP = [
-  {k:"Emergency",                    v:"911",                             h:"24/7"},
-  {k:"Mental health crisis",         v:"988 — call or text",              h:"24/7"},
-  {k:"Crisis team, can come to you", v:"re:solve 1-888-796-8226",         h:"24/7 · walk-in 333 N Braddock Ave"},
-  {k:"If you can't safely talk",     v:"text PA to 741741",               h:"24/7"},
-  {k:"Overdose help & naloxone",     v:"412-350-4456",                    h:"24/7 · Allegheny County"},
-  {k:"Drug & alcohol treatment",     v:"1-800-662-4357",                  h:"24/7 · PA Get Help Now"},
-  {k:"Harm reduction supplies",      v:"Prevention Point 412-247-3404",   h:"hours vary by site"},
-  {k:"Food, housing, anything",      v:"211",                             h:"24/7"},
-  {k:"Housing & shelter",            v:"Allegheny Link 1-866-730-2368",   h:"Mon–Fri daytime"},
-  {k:"Free medical care",            v:"Second Ave Commons 412-232-7544", h:"Mon–Fri 9–5 · walk-in, no insurance"}
+  {k:"Emergency",            v:"911",                             h:"24/7"},
+  {k:"Mental health crisis", v:"988, call or text",               h:"24/7"},
+  {k:"Crisis team",          v:"1-888-796-8226",                  h:"24/7 · re:solve · walk-in 333 N Braddock"},
+  {k:"Can't safely talk",    v:"text PA to 741741",               h:"24/7"},
+  {k:"Overdose, naloxone",   v:"412-350-4456",                    h:"24/7 · Allegheny County"},
+  {k:"Drug & alcohol help",  v:"1-800-662-4357",                  h:"24/7 · PA Get Help Now"},
+  {k:"Harm reduction",       v:"412-247-3404",                    h:"Prevention Point · hours vary"},
+  {k:"Food, housing, more",  v:"211",                             h:"24/7"},
+  {k:"Shelter",              v:"1-866-730-2368",                  h:"Allegheny Link · Mon–Fri"},
+  {k:"Free medical care",    v:"412-232-7544",                    h:"Second Ave Commons · Mon–Fri 9–5, walk-in"}
 ];
 function helpHtml(){
   return `<div class="helpTitle">IF YOU NEED HELP</div>
     <div class="helpSub">Pittsburgh &amp; Allegheny County</div>
     <div class="helpList">${HELP.map(r=>
-      `<div class="helpRow"><b>${esc(r.k)}:</b> ${esc(r.v)}<br><i>${esc(r.h)}</i></div>`
+      `<div class="helpRow"><b>${esc(r.k)}</b>${esc(r.v)} <i>${esc(r.h)}</i></div>`
     ).join("")}</div>
     <div class="helpFooter">Numbers can change. In an emergency call 911.</div>`;
 }
@@ -681,6 +708,11 @@ function packageRun(){
   }
   if(!added.length) return;
 
+  // Single bag: open the prefilled form now, while still inside the click
+  // gesture, the way v1 did. A run would be one tab per bag, so it isn't.
+  let opened = false;
+  if(added.length===1) opened = submitToForm(added[0]);
+
   setBatch(batch.concat(added));
   rotateBase();            // next run gets a fresh, unused base
   saveCurrent();
@@ -688,6 +720,14 @@ function packageRun(){
   renderList();
   const top = $("qrList").firstElementChild;
   if(top) top.scrollIntoView({behavior:"smooth",block:"nearest"});
+
+  if(added.length===1){
+    toast(opened
+      ? "Bag "+added[0].bag_id+" packaged and QR frozen. The form opened in a new tab — submit it there."
+      : "Bag "+added[0].bag_id+" packaged and QR frozen, but the form could not open. Use download CSV.");
+  }else{
+    toast(added.length+" bags packaged and QRs frozen. The form is not opened for a run — tap download CSV and paste it into the sheet once.");
+  }
 }
 
 function clearMedication(){
@@ -779,18 +819,34 @@ async function copyText(text, btn, done){
   catch{ prompt("Copy this:", text); }
 }
 
+/* Must run inside the click gesture or the popup is blocked, so this is
+   called before any DOM rendering. noopener deliberately hides the window
+   handle, so a null return tells us nothing and we do not test for it. */
+function submitToForm(r){
+  if(!FORM_BASE) return false;
+  try{
+    const url=new URL(FORM_BASE);
+    Object.entries(FIELDS).forEach(([k,id])=>{
+      if(!id || id.indexOf("XXXX")>=0) return;
+      const v=r[k];
+      if(v==null||String(v).trim()==="") return;
+      url.searchParams.set(id,String(v));
+    });
+    window.open(url.toString(),"_blank","noopener,noreferrer");
+    return true;
+  }catch(err){
+    console.error("form open failed; the bag is still saved locally.",err);
+    return false;
+  }
+}
+function toast(msg){
+  const t=$("okToast"); t.textContent=msg; t.hidden=false;
+  setTimeout(()=>{t.hidden=true;},7000);
+}
 function openForm(){
   const b=getBatch(); if(!b.length) return;
   if(!FORM_BASE){ alert("No form URL is set. See the SPREADSHEET HERE block in this file."); return; }
-  const r=b[b.length-1];
-  const url=new URL(FORM_BASE);
-  Object.entries(FIELDS).forEach(([k,id])=>{
-    if(!id || id.indexOf("XXXX")>=0) return;
-    const v=r[k];
-    if(v==null||String(v).trim()==="") return;
-    url.searchParams.set(id,String(v));
-  });
-  window.open(url.toString(),"_blank","noopener,noreferrer");
+  submitToForm(b[b.length-1]);
 }
 
 /* ---------- printing ---------- */
@@ -857,25 +913,32 @@ function printCards(){
   const html = b.map(r=>{
     const sigs = [r.sig_1,r.sig_2,r.sig_3].filter(Boolean);
     const choices = sigs.map(s=>`<div class="sigChoice"><span class="checkBox"></span>${esc(s)}</div>`).join("");
-    const common = `
-      <div class="medBig">${esc(r.med_name)}</div>
-      <div class="medMeta">${esc(r.med_strength)} · ${esc(r.qty_in_bag)} in bag</div>
-      <div class="pGrid">
-        <div class="pCell"><b>Bag</b>${esc(r.bag_id)}</div>
-        <div class="pCell"><b>Box / lot / expiry</b>box ${esc(r.box_number)} · ${esc(r.med_lot)} · ${esc(r.med_exp_ym)}</div>
-      </div>
-      <div class="blankLine">Patient: <span></span></div>
-      <div class="sigLabel">DIRECTIONS — tick one or write your own</div>
-      ${choices}
-      <div class="writeSig"><b>Or write directions:</b><div class="writeLines"></div></div>
+    const signLine = `
       <div class="docSignGrid">
         <div>Physician<div class="u"></div><div class="k">SIGNATURE</div></div>
         <div>Date<div class="u"></div><div class="k">TODAY</div></div>
-      </div>
+      </div>`;
+    // Print name / License are the physician's record and were crowding
+    // the 4.25in patient panel, so they print on that half only.
+    const licenceLine = `
       <div class="docSignGrid">
         <div>Print name<div class="u"></div><div class="k">NAME</div></div>
         <div>License<div class="u"></div><div class="k">NPI / LIC</div></div>
       </div>`;
+    const body = ids => `
+      <div class="medBig">${esc(r.med_name)}</div>
+      <div class="medMeta">${esc(r.med_strength)} · ${esc(r.qty_in_bag)} in bag</div>
+      ${ids}
+      <div class="blankLine">Patient: <span></span></div>
+      <div class="sigLabel">DIRECTIONS — tick one or write your own</div>
+      ${choices}
+      <div class="writeSig"><b>Or write directions:</b><div class="writeLines"></div></div>`;
+    const idsGrid = `
+      <div class="pGrid">
+        <div class="pCell"><b>Bag</b>${esc(r.bag_id)}</div>
+        <div class="pCell"><b>Box / lot / expiry</b>box ${esc(r.box_number)} · ${esc(r.med_lot)} · ${esc(r.med_exp_ym)}</div>
+      </div>`;
+    const idsLine = `<div class="pCell" style="margin-top:.08in;"><b>Bag / box / expiry</b>${esc(r.bag_id)} · box ${esc(r.box_number)} · ${esc(r.med_exp_ym)}</div>`;
     return `<section class="carePage">
       <div class="cutLine"></div><div class="cutTag">CUT HERE</div>
       <div class="doctorHalf">
@@ -883,16 +946,18 @@ function printCards(){
         <div class="pKick">labelsig2 · retain this half</div>
         <div class="pInstr">Complete at the encounter: patient, directions, signature, license, date</div>
         <div class="pRule"></div>
-        ${common}
+        ${body(idsGrid)}
+        ${signLine}
+        ${licenceLine}
         <div class="traceBox"><b>Retain this copy.</b> Not valid unless signed and dated at the time of the encounter. Bag ID, box and lot tie this record to the bag that was handed over.</div>
       </div>
       <div class="patientHalf">
         <div class="patientPanel patientFront">
           <div class="pTitle">FOR YOU</div>
-          <div class="pKick">keep this card inside the bag</div>
           <div class="pRule"></div>
-          ${common}
-          <div class="smallBottom">Phone numbers for help are on the other side after folding.</div>
+          ${body(idsLine)}
+          ${signLine}
+          <div class="smallBottom">Phone numbers for help are on the other side of this card.</div>
         </div>
         <div class="foldTag">FOLD HERE · PRINTED SIDES OUT</div>
         <div class="patientPanel patientBack">${help}</div>
