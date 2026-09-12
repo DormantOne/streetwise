@@ -7,7 +7,26 @@
 <title>labelsig2 · package bags</title>
 <!--
   labelsig2 — street medicine bag packaging + sticker/receipt printing
-  v2.3.0
+  v2.4.0
+
+  CHANGED IN 2.4.0
+  ------------------------------------------------------------------
+  · THE SHEET IS NOW ONE ROW PER RUN, not per bag. A Google Form submits
+    exactly one row per open, so twelve bags could only ever mean twelve
+    tabs. A run shares everything except the index, so one row carrying
+    run_id, bag_count and bag_ids is lossless — and it is the better unit
+    anyway, because a recall is per-lot and a lot maps to a run.
+    Packaging now always opens the form, whether that is 1 bag or 40.
+  · qr_link on the run row is the LAST bag's link.
+  · Joining back from a handout scan: LEFT(bag_id,FIND("-",bag_id)-1)
+    turns 14EDD00-7 into 14EDD00, which matches run_id.
+  · Fields clear after Package — only "Prepared by" is kept. Carrying a
+    lot number forward onto a different product is exactly the error that
+    matters, so a fresh slate is the safer default. The QR previews are
+    NOT cleared, since those bags may not be printed yet; they have their
+    own clear button.
+  · A fresh Bag ID is drawn every time the app opens, and nothing you
+    typed last session is restored.
 
   CHANGED IN 2.3.0
   ------------------------------------------------------------------
@@ -275,7 +294,7 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 </section>
 
 <section class="card">
-  <div class="sectionTitle"><span>Medication</span><button class="tinyBtn" id="newMedBtn" type="button">clear medication</button></div>
+  <div class="sectionTitle"><span>Medication</span><button class="tinyBtn" id="newMedBtn" type="button">clear fields</button></div>
   <label class="lbl" for="medName">Name</label>
   <input id="medName" placeholder="Acetaminophen" autocomplete="off" />
   <div class="grid2" style="margin-top:6px;">
@@ -302,7 +321,7 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 
 <section class="card">
   <button class="mainBtn" id="packageBtn">Package</button>
-  <div class="note">Everything stays on screen afterwards and a fresh ID is drawn, so a run of the same bag is just tapping again. Use <strong>clear medication</strong> when you switch product.</div>
+  <div class="note">Packaging freezes a QR for every bag, opens the form with one row for the whole run, then clears the fields and draws a fresh Bag ID. Only <strong>Prepared by</strong> is kept. The QR previews below are not cleared — those bags may not be printed yet.</div>
 </section>
 
 <section class="card">
@@ -321,10 +340,10 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
     <button class="tinyBtn dangerTinyBtn" id="clearBatchBtn">clear all</button>
   </div>
   <div id="formRow" class="miniRow" style="margin-top:6px;" hidden>
-    <button class="tinyBtn" id="openFormBtn">send newest bag to form</button>
+    <button class="tinyBtn" id="openFormBtn">re-send newest run to form</button>
   </div>
   <div id="qrList" class="qrList"></div>
-  <div class="note">For a run of bags, download the CSV and paste it into the sheet once. The form opens one tab per bag, so it only makes sense for one-offs.</div>
+  <div class="note">One sheet row per run, matching the form exactly. The CSV holds the same rows if you would rather paste than submit.</div>
 </section>
 
 </main>
@@ -337,36 +356,53 @@ button:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 "use strict";
 
 /* ══════════════════════ SPREADSHEET HERE ══════════════════════
-   PACKAGING form + sheet. 14 fields, all prefilled by this app.
+   PACKAGING form + sheet. ONE ROW PER RUN, 16 fields, all prefilled.
 
    Form:  labelsig2 · packaging log
-   Every question is Short answer except sig_1..3 and bag_note
-   (Paragraph). Nothing required, no validation, no email collection.
+   Short answer everywhere except sig_1..3 and bag_note (Paragraph).
+   Nothing required, no validation, no email collection.
 
-   Google's own Timestamp takes column A, so these land in B..O:
-     B box_number   C bag_id       D prep_date    E prepared_by
-     F med_name     G med_strength H qty_in_bag   I med_lot
-     J med_exp_ym   K sig_1        L sig_2        M sig_3
-     N bag_note     O qr_link
+   A Google Form writes one row per open, so a run of 12 bags cannot be
+   12 rows without 12 tabs. A run shares everything but the index, so
+   run_id + bag_count + bag_ids carries it losslessly in one row.
 
-   BEFORE THE FIRST SUBMISSION: format column J as PLAIN TEXT, or Sheets
+   Google's Timestamp takes column A, so these land in B..Q:
+     B box_number  C run_id      D bag_count   E bag_ids
+     F prep_date   G prepared_by H med_name    I med_strength
+     J qty_in_bag  K med_lot     L med_exp_ym
+     M sig_1       N sig_2       O sig_3       P bag_note   Q qr_link
+
+   BEFORE THE FIRST SUBMISSION: format column L as PLAIN TEXT, or Sheets
    reads "2027-09" as a date by locale and you lose it.
 
-   Derived in the sheet rather than stored here:
-     expiry status  =IF(J2="","",LET(d,DATE(LEFT(J2,4),MID(J2,6,2),1),
+   NOTE: adding questions to an already-linked form appends the new
+   columns at the far right rather than in question order. Delete and
+   re-link the response sheet after editing so B..Q line up.
+
+   Derived in the sheet rather than stored:
+     expiry status  =IF(L2="","",LET(d,DATE(LEFT(L2,4),MID(L2,6,2),1),
                        IF(d<TODAY(),"EXPIRED",
                        IF(d<EDATE(TODAY(),2),"soon","in date"))))
-     run / group    =LEFT(C2,FIND("-",C2)-1)
-     index in run   =MID(C2,FIND("-",C2)+1,9)
-     sig count      =COUNTA(K2:M2)
+     bags packaged  =SUM(D:D)
 
-   C (bag_id) is the join key to the HANDOUT sheet.
+   Joining from the HANDOUT sheet, whose bag_id is its column D:
+     run           =LEFT($D2,FIND("-",$D2)-1)
+     lot           =IFERROR(VLOOKUP(LEFT($D2,FIND("-",$D2)-1),
+                     PACKAGING!$C:$L,9,FALSE),"")
+     expiry        =IFERROR(VLOOKUP(LEFT($D2,FIND("-",$D2)-1),
+                     PACKAGING!$C:$L,10,FALSE),"")
 */
 const FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSdSFlnAap79zEGJQhBxBN5ePmBqzH2J6SDfVDFBVMTv--RQtg/viewform?usp=pp_url";
 
+/* All 16 verified against a prefilled link on 2026-09-12. Renaming a
+   question in Google Forms keeps its entry ID, so bag_ids still uses the
+   1447357313 it had as bag_id, and re-harvesting confirmed all fourteen
+   carried-over ids unchanged and in the same positions. */
 const FIELDS = {
   box_number:   "entry.312830123",
-  bag_id:       "entry.1447357313",
+  run_id:       "entry.2093457263",
+  bag_count:    "entry.298347115",
+  bag_ids:      "entry.1447357313",    // was bag_id, same id after rename
   prep_date:    "entry.553703619",
   prepared_by:  "entry.165089887",
   med_name:     "entry.357053853",
@@ -382,12 +418,13 @@ const FIELDS = {
 };
 
 const COLUMNS = [
-  "box_number","bag_id","prep_date","prepared_by","med_name","med_strength",
-  "qty_in_bag","med_lot","med_exp_ym","sig_1","sig_2","sig_3","bag_note","qr_link"
+  "box_number","run_id","bag_count","bag_ids","prep_date","prepared_by",
+  "med_name","med_strength","qty_in_bag","med_lot","med_exp_ym",
+  "sig_1","sig_2","sig_3","bag_note","qr_link"
 ];
 /* ════════════════════ END SPREADSHEET HERE ════════════════════ */
 
-const APP_VERSION = "labelsig2 2.3.0";
+const APP_VERSION = "labelsig2 2.4.0";
 const DEFAULT_RESOLVER = "https://dormantone.github.io/streetwise/scanbag2.html";
 const MAKE_MAX = 60;
 
@@ -397,8 +434,8 @@ const MAKE_MAX = 60;
 const ID_EPOCH_SEC = Date.UTC(2026,0,1) / 1000;
 
 const K = {
-  resolver:"ls2_resolver_v1", by:"ls2_by_v1", box:"ls2_box_v1",
-  cur:"ls2_current_v3", batch:"ls2_batch_v3", base:"ls2_base_v1"
+  resolver:"ls2_resolver_v1", by:"ls2_by_v1",
+  batch:"ls2_batch_v4", base:"ls2_base_v2"
 };
 
 /* ---------- storage that actually falls back ---------- */
@@ -454,7 +491,7 @@ function freshBase(){
   if(secs < 1) secs = 1;
   let base = secs.toString(16).toUpperCase();
   // Guard against two runs inside the same second on this device.
-  const used = new Set(getBatch().map(r=>r.batch_group_id));
+  const used = new Set(getBatch().map(r=>r.run_id));
   while(used.has(base)){ secs += 1; base = secs.toString(16).toUpperCase(); }
   return base;
 }
@@ -577,24 +614,23 @@ function helpHtml(){
 }
 
 /* ---------- current form state ---------- */
-const CUR = ["boxNumber","bagCount","medName","medStrength","qtyInBag",
-             "medLot","medExp","bagNote","sig1","sig2","sig3"];
-function saveCurrent(){
-  const o={}; CUR.forEach(id=>o[id]=$(id).value);
-  store.set(K.cur, JSON.stringify(o));
-  store.set(K.by, $("preparedBy").value.trim());
-  store.set(K.box, $("boxNumber").value.trim());
+/* Nothing typed survives a reload or a Package. Only the resolver URL
+   and "Prepared by" persist. Carrying a lot number forward onto a
+   different product is the error that actually matters. */
+const CLEARABLE = ["boxNumber","medName","medStrength","medLot","medExp","bagNote",
+                   "sig1","sig2","sig3"];
+function clearFields(){
+  CLEARABLE.forEach(id=>$(id).value="");
+  $("bagCount").value = "1";
+  $("qtyInBag").value = "10";
+  $("sigSlot2").hidden = true; $("sigSlot3").hidden = true; $("addSigBtn").hidden = false;
+  echoExp();
 }
-function loadCurrent(){
+function loadSetup(){
   $("resolverUrl").value = store.get(K.resolver) || DEFAULT_RESOLVER;
   $("preparedBy").value = store.get(K.by) || "";
-  let c=null; try{ c=JSON.parse(store.get(K.cur)||"null"); }catch{}
-  if(c) CUR.forEach(id=>{ if(c[id]!=null && c[id]!=="") $(id).value=c[id]; });
-  if(!$("boxNumber").value.trim()) $("boxNumber").value = "1";
-  if(!$("bagCount").value.trim())  $("bagCount").value  = "1";
-  if(!$("qtyInBag").value.trim())  $("qtyInBag").value   = "10";
-  syncSigSlots();
-  echoExp();
+  clearFields();
+  rotateBase();          // a fresh Bag ID every time the app opens
   renderIdPreview();
   $("resolverLink").href = resolverBase();
 }
@@ -680,9 +716,9 @@ function buildRecord(f, base, index, size){
     sig_1: f.sigs[0]||"", sig_2: f.sigs[1]||"", sig_3: f.sigs[2]||"",
     sig_count: f.sigs.length,         // internal: batch list display only
     bag_note: f.bag_note,
-    batch_group_id: base,             // internal: run grouping + base guard
-    batch_index: index,
-    batch_size: size
+    run_id: base,
+    bag_index: index,
+    bag_count: size
   };
   r.qr_link = qrLink(r);              // frozen at commit; never recomputed
   return r;
@@ -708,35 +744,43 @@ function packageRun(){
   }
   if(!added.length) return;
 
-  // Single bag: open the prefilled form now, while still inside the click
-  // gesture, the way v1 did. A run would be one tab per bag, so it isn't.
-  let opened = false;
-  if(added.length===1) opened = submitToForm(added[0]);
+  // One row per run, so this is a single form open whether that is 1 bag
+  // or 40. Must happen inside the click gesture or the popup is blocked.
+  const runRow = {
+    box_number: f.box_number,
+    run_id: base,
+    bag_count: added.length,
+    bag_ids: added.length===1 ? added[0].bag_id
+                              : added[0].bag_id+" to "+added[added.length-1].bag_id,
+    prep_date: added[0].prep_date,
+    prepared_by: f.prepared_by,
+    med_name: f.med_name,
+    med_strength: f.med_strength,
+    qty_in_bag: f.qty_in_bag,
+    med_lot: f.med_lot,
+    med_exp_ym: f.med_exp_ym,
+    sig_1: added[0].sig_1, sig_2: added[0].sig_2, sig_3: added[0].sig_3,
+    bag_note: f.bag_note,
+    qr_link: added[added.length-1].qr_link   // last bag, as specified
+  };
+  const opened = submitToForm(runRow);
 
   setBatch(batch.concat(added));
   rotateBase();            // next run gets a fresh, unused base
-  saveCurrent();
+  clearFields();           // keep only "Prepared by"; QR previews stay
   renderIdPreview();
   renderList();
   const top = $("qrList").firstElementChild;
   if(top) top.scrollIntoView({behavior:"smooth",block:"nearest"});
 
-  if(added.length===1){
-    toast(opened
-      ? "Bag "+added[0].bag_id+" packaged and QR frozen. The form opened in a new tab — submit it there."
-      : "Bag "+added[0].bag_id+" packaged and QR frozen, but the form could not open. Use download CSV.");
-  }else{
-    toast(added.length+" bags packaged and QRs frozen. The form is not opened for a run — tap download CSV and paste it into the sheet once.");
-  }
+  const what = added.length===1 ? "1 bag ("+runRow.bag_ids+")"
+                                : added.length+" bags ("+runRow.bag_ids+")";
+  toast(opened
+    ? what+" packaged, QRs frozen, fields cleared. The form opened in a new tab — submit it there."
+    : what+" packaged and QRs frozen, but the form could not open. Use download CSV instead.");
 }
 
-function clearMedication(){
-  if(!confirm("Clear the medication, lot, expiry, note and SIG options?")) return;
-  ["medName","medStrength","medLot","medExp","bagNote","sig1","sig2","sig3"].forEach(id=>$(id).value="");
-  $("qtyInBag").value="10";
-  $("sigSlot2").hidden=true; $("sigSlot3").hidden=true; $("addSigBtn").hidden=false;
-  echoExp(); saveCurrent(); $("medName").focus();
-}
+function clearMedication(){ clearFields(); $("medName").focus(); }
 
 function removeItem(id){
   const b=getBatch(), r=b.find(x=>x.record_id===id);
@@ -765,9 +809,9 @@ function renderList(){
   el.innerHTML = "";
   let lastGroup = null;
   [...b].reverse().forEach(r=>{
-    if(r.batch_group_id !== lastGroup){
-      lastGroup = r.batch_group_id;
-      const siblings = b.filter(x=>x.batch_group_id===lastGroup);
+    if(r.run_id !== lastGroup){
+      lastGroup = r.run_id;
+      const siblings = b.filter(x=>x.run_id===lastGroup);
       const h = document.createElement("div");
       h.className = "groupHead";
       h.textContent = siblings.length>1
@@ -794,8 +838,40 @@ function renderList(){
     btn.addEventListener("click",()=>removeItem(btn.getAttribute("data-del"))));
 }
 
+/* ---------- run-level rows ----------
+   The batch stays per-bag, because every bag needs its own sticker, card
+   and QR. The sheet is one row per run, so run rows are derived from the
+   batch rather than stored twice. qr_link is the LAST bag's link. */
+function runRecords(){
+  const byRun = new Map();
+  getBatch().forEach(r=>{
+    if(!byRun.has(r.run_id)) byRun.set(r.run_id, []);
+    byRun.get(r.run_id).push(r);
+  });
+  return [...byRun.values()].map(bags=>{
+    bags.sort((a,b)=>(a.bag_index||0)-(b.bag_index||0));
+    const first = bags[0], last = bags[bags.length-1];
+    return {
+      box_number: first.box_number,
+      run_id: first.run_id,
+      bag_count: bags.length,
+      bag_ids: bags.length===1 ? first.bag_id : first.bag_id+" to "+last.bag_id,
+      prep_date: first.prep_date,
+      prepared_by: first.prepared_by,
+      med_name: first.med_name,
+      med_strength: first.med_strength,
+      qty_in_bag: first.qty_in_bag,
+      med_lot: first.med_lot,
+      med_exp_ym: first.med_exp_ym,
+      sig_1: first.sig_1, sig_2: first.sig_2, sig_3: first.sig_3,
+      bag_note: first.bag_note,
+      qr_link: last.qr_link
+    };
+  });
+}
+
 /* ---------- export ---------- */
-function rowsOut(){ return getBatch().map(r=>COLUMNS.map(c=>r[c]==null?"":r[c])); }
+function rowsOut(){ return runRecords().map(r=>COLUMNS.map(c=>r[c]==null?"":r[c])); }
 function csvCell(v){ v=String(v==null?"":v); return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function toCSV(){
   return COLUMNS.map(csvCell).join(",")+"\r\n"+rowsOut().map(r=>r.map(csvCell).join(",")).join("\r\n");
@@ -844,9 +920,9 @@ function toast(msg){
   setTimeout(()=>{t.hidden=true;},7000);
 }
 function openForm(){
-  const b=getBatch(); if(!b.length) return;
+  const runs=runRecords(); if(!runs.length) return;
   if(!FORM_BASE){ alert("No form URL is set. See the SPREADSHEET HERE block in this file."); return; }
-  submitToForm(b[b.length-1]);
+  submitToForm(runs[runs.length-1]);
 }
 
 /* ---------- printing ---------- */
@@ -985,8 +1061,7 @@ $("toggleSetupBtn").addEventListener("click",()=>{
   body.hidden=!body.hidden; b.textContent=body.hidden?"show":"hide";
 });
 
-CUR.forEach(id=>$(id).addEventListener("input",saveCurrent));
-$("preparedBy").addEventListener("input",saveCurrent);
+$("preparedBy").addEventListener("input",()=>store.set(K.by,$("preparedBy").value.trim()));
 $("medExp").addEventListener("input",echoExp);
 $("bagCount").addEventListener("input",renderIdPreview);
 $("sig2").addEventListener("blur",syncSigSlots);
@@ -997,7 +1072,7 @@ $("resolverUrl").addEventListener("input",()=>{
 });
 
 $("formRow").hidden = !FORM_BASE;
-loadCurrent();
+loadSetup();
 qrReady();
 renderList();
 </script>
