@@ -1,0 +1,352 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>StreetLocker</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; padding:18px;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:linear-gradient(155deg,#0b1016,#172434 62%,#0f171f);
+    color:#f3f7fa;
+  }
+  .wrap{width:min(560px,100%);margin:0 auto}
+  h1{font-size:31px;margin:4px 0 12px}
+  .card{
+    background:#151d27;
+    border:1px solid #2d3b4a;
+    border-radius:20px;
+    padding:18px;
+    margin:12px 0;
+    box-shadow:0 16px 45px rgba(0,0,0,.24);
+  }
+  h2{font-size:18px;margin:0 0 12px}
+  label{display:block;margin:13px 0 6px;font-weight:750}
+  input[type=email],input[type=text],textarea,input[type=file]{
+    width:100%; padding:13px 14px; border-radius:13px;
+    border:1px solid #3a4b5d; background:#0c141d; color:#fff; font:inherit;
+  }
+  textarea{min-height:82px;resize:vertical}
+  .cats{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:9px;
+  }
+  .cat{
+    border:1px solid #38516a; background:#1a2939; color:#e9f2f8;
+    border-radius:13px; padding:13px 10px; font:inherit; font-weight:750; cursor:pointer;
+  }
+  .cat.active{background:#f3f7fa;color:#10161d;border-color:#f3f7fa}
+  button.action{
+    width:100%; margin-top:12px; border:0; border-radius:15px;
+    padding:15px 16px; background:#f3f7fa; color:#10161d;
+    font:inherit; font-weight:850; cursor:pointer;
+  }
+  button.secondary{background:#223249;color:#eef6fb;border:1px solid #3a526b}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .preview{
+    display:none; width:100%; max-height:270px; object-fit:contain;
+    margin-top:12px; border-radius:13px; background:#091018;
+  }
+  .index{
+    white-space:pre-wrap; word-break:break-word;
+    background:#0a1118; border:1px solid #263747; border-radius:13px;
+    padding:13px; color:#dceaf5;
+    font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+    font-size:12px; line-height:1.5;
+  }
+  .finder{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .finder button{
+    border:1px solid #354a5f; background:#182737; color:#e6eff6;
+    border-radius:12px; padding:11px 8px; font:inherit; font-weight:700; cursor:pointer;
+  }
+  .tiny{font-size:12px;color:#8394a5;line-height:1.45}
+  #status{min-height:22px;margin-top:11px;color:#aab8c6;font-size:13px}
+  .hidden{display:none!important}
+  details.share{padding:0;overflow:hidden}
+  details.share summary{
+    list-style:none; cursor:pointer; padding:15px 18px;
+    font-weight:850; text-align:center;
+  }
+  details.share summary::-webkit-details-marker{display:none}
+  details.share summary::after{content:" ▾";font-weight:400;color:#8fa2b4}
+  details.share[open] summary::after{content:" ▴"}
+  .sharebody{padding:0 18px 18px;text-align:center}
+  .qr{
+    width:188px; max-width:72%; background:white;
+    padding:9px; border-radius:14px; display:block; margin:4px auto 8px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>StreetLocker</h1>
+
+  <!--
+  PRIVACY / ARCHITECTURE NOTE:
+  StreetLocker is intentionally stateless.
+  It does not persist the user's email address, note, selected file, or other entered information.
+  No localStorage, cookies, IndexedDB, database, analytics, or server upload are used by this page.
+  Entered information exists only in the active browser tab.
+  -->
+
+  <details class="card share">
+    <summary>Share StreetLocker</summary>
+    <div class="sharebody">
+      <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATgAAAE4AQAAAADnBNLHAAACCElEQVR4nO1aXYvDMAyTjvv/f1n3IOWjD+sGB4sLzmBrV0Fr40SSGwofjZ/PYI1rXOO+iPsFQB8KAChQFAVC25XqcZzMXzIHMIeiCJGaV8rHcTR/I3GiLnlcV8rHcTZ/czhdIgBip+bqcZTApdgIgPzifR+Mc/250kwalOBfas3j6nEczd+sNeeM8gzer1SP4xSOF/9BcwhFEdgXwOpxnMQRIEjQhRfdIoBdfx/hGLb1midzSLRMqOQRcRzCRTNPs0GQEmAiYeu/Nzjz7PgQgGQyhsYC+YQ4TuFEiF7sGPMGZPKOSfyEOE7g4t8GX3jVs//I99nnq46jgOgVKxcg6nnUn31c9TgO4wTJE5iewyAkE0uF5yuNI0hG/C3LlkTy/PNVxkGSJv9iErGLb51Uj+No/WURBCBxqpgkkN0/vRnU+g5VMA3AmUR2//4Wx3gODserFF6Wwubfe9wUesqJ9Us6gO1/3+Hsd500IO7NxEu0/32Lc+VJ6RWI8R7Wg63/7sbya1gvP7L2cf5ZP46z/Jtjm+BQbnr5EdXV4zjZPxjVp/TtCYlTubT/vRv7/gPOFx8bIav7V3dj338wDMelA0ip9fPrse8/4KIMM8n2Gq56HBVwYt4iceyBGbauxvPVxaXVFxlo75baU9ff3dj3HwzDO3duWLyw8/d6XPcffO++jWtc4/6P+wMa1Plq2YFu/gAAAABJRU5ErkJggg==" alt="QR code for StreetLocker">
+      <div class="tiny">https://dormantone.github.io/streetwise/streetlocker.html</div>
+    </div>
+  </details>
+
+  <section class="card">
+    <h2>1. Email to myself</h2>
+    <label for="selfEmail">My email address</label>
+    <input id="selfEmail" type="email" autocomplete="off" placeholder="me@example.com">
+    <div class="tiny">Not saved by StreetLocker.</div>
+  </section>
+
+  <section class="card">
+    <h2>2. What kind of record?</h2>
+
+    <div class="cats">
+      <button class="cat" data-key="IDENTIFICATION">Identification</button>
+      <button class="cat" data-key="CASE MANAGEMENT">Case Management</button>
+      <button class="cat" data-key="HEALTH NOTES">Health Notes</button>
+      <button class="cat" data-key="HOUSING">Housing</button>
+      <button class="cat" data-key="SUPPORT">Support / Services</button>
+      <button class="cat" data-key="OTHER">Other</button>
+    </div>
+
+    <div id="otherWrap" class="hidden">
+      <label for="otherLabel">What is the “Other” record?</label>
+      <input id="otherLabel" type="text" autocomplete="off"
+             placeholder="Example: Legal, transportation, employment">
+    </div>
+
+    <label for="note">Note to self</label>
+    <textarea id="note" autocomplete="off"
+      placeholder="Example: Call Monday. Ask about the housing application."></textarea>
+  </section>
+
+  <section class="card">
+    <h2>3. Optional photo or document</h2>
+    <input id="fileInput" type="file"
+      accept="image/*,.pdf,.txt,.doc,.docx"
+      capture="environment">
+    <img id="preview" class="preview" alt="Selected image preview">
+    <div class="tiny" style="margin-top:8px">
+      On many phones this can open the camera. StreetLocker does not upload the file.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Index</h2>
+    <div id="indexPreview" class="index">Choose a category.</div>
+
+    <button id="emailBtn" class="action" disabled>Email note to myself</button>
+    <button id="shareFileBtn" class="action secondary" disabled>Share photo + index</button>
+
+    <div id="status"></div>
+  </section>
+
+  <section class="card">
+    <h2>Find something later</h2>
+    <div class="finder">
+      <button data-find="IDENTIFICATION">Identification</button>
+      <button data-find="CASE MANAGEMENT">Case Management</button>
+      <button data-find="HEALTH NOTES">Health Notes</button>
+      <button data-find="HOUSING">Housing</button>
+      <button data-find="SUPPORT">Support / Services</button>
+      <button data-find="OTHER">Other</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const STREETLOCKER_URL = 'https://dormantone.github.io/streetwise/streetlocker.html';
+
+  // Intentionally no localStorage, cookies, IndexedDB, service worker, or server upload.
+  const $ = id => document.getElementById(id);
+
+  const selfEmail = $('selfEmail');
+  const note = $('note');
+  const otherWrap = $('otherWrap');
+  const otherLabel = $('otherLabel');
+  const fileInput = $('fileInput');
+  const preview = $('preview');
+  const indexPreview = $('indexPreview');
+  const emailBtn = $('emailBtn');
+  const shareFileBtn = $('shareFileBtn');
+  const status = $('status');
+
+  let category = '';
+  let selectedFile = null;
+  let previewUrl = null;
+
+  function validEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  }
+
+  function clean(v) {
+    return v.trim().replace(/\s+/g,' ');
+  }
+
+  function dateText() {
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function searchKey(cat) {
+    return `STREETLOCKER ${cat}`;
+  }
+
+  function subjectText() {
+    if (!category) return '';
+    if (category === 'OTHER' && clean(otherLabel.value)) {
+      return `${searchKey('OTHER')} | ${clean(otherLabel.value)}`;
+    }
+    return searchKey(category);
+  }
+
+  function buildIndex() {
+    if (!category) return '';
+
+    const lines = [
+      `INDEX: ${searchKey(category)}`
+    ];
+
+    if (category === 'OTHER' && clean(otherLabel.value)) {
+      lines.push(`OTHER: ${clean(otherLabel.value)}`);
+    }
+
+    lines.push(`DATE: ${dateText()}`);
+
+    if (clean(note.value)) {
+      lines.push(`NOTE TO SELF: ${clean(note.value)}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  function update() {
+    indexPreview.textContent = buildIndex() || 'Choose a category.';
+
+    emailBtn.disabled = !(category && validEmail(selfEmail.value));
+    shareFileBtn.disabled = !(category && selectedFile);
+
+    if (selfEmail.value.trim() && !validEmail(selfEmail.value)) {
+      status.textContent = 'Check the email address.';
+    } else {
+      status.textContent = '';
+    }
+  }
+
+  document.querySelectorAll('.cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      category = btn.dataset.key;
+
+      if (category === 'OTHER') {
+        otherWrap.classList.remove('hidden');
+      } else {
+        otherWrap.classList.add('hidden');
+        otherLabel.value = '';
+      }
+
+      update();
+    });
+  });
+
+  [selfEmail, note, otherLabel].forEach(el => el.addEventListener('input', update));
+
+  fileInput.addEventListener('change', () => {
+    selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    preview.style.display = 'none';
+
+    if (selectedFile && selectedFile.type.startsWith('image/')) {
+      previewUrl = URL.createObjectURL(selectedFile);
+      preview.src = previewUrl;
+      preview.style.display = 'block';
+    }
+
+    update();
+  });
+
+  emailBtn.addEventListener('click', () => {
+    const to = selfEmail.value.trim();
+    const subject = subjectText();
+    const body =
+`${buildIndex()}
+
+StreetLocker:
+${STREETLOCKER_URL}`;
+
+    window.location.href =
+      `mailto:${encodeURIComponent(to)}` +
+      `?subject=${encodeURIComponent(subject)}` +
+      `&body=${encodeURIComponent(body)}`;
+  });
+
+  shareFileBtn.addEventListener('click', async () => {
+    if (!selectedFile || !category) return;
+
+    const text =
+`${buildIndex()}
+
+StreetLocker:
+${STREETLOCKER_URL}`;
+
+    try {
+      if (navigator.canShare && navigator.canShare({files:[selectedFile]})) {
+        await navigator.share({
+          files:[selectedFile],
+          title:subjectText(),
+          text
+        });
+
+        status.textContent = validEmail(selfEmail.value)
+          ? `Choose Mail/Gmail and send it to ${selfEmail.value.trim()}.`
+          : 'Choose your email app and send it to yourself.';
+      } else {
+        status.textContent =
+          'This browser cannot share local files. Use “Email note to myself” and attach the file in your mail app.';
+      }
+    } catch (err) {
+      status.textContent =
+        err && err.name === 'AbortError'
+          ? 'Share canceled.'
+          : 'Could not open the share sheet.';
+    }
+  });
+
+  document.querySelectorAll('[data-find]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const q = searchKey(btn.dataset.find);
+
+      try {
+        await navigator.clipboard.writeText(q);
+      } catch (_) {}
+
+      window.open(
+        'https://mail.google.com/mail/u/0/#search/' + encodeURIComponent(q),
+        '_blank',
+        'noopener,noreferrer'
+      );
+    });
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
