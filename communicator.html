@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0056b3">
+    <meta name="color-scheme" content="light only">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Communicator">
@@ -188,8 +190,58 @@
             width: 100%;
         }
     </style>
+    <style>
+        /* ===== Mobile & cross-device fixes (layout only, app behavior unchanged) ===== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; height: 100%; }
+        /* Size the app to the screen you can actually see. "100vh" is taller than the visible
+           area on Android Chrome and iPhone Safari (browser bars), which hid the bottom of the
+           form/messages and made the page scroll twice. dvh = the real visible height. */
+        body { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
+        .app-header {
+            flex: none; gap: 12px;
+            padding: calc(10px + env(safe-area-inset-top)) max(15px, env(safe-area-inset-right)) 10px max(15px, env(safe-area-inset-left));
+        }
+        .app-header > div:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .share-btn { flex: none; min-height: 44px; padding: 8px 14px; font-size: 15px; white-space: nowrap; touch-action: manipulation; }
+        .share-btn:active { background-color: rgba(255, 255, 255, 0.32); }
+        .tab-bar { flex: none; position: relative; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+        .tab-button { min-height: 52px; padding: 12px 6px; line-height: 1.2; touch-action: manipulation; }
+        .tab-button:active { background-color: #f3f6fa; }
+        .tab-content {
+            flex: 1 1 auto; min-height: 0; height: auto; width: 100%;
+            overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+            padding: 15px max(15px, env(safe-area-inset-right)) calc(15px + env(safe-area-inset-bottom)) max(15px, env(safe-area-inset-left));
+        }
+        /* Send tab: the form fills the rest of the screen and scrolls on its own (one scroll, not two) */
+        #send.tab-content.active { display: flex; flex-direction: column; }
+        #send .warning-banner { flex: none; }
+        #send .iframe-container { flex: 1 1 auto; height: auto; min-height: 300px; margin-bottom: 0; }
+        .message-time { color: #666; font-size: 13px; }
+        .message-body { line-height: 1.45; overflow-wrap: anywhere; }
+        /* Share popup scrolls instead of being cut off on short / landscape screens */
+        .modal-overlay {
+            align-items: flex-start; overflow-y: auto; overscroll-behavior: contain;
+            padding: max(20px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+        }
+        .modal-content { margin: auto; }
+        .close-btn { min-height: 48px; touch-action: manipulation; }
+        .close-btn:active { filter: brightness(0.9); }
+        :focus-visible { outline: 3px solid #0056b3; outline-offset: 2px; }
+        .app-header :focus-visible { outline-color: #fff; }
+        @media (max-width: 360px) { .tab-button { font-size: 15px; } .app-header { font-size: 17px; } }
+    </style>
 </head>
 <body>
+    <script>
+        /* Layout helper only: older browsers without "dvh" units get the real visible screen height. */
+        (function () {
+            if (window.CSS && CSS.supports && CSS.supports('height', '100dvh')) return;
+            function fit() { document.body.style.height = window.innerHeight + 'px'; }
+            fit();
+            window.addEventListener('resize', fit);
+            window.addEventListener('orientationchange', fit);
+        })();
+    </script>
     <div class="app-header">
         <div>Communicator</div>
         <button class="share-btn" onclick="toggleShare(true)">🔗 Share App</button>
