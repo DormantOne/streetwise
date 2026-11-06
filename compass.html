@@ -3,8 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d0e0a">
+<meta name="color-scheme" content="dark only">
 <title>FIELD RECEIVER MK-II · SHELTER BEACON</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -615,6 +616,70 @@
     .panel-val{font-size:15px}
     .title-main{font-size:13px}
     .beacon-btn{width:80px}
+  }
+</style>
+<style>
+  /* ===== Mobile & cross-device fixes (layout + readability only, receiver logic unchanged) ===== */
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  :root{--text-faint:#98875f}            /* labels were #5a4e34 (about 2:1 contrast); now about 4.6:1 */
+  body{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  button,a,[role=button],summary{touch-action:manipulation}
+  :focus-visible{outline:2px solid var(--amber-hot);outline-offset:2px}
+
+  /* RESOURCES bar: title stays on one line at every phone width (its arrows were wrapping onto separate lines) */
+  .access-bar{padding:16px 12px 14px}
+  .access-bar-main{white-space:nowrap;font-size:clamp(15px,5.4vw,22px);letter-spacing:clamp(.06em,.9vw,.18em)}
+  .access-bar-arrow{margin:0 .3em}
+  .access-bar-sub{font-size:clamp(10.5px,3.1vw,12px);letter-spacing:.12em;text-wrap:balance}
+  .share-btn{width:clamp(76px,22vw,96px)}
+  @media (max-width:345px){.access-bar-main,.access-bar-sub{letter-spacing:.06em}.access-bar{padding-left:10px;padding-right:10px}}
+  /* GPS accuracy value stays together ("± 18m" was splitting across two lines) */
+  .density-row .panel-val{flex:0 0 auto;white-space:nowrap}
+
+  /* readable minimum text sizes (were 9-10px) */
+  .title-sub{font-size:11px}
+  .ser{font-size:10.5px}
+  .panel-label{font-size:11px;letter-spacing:.16em}
+  .panel-sub{font-size:11.5px;line-height:1.35}
+  .beacon-meta{font-size:12px;line-height:1.4}
+  .beacon-btn-label{font-size:10.5px}
+  .density-tag{font-size:11px}
+  .activate-note{font-size:12px}
+  .activate-warn{font-size:11px}
+  .log{font-size:11.5px;height:96px}
+  .btn{font-size:12px;min-height:46px;color:#a8843c}   /* dim amber buttons were about 3:1 */
+  .footer{font-size:10.5px}
+
+  /* lighter on phones: the full-screen blend-mode grain layer and the fixed background
+     both repaint on every scroll frame on Android; the scanlines stay */
+  @media (hover:none),(pointer:coarse){
+    body{background-attachment:scroll}
+    body::before{display:none}
+  }
+  /* same shine sweep, moved with transform instead of "left" (no layout work every frame) */
+  .access-bar::before{left:0;animation-name:sweep-shine-gpu}
+  @keyframes sweep-shine-gpu{0%{transform:translateX(-116.7%)}60%{transform:translateX(200%)}100%{transform:translateX(200%)}}
+  /* compass box stays square on older iPhones without aspect-ratio support */
+  @supports not (aspect-ratio:1/1){.compass-wrap{height:min(calc(100vw - 24px),380px)}}
+
+  /* resources view */
+  #resourcesView{color-scheme:light;overscroll-behavior:contain;
+    padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+  .res-app .res-back{min-height:46px}
+  .res-app .res-badge{-webkit-backdrop-filter:blur(8px)}
+  .res-app details summary{display:block;padding:12px 0;line-height:20px}
+  .res-app .res-item-title,.res-app .res-item-meta,.res-app .res-details-box,.res-app .res-small,.res-app .res-big-name{overflow-wrap:anywhere}
+
+  /* share QR popup: square image at every width, scrolls instead of being cut off */
+  #qrOverlay{-webkit-backdrop-filter:blur(6px);align-items:flex-start;overflow-y:auto;overscroll-behavior:contain;
+    padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+  #qrCard{margin:auto}
+  #qrImg{width:min(260px,100%);height:auto;aspect-ratio:1/1}
+  @media (max-width:360px){#qrCard{padding:18px}}
+
+  @media (prefers-reduced-motion:reduce){
+    .access-bar,.activate-btn,.sweep,.led.on,.state-readout.lock,.state-readout.arrived,.res-aurora,.res-light{animation:none!important}
+    .access-bar::before{display:none}
   }
 </style>
 </head>
