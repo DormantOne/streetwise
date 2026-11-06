@@ -623,6 +623,12 @@
   html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   :root{--text-faint:#98875f}            /* labels were #5a4e34 (about 2:1 contrast); now about 4.6:1 */
   body{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+  /* Finger scrolling: "overflow-x:hidden" on both html and body turned the body into its own
+     (non-scrolling) scroll box, and its "overscroll-behavior:none" then swallowed every swipe,
+     so the page could not be scrolled on phones. clip trims sideways overflow without making a
+     scroll box; overscroll auto on body lets swipes reach the page on older browsers too.
+     html keeps overscroll none, so pull-to-refresh stays off as before. */
+  body{overflow-x:clip;overscroll-behavior:auto}
   button,a,[role=button],summary{touch-action:manipulation}
   :focus-visible{outline:2px solid var(--amber-hot);outline-offset:2px}
 
