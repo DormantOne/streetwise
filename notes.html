@@ -665,7 +665,6 @@
         <span id="namesTitle">Names</span>
         <div class="miniActions">
           <button class="tinyBtn" id="toggleNamesBtn">show</button>
-          <button class="tinyBtn" id="demoBtn">demo names</button>
         </div>
       </div>
       <div id="names" class="names collapsed"></div>
@@ -757,6 +756,34 @@
       "https://overpass.private.coffee/api/interpreter"
     ];
 
+    // The browser's storage can be missing or blocked (file previews such as the one in the Claude app,
+    // some private windows, blocked site data). The app then keeps everything in memory so every button
+    // still works; nothing survives closing the page in that case.
+    const appStorage = (() => {
+      const memory = new Map();
+      let real = null;
+      try {
+        real = window.localStorage;
+        real.setItem("street_memory_probe", "1");
+        real.removeItem("street_memory_probe");
+      } catch { real = null; }
+      return {
+        persistent: !!real,
+        getItem(key) {
+          if (memory.has(key)) return memory.get(key);
+          try { return real ? real.getItem(key) : null; } catch { return null; }
+        },
+        setItem(key, value) {
+          try { if (real) { real.setItem(key, value); memory.delete(key); return; } } catch {}
+          memory.set(key, String(value));
+        },
+        removeItem(key) {
+          memory.delete(key);
+          try { if (real) real.removeItem(key); } catch {}
+        }
+      };
+    })();
+
     let selected = "";
     let selectedActions = new Set();
     let namesExpanded = false;
@@ -782,7 +809,7 @@
     // Each name is stored with the time it was added, so it can erase itself after 24 hours.
     function getNameEntries() {
       try {
-        const raw = JSON.parse(localStorage.getItem(NAMES_KEY) || "[]");
+        const raw = JSON.parse(appStorage.getItem(NAMES_KEY) || "[]");
         return (Array.isArray(raw) ? raw : [])
           .map(entry => typeof entry === "string" ? { name: entry, savedAt: Date.now() } : entry) // older saves had no time
           .filter(entry => entry && typeof entry.name === "string" && entry.name);
@@ -793,22 +820,22 @@
 
     function saveNames(names) {
       const addedAt = new Map(getNameEntries().map(entry => [entry.name, entry.savedAt]));
-      localStorage.setItem(NAMES_KEY, JSON.stringify(names.map(name => ({ name, savedAt: addedAt.get(name) || Date.now() }))));
+      appStorage.setItem(NAMES_KEY, JSON.stringify(names.map(name => ({ name, savedAt: addedAt.get(name) || Date.now() }))));
     }
 
     function getHistory() {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+      try { return JSON.parse(appStorage.getItem(HISTORY_KEY) || "[]"); }
       catch { return []; }
     }
 
-    function saveHistory(history) { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
+    function saveHistory(history) { appStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
 
     function getRoutePath() {
-      try { return JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]"); }
+      try { return JSON.parse(appStorage.getItem(ROUTE_KEY) || "[]"); }
       catch { return []; }
     }
 
-    function saveRoutePath() { localStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
+    function saveRoutePath() { appStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
 
     // HIPAA: nobody types a name. "＋ New person" assigns a made-up unisex name from this list, in a
     // shuffled order, and no name comes up a second time until all 40 have been used.
@@ -831,14 +858,14 @@
 
     function assignMadeUpName() {
       let saved = {};
-      try { saved = JSON.parse(localStorage.getItem(NAME_DECK_KEY) || "{}") || {}; } catch {}
+      try { saved = JSON.parse(appStorage.getItem(NAME_DECK_KEY) || "{}") || {}; } catch {}
       let left = Array.isArray(saved.left) ? saved.left.filter(n => MADE_UP_NAMES.includes(n)) : [];
       if (!left.length) {
         left = shuffled(MADE_UP_NAMES); // every name has been used: start a new round
         if (left[0] === saved.last) left.push(left.shift()); // no back-to-back repeat across rounds
       }
       const base = left.shift();
-      localStorage.setItem(NAME_DECK_KEY, JSON.stringify({ left, last: base }));
+      appStorage.setItem(NAME_DECK_KEY, JSON.stringify({ left, last: base }));
       // more than 40 people within 24 hours: number the repeat so two people never share a name
       const inUse = new Set(getNames());
       let name = base;
@@ -852,6 +879,8 @@
       selected = name;
       namesExpanded = false;
       render();
+      // bring the assigned name (and the action buttons under it) into view on small screens
+      document.getElementById("selectedName").scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
 
     function chooseName(name) {
@@ -879,22 +908,22 @@
     }
 
     function getUserName() {
-      return (localStorage.getItem(USER_KEY) || document.getElementById("userNameInput").value || "").trim();
+      return (appStorage.getItem(USER_KEY) || document.getElementById("userNameInput").value || "").trim();
     }
 
     function saveUserName() {
       const value = document.getElementById("userNameInput").value.trim();
-      if (value) localStorage.setItem(USER_KEY, value);
+      if (value) appStorage.setItem(USER_KEY, value);
       renderUserName();
     }
 
     function loadUserName() {
-      document.getElementById("userNameInput").value = localStorage.getItem(USER_KEY) || "";
+      document.getElementById("userNameInput").value = appStorage.getItem(USER_KEY) || "";
       renderUserName();
     }
 
     function renderUserName(editing = false) {
-      const saved = localStorage.getItem(USER_KEY) || "";
+      const saved = appStorage.getItem(USER_KEY) || "";
       const userSet = document.getElementById("userSet");
       const userShown = document.getElementById("userShown");
       const userNameSmall = document.getElementById("userNameSmall");
@@ -982,23 +1011,16 @@
       render();
     }
 
-    function loadCandyDemo() {
-      const names = ["Mika", "Sunny", "Jo", "Rae", "Teddy", "Blue", "Sam", "Nina", "Kai", "Lulu"];
-      saveNames(names);
-      selected = names[0];
-      render();
-    }
-
     function clearNames() {
-      if (!confirm("Clear stored demo names?")) return;
-      localStorage.removeItem(NAMES_KEY);
+      if (!confirm("Clear all stored names?")) return;
+      appStorage.removeItem(NAMES_KEY);
       selected = "";
       render();
     }
 
     function clearHistory() {
       if (!confirm("Clear all stored demo history?")) return;
-      localStorage.removeItem(HISTORY_KEY);
+      appStorage.removeItem(HISTORY_KEY);
       render();
     }
 
@@ -1174,14 +1196,14 @@
     }
 
     function getLastLocation() {
-      try { return JSON.parse(localStorage.getItem(LAST_LOCATION_KEY) || "null"); }
+      try { return JSON.parse(appStorage.getItem(LAST_LOCATION_KEY) || "null"); }
       catch { return null; }
     }
 
-    function saveLastLocation(point) { localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(point)); }
+    function saveLastLocation(point) { appStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(point)); }
 
     function getLastStreet() {
-      const raw = localStorage.getItem(LAST_STREET_KEY);
+      const raw = appStorage.getItem(LAST_STREET_KEY);
       if (!raw) return null;
       try {
         const saved = JSON.parse(raw);
@@ -1191,8 +1213,8 @@
     }
 
     function saveLastStreet(value) {
-      if (value) localStorage.setItem(LAST_STREET_KEY, JSON.stringify({ value, savedAt: Date.now() }));
-      else localStorage.removeItem(LAST_STREET_KEY);
+      if (value) appStorage.setItem(LAST_STREET_KEY, JSON.stringify({ value, savedAt: Date.now() }));
+      else appStorage.removeItem(LAST_STREET_KEY);
     }
 
     function loadLastStreet() {
@@ -1215,7 +1237,7 @@
 
       const names = getNameEntries();
       const keptNames = names.filter(entry => isFresh(entry.savedAt, now));
-      localStorage.setItem(NAMES_KEY, JSON.stringify(keptNames)); // also time-stamps names saved by the older version
+      appStorage.setItem(NAMES_KEY, JSON.stringify(keptNames)); // also time-stamps names saved by the older version
       if (keptNames.length !== names.length) {
         changed = true;
         if (selected && !keptNames.some(entry => entry.name === selected)) selected = "";
@@ -1238,18 +1260,18 @@
 
       const last = getLastLocation();
       if (last && !isFresh(last.timestamp, now)) {
-        localStorage.removeItem(LAST_LOCATION_KEY);
+        appStorage.removeItem(LAST_LOCATION_KEY);
         changed = true;
       }
 
       const street = getLastStreet();
       if (street && !isFresh(street.savedAt, now)) {
-        localStorage.removeItem(LAST_STREET_KEY);
+        appStorage.removeItem(LAST_STREET_KEY);
         streetInput.value = "";
         streetWasAuto = true;
         changed = true;
       } else if (street) {
-        localStorage.setItem(LAST_STREET_KEY, JSON.stringify(street)); // also time-stamps an older save
+        appStorage.setItem(LAST_STREET_KEY, JSON.stringify(street)); // also time-stamps an older save
       }
 
       return changed;
@@ -1266,14 +1288,15 @@
       }
       setMapExpanded(true);
       setLocationStatus("Getting current location...");
-      navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+      // a tap on "locate" always looks up cross streets fresh
+      navigator.geolocation.getCurrentPosition(position => updateLocation(position, true), handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
     }
 
     function toggleTracking() {
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
-        localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+        appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
         document.getElementById("gpsTrackBtn").textContent = "track";
         setLocationStatus("Route tracking stopped. Saved route remains until clear route is pressed.");
         return;
@@ -1283,7 +1306,7 @@
         return;
       }
       setMapExpanded(true);
-      localStorage.setItem(TRACKING_WAS_ON_KEY, "true");
+      appStorage.setItem(TRACKING_WAS_ON_KEY, "true");
       document.getElementById("gpsTrackBtn").textContent = "stop";
       setLocationStatus("Tracking route...");
       watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
@@ -1298,12 +1321,12 @@
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
-        localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+        appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
         document.getElementById("gpsTrackBtn").textContent = "track";
       }
     }
 
-    function updateLocation(position) {
+    function updateLocation(position, forceStreets = false) {
       const point = {
         lat: position.coords.latitude,
         lon: position.coords.longitude,
@@ -1312,9 +1335,10 @@
       };
       saveLastLocation(point);
       addRoutePoint(point);
-      updateMap(point);
       setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Estimating cross streets...`);
-      maybeUpdateStreetEstimate(point);
+      // start the cross-street lookup before touching the map, so a map problem can never hold it up
+      maybeUpdateStreetEstimate(point, forceStreets);
+      try { updateMap(point); } catch (err) { console.warn("Map update failed:", err); }
     }
 
     function addRoutePoint(point) {
@@ -1440,10 +1464,10 @@
     function clearRoute() {
       if (!confirm("Clear local route memory and last GPS/cross-street estimate?")) return;
       routePath = [];
-      localStorage.removeItem(ROUTE_KEY);
-      localStorage.removeItem(LAST_LOCATION_KEY);
-      localStorage.removeItem(LAST_STREET_KEY);
-      localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+      appStorage.removeItem(ROUTE_KEY);
+      appStorage.removeItem(LAST_LOCATION_KEY);
+      appStorage.removeItem(LAST_STREET_KEY);
+      appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
@@ -1461,9 +1485,8 @@
 
     function shouldGeocode(point, force = false) {
       if (force) return true;
-      const now = Date.now();
-      if (!lastGeocodePoint) return true;
-      if (now - lastGeocodeAt < 15000) return false;
+      if (Date.now() - lastGeocodeAt < 15000) return false;
+      if (!lastGeocodePoint) return true; // first lookup, or the last one failed: try again
       return calculateDistance(lastGeocodePoint.lat, lastGeocodePoint.lon, point.lat, point.lon) > 25;
     }
 
@@ -1502,6 +1525,7 @@
         }
       } catch (err) {
         console.warn(err);
+        lastGeocodePoint = null; // lets the next GPS update (15 s on) try again
         setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Street lookup failed; type it manually.`);
       } finally {
         streetLookupBusy = false;
@@ -1742,7 +1766,6 @@
     }
 
     document.getElementById("addNameBtn").addEventListener("click", addName);
-    document.getElementById("demoBtn").addEventListener("click", loadCandyDemo);
     document.getElementById("toggleNamesBtn").addEventListener("click", toggleNames);
     document.getElementById("saveBtn").addEventListener("click", openFormAndLog);
     document.getElementById("clearNamesBtn").addEventListener("click", clearNames);
@@ -1780,6 +1803,9 @@
     // 24-hour wipe: on open, every minute, and when the app comes back on screen
     // (phones pause timers while the browser is in the background).
     wipeExpired();
+    if (!appStorage.persistent) {
+      document.querySelector(".wipeNote").textContent = "This view can't save: names and notes last only until it closes. Open the app from its web link to keep them for 24 h.";
+    }
     setInterval(wipeAndRefresh, 60 * 1000);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") wipeAndRefresh(); });
     window.addEventListener("pageshow", wipeAndRefresh);
