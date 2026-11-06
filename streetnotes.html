@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="light only" />
   <title>Street Memory</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css'" />
 
   <style>
     :root {
@@ -595,6 +595,12 @@
     /* Safari: keep the map's rounded corners clipping the map tiles */
     #map { isolation: isolate; }
 
+    /* the name rule sits above the add-name box so it is always visible, even while typing */
+    .nameRule { display: block; margin: 0 2px 8px; color: var(--muted); font-size: .9rem; font-weight: 900; line-height: 1.25; }
+    .nameRule strong { color: var(--ink); font-weight: 1000; }
+    .newPersonBtn { width: 100%; font-size: 1.1rem; }
+    .wipeNote { margin-top: 8px; text-align: center; color: var(--muted); font-size: .78rem; font-weight: 850; line-height: 1.25; }
+
     @media (prefers-reduced-motion: reduce) {
       button, .demoToast { transition: none; }
       button:active { transform: none; }
@@ -609,7 +615,7 @@
   </div>
 
   <div class="demoToast" id="demoToast" aria-live="polite">
-    Demo only — do not enter private medical information. Route memory stays local on this device/browser. The form receives only name, notes, user, and the street/cross-street field.
+    Demo only — do not enter private medical information. For HIPAA: each person gets a made-up name from the app, and notes say just what was provided — no names or other identifiers. Names, notes and route stay on this device and erase themselves 24 hours after saving. The form receives only name, notes (with the GPS estimate), user, and the street/cross-street field.
   </div>
 
   <main class="app">
@@ -650,10 +656,8 @@
     </section>
 
     <section class="card">
-      <div class="row">
-        <input id="newName" placeholder="Add first name" autocomplete="off" />
-        <button class="addBtn" id="addNameBtn" aria-label="Add name">＋</button>
-      </div>
+      <div class="nameRule"><strong>Made-up names only (HIPAA)</strong> · the app assigns one, never a real name</div>
+      <button class="addBtn newPersonBtn" id="addNameBtn" type="button">＋ New person</button>
     </section>
 
     <section class="card">
@@ -661,7 +665,6 @@
         <span id="namesTitle">Names</span>
         <div class="miniActions">
           <button class="tinyBtn" id="toggleNamesBtn">show</button>
-          <button class="tinyBtn" id="demoBtn">demo names</button>
         </div>
       </div>
       <div id="names" class="names collapsed"></div>
@@ -680,7 +683,7 @@
 
       <div id="actionWords" class="actionWords">No action selected</div>
 
-      <textarea id="whatDid" placeholder="Optional note"></textarea>
+      <textarea id="whatDid" placeholder="Optional note — just what was provided. No names or other identifiers (HIPAA)."></textarea>
       <div style="height: 10px"></div>
       <button class="mainBtn" id="saveBtn">Save + open form</button>
     </section>
@@ -694,6 +697,7 @@
       <div class="bottomRow">
         <button class="ghostBtn" id="clearNamesBtn">clear names</button>
       </div>
+      <div class="wipeNote">Names, notes and route erase themselves 24 h after saving.</div>
     </section>
   </main>
 
@@ -720,11 +724,65 @@
     const LAST_STREET_KEY = "street_memory_demo_last_street_v1";
     const TRACKING_WAS_ON_KEY = "street_memory_demo_tracking_was_on_v1";
 
+    // Names, notes, route and last location/street erase themselves 24 hours after they were saved.
+    // The check runs when the app opens, every minute while it is open, and when it comes back on screen.
+    // (Your own user name is kept.)
+    const KEEP_MS = 24 * 60 * 60 * 1000;
+
     // QR shares the blank app only. It must never include names, notes, actions, user identity, route, or GPS data.
     const APP_SHARE_URL = "";
     const GEOCODER_EMAIL = "";
     const DEFAULT_MAP_LAT = 40.4406;
     const DEFAULT_MAP_LON = -79.9959;
+
+    // Base map: OpenFreeMap — free, no API key, no sign-up, no usage limits, and it doesn't need the
+    // Referer header that gets OpenStreetMap's own tiles blocked. It draws with MapLibre (WebGL), loaded
+    // the first time the map opens. Without WebGL or OpenFreeMap, the app falls back to OpenStreetMap tiles.
+    const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+    const OPENFREEMAP_CREDIT = '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">&copy; OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+    // Map libraries come from unpkg, with jsDelivr as a backup if unpkg is down or blocked on this network.
+    const CDNS = ["https://unpkg.com/", "https://cdn.jsdelivr.net/npm/"];
+    const LEAFLET_CSS = "leaflet@1.9.4/dist/leaflet.css";
+    const LEAFLET_JS = "leaflet@1.9.4/dist/leaflet.js";
+    const MAPLIBRE_CSS = "maplibre-gl@5.24.0/dist/maplibre-gl.css";
+    const MAPLIBRE_JS = "maplibre-gl@5.24.0/dist/maplibre-gl.js";
+    const MAPLIBRE_LEAFLET_JS = "@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js";
+
+    // Cross streets come from free public Overpass servers (OpenStreetMap data), tried in order.
+    // Roads around you are fetched once and reused while you stay within ~150 m, so walking
+    // doesn't trip the servers' rate limits.
+    const OVERPASS_SERVERS = [
+      "https://overpass-api.de/api/interpreter",
+      "https://overpass.private.coffee/api/interpreter"
+    ];
+
+    // The browser's storage can be missing or blocked (file previews such as the one in the Claude app,
+    // some private windows, blocked site data). The app then keeps everything in memory so every button
+    // still works; nothing survives closing the page in that case.
+    const appStorage = (() => {
+      const memory = new Map();
+      let real = null;
+      try {
+        real = window.localStorage;
+        real.setItem("street_memory_probe", "1");
+        real.removeItem("street_memory_probe");
+      } catch { real = null; }
+      return {
+        persistent: !!real,
+        getItem(key) {
+          if (memory.has(key)) return memory.get(key);
+          try { return real ? real.getItem(key) : null; } catch { return null; }
+        },
+        setItem(key, value) {
+          try { if (real) { real.setItem(key, value); memory.delete(key); return; } } catch {}
+          memory.set(key, String(value));
+        },
+        removeItem(key) {
+          memory.delete(key);
+          try { if (real) real.removeItem(key); } catch {}
+        }
+      };
+    })();
 
     let selected = "";
     let selectedActions = new Set();
@@ -739,41 +797,90 @@
     let lastGeocodeAt = 0;
     let lastGeocodePoint = null;
     let streetWasAuto = true;
+    let baseLayer = null;
+    let mapLibsLoading = null;
+    let roadCache = null;
+    let streetLookupBusy = false;
+    const overpassRestUntil = {};
 
     const locationStatus = document.getElementById("locationStatus");
     const streetInput = document.getElementById("streetInput");
 
-    function getNames() {
-      try { return JSON.parse(localStorage.getItem(NAMES_KEY) || "[]"); }
-      catch { return []; }
+    // Each name is stored with the time it was added, so it can erase itself after 24 hours.
+    function getNameEntries() {
+      try {
+        const raw = JSON.parse(appStorage.getItem(NAMES_KEY) || "[]");
+        return (Array.isArray(raw) ? raw : [])
+          .map(entry => typeof entry === "string" ? { name: entry, savedAt: Date.now() } : entry) // older saves had no time
+          .filter(entry => entry && typeof entry.name === "string" && entry.name);
+      } catch { return []; }
     }
 
-    function saveNames(names) { localStorage.setItem(NAMES_KEY, JSON.stringify(names)); }
+    function getNames() { return getNameEntries().map(entry => entry.name); }
+
+    function saveNames(names) {
+      const addedAt = new Map(getNameEntries().map(entry => [entry.name, entry.savedAt]));
+      appStorage.setItem(NAMES_KEY, JSON.stringify(names.map(name => ({ name, savedAt: addedAt.get(name) || Date.now() }))));
+    }
 
     function getHistory() {
-      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+      try { return JSON.parse(appStorage.getItem(HISTORY_KEY) || "[]"); }
       catch { return []; }
     }
 
-    function saveHistory(history) { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
+    function saveHistory(history) { appStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
 
     function getRoutePath() {
-      try { return JSON.parse(localStorage.getItem(ROUTE_KEY) || "[]"); }
+      try { return JSON.parse(appStorage.getItem(ROUTE_KEY) || "[]"); }
       catch { return []; }
     }
 
-    function saveRoutePath() { localStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
+    function saveRoutePath() { appStorage.setItem(ROUTE_KEY, JSON.stringify(routePath.slice(-700))); }
+
+    // HIPAA: nobody types a name. "＋ New person" assigns a made-up unisex name from this list, in a
+    // shuffled order, and no name comes up a second time until all 40 have been used.
+    const MADE_UP_NAMES = [
+      "Alex", "Ari", "Avery", "Bailey", "Blake", "Cameron", "Casey", "Charlie", "Dakota", "Drew",
+      "Eden", "Elliot", "Emerson", "Finley", "Frankie", "Harper", "Hayden", "Jamie", "Jesse", "Jordan",
+      "Jules", "Kai", "Kendall", "Lane", "Logan", "Marley", "Morgan", "Noel", "Parker", "Peyton",
+      "Quinn", "Reese", "Remy", "Riley", "River", "Robin", "Rowan", "Sage", "Skyler", "Taylor"
+    ];
+    const NAME_DECK_KEY = "street_memory_demo_name_deck_v1"; // names not yet used in this round (no personal data)
+
+    function shuffled(list) {
+      const out = list.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    }
+
+    function assignMadeUpName() {
+      let saved = {};
+      try { saved = JSON.parse(appStorage.getItem(NAME_DECK_KEY) || "{}") || {}; } catch {}
+      let left = Array.isArray(saved.left) ? saved.left.filter(n => MADE_UP_NAMES.includes(n)) : [];
+      if (!left.length) {
+        left = shuffled(MADE_UP_NAMES); // every name has been used: start a new round
+        if (left[0] === saved.last) left.push(left.shift()); // no back-to-back repeat across rounds
+      }
+      const base = left.shift();
+      appStorage.setItem(NAME_DECK_KEY, JSON.stringify({ left, last: base }));
+      // more than 40 people within 24 hours: number the repeat so two people never share a name
+      const inUse = new Set(getNames());
+      let name = base;
+      for (let n = 2; inUse.has(name); n++) name = `${base} ${n}`;
+      return name;
+    }
 
     function addName() {
-      const input = document.getElementById("newName");
-      const name = input.value.trim();
-      if (!name) return;
-      const names = getNames();
-      if (!names.includes(name)) names.push(name);
-      saveNames(names);
-      input.value = "";
+      const name = assignMadeUpName();
+      saveNames([...getNames(), name]);
       selected = name;
+      namesExpanded = false;
       render();
+      // bring the assigned name (and the action buttons under it) into view on small screens
+      document.getElementById("selectedName").scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
 
     function chooseName(name) {
@@ -801,22 +908,22 @@
     }
 
     function getUserName() {
-      return (localStorage.getItem(USER_KEY) || document.getElementById("userNameInput").value || "").trim();
+      return (appStorage.getItem(USER_KEY) || document.getElementById("userNameInput").value || "").trim();
     }
 
     function saveUserName() {
       const value = document.getElementById("userNameInput").value.trim();
-      if (value) localStorage.setItem(USER_KEY, value);
+      if (value) appStorage.setItem(USER_KEY, value);
       renderUserName();
     }
 
     function loadUserName() {
-      document.getElementById("userNameInput").value = localStorage.getItem(USER_KEY) || "";
+      document.getElementById("userNameInput").value = appStorage.getItem(USER_KEY) || "";
       renderUserName();
     }
 
     function renderUserName(editing = false) {
-      const saved = localStorage.getItem(USER_KEY) || "";
+      const saved = appStorage.getItem(USER_KEY) || "";
       const userSet = document.getElementById("userSet");
       const userShown = document.getElementById("userShown");
       const userNameSmall = document.getElementById("userNameSmall");
@@ -866,21 +973,8 @@
     }
 
     function openFormAndLog() {
-      const input = document.getElementById("newName");
-      const typedName = input.value.trim();
-
-      if (typedName && typedName !== selected) {
-        const names = getNames();
-        if (!names.includes(typedName)) {
-          names.push(typedName);
-          saveNames(names);
-        }
-        selected = typedName;
-        input.value = "";
-      }
-
       if (!selected) {
-        alert("Choose or type a name first.");
+        alert("Tap “＋ New person” or choose a name first.");
         return;
       }
 
@@ -917,23 +1011,16 @@
       render();
     }
 
-    function loadCandyDemo() {
-      const names = ["Mika", "Sunny", "Jo", "Rae", "Teddy", "Blue", "Sam", "Nina", "Kai", "Lulu"];
-      saveNames(names);
-      selected = names[0];
-      render();
-    }
-
     function clearNames() {
-      if (!confirm("Clear stored demo names?")) return;
-      localStorage.removeItem(NAMES_KEY);
+      if (!confirm("Clear all stored names?")) return;
+      appStorage.removeItem(NAMES_KEY);
       selected = "";
       render();
     }
 
     function clearHistory() {
       if (!confirm("Clear all stored demo history?")) return;
-      localStorage.removeItem(HISTORY_KEY);
+      appStorage.removeItem(HISTORY_KEY);
       render();
     }
 
@@ -1105,22 +1192,93 @@
       const toast = document.getElementById("demoToast");
       toast.classList.add("active");
       clearTimeout(demoToastTimer);
-      demoToastTimer = setTimeout(() => toast.classList.remove("active"), 4300);
+      demoToastTimer = setTimeout(() => toast.classList.remove("active"), 6500);
     }
 
     function getLastLocation() {
-      try { return JSON.parse(localStorage.getItem(LAST_LOCATION_KEY) || "null"); }
+      try { return JSON.parse(appStorage.getItem(LAST_LOCATION_KEY) || "null"); }
       catch { return null; }
     }
 
-    function saveLastLocation(point) { localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(point)); }
+    function saveLastLocation(point) { appStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(point)); }
+
+    function getLastStreet() {
+      const raw = appStorage.getItem(LAST_STREET_KEY);
+      if (!raw) return null;
+      try {
+        const saved = JSON.parse(raw);
+        if (saved && typeof saved.value === "string") return saved;
+      } catch {}
+      return { value: raw, savedAt: Date.now() }; // saved by the older version, which kept no time
+    }
+
+    function saveLastStreet(value) {
+      if (value) appStorage.setItem(LAST_STREET_KEY, JSON.stringify({ value, savedAt: Date.now() }));
+      else appStorage.removeItem(LAST_STREET_KEY);
+    }
 
     function loadLastStreet() {
-      const saved = localStorage.getItem(LAST_STREET_KEY) || "";
-      if (saved) {
-        streetInput.value = saved;
+      const saved = getLastStreet();
+      if (saved && saved.value) {
+        streetInput.value = saved.value;
         streetWasAuto = true;
       }
+    }
+
+    function isFresh(time, now) {
+      const t = typeof time === "number" ? time : Date.parse(time);
+      return Number.isFinite(t) && now - t < KEEP_MS;
+    }
+
+    // Erases anything saved more than 24 hours ago. Returns true if something was erased.
+    function wipeExpired() {
+      const now = Date.now();
+      let changed = false;
+
+      const names = getNameEntries();
+      const keptNames = names.filter(entry => isFresh(entry.savedAt, now));
+      appStorage.setItem(NAMES_KEY, JSON.stringify(keptNames)); // also time-stamps names saved by the older version
+      if (keptNames.length !== names.length) {
+        changed = true;
+        if (selected && !keptNames.some(entry => entry.name === selected)) selected = "";
+      }
+
+      const history = getHistory();
+      const keptHistory = history.filter(item => isFresh(item.timestamp, now));
+      if (keptHistory.length !== history.length) {
+        saveHistory(keptHistory);
+        changed = true;
+      }
+
+      const keptRoute = routePath.filter(point => isFresh(point.timestamp, now));
+      if (keptRoute.length !== routePath.length) {
+        routePath = keptRoute;
+        saveRoutePath();
+        if (routeLine) routeLine.setLatLngs(routePath.map(p => [p.lat, p.lon]));
+        changed = true;
+      }
+
+      const last = getLastLocation();
+      if (last && !isFresh(last.timestamp, now)) {
+        appStorage.removeItem(LAST_LOCATION_KEY);
+        changed = true;
+      }
+
+      const street = getLastStreet();
+      if (street && !isFresh(street.savedAt, now)) {
+        appStorage.removeItem(LAST_STREET_KEY);
+        streetInput.value = "";
+        streetWasAuto = true;
+        changed = true;
+      } else if (street) {
+        appStorage.setItem(LAST_STREET_KEY, JSON.stringify(street)); // also time-stamps an older save
+      }
+
+      return changed;
+    }
+
+    function wipeAndRefresh() {
+      if (wipeExpired()) render();
     }
 
     function startLocationOnce() {
@@ -1130,14 +1288,15 @@
       }
       setMapExpanded(true);
       setLocationStatus("Getting current location...");
-      navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+      // a tap on "locate" always looks up cross streets fresh
+      navigator.geolocation.getCurrentPosition(position => updateLocation(position, true), handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
     }
 
     function toggleTracking() {
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
-        localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+        appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
         document.getElementById("gpsTrackBtn").textContent = "track";
         setLocationStatus("Route tracking stopped. Saved route remains until clear route is pressed.");
         return;
@@ -1147,7 +1306,7 @@
         return;
       }
       setMapExpanded(true);
-      localStorage.setItem(TRACKING_WAS_ON_KEY, "true");
+      appStorage.setItem(TRACKING_WAS_ON_KEY, "true");
       document.getElementById("gpsTrackBtn").textContent = "stop";
       setLocationStatus("Tracking route...");
       watchId = navigator.geolocation.watchPosition(updateLocation, handleLocationError, { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
@@ -1162,12 +1321,12 @@
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
-        localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+        appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
         document.getElementById("gpsTrackBtn").textContent = "track";
       }
     }
 
-    function updateLocation(position) {
+    function updateLocation(position, forceStreets = false) {
       const point = {
         lat: position.coords.latitude,
         lon: position.coords.longitude,
@@ -1176,9 +1335,10 @@
       };
       saveLastLocation(point);
       addRoutePoint(point);
-      updateMap(point);
       setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Estimating cross streets...`);
-      maybeUpdateStreetEstimate(point);
+      // start the cross-street lookup before touching the map, so a map problem can never hold it up
+      maybeUpdateStreetEstimate(point, forceStreets);
+      try { updateMap(point); } catch (err) { console.warn("Map update failed:", err); }
     }
 
     function addRoutePoint(point) {
@@ -1199,14 +1359,90 @@
         setLocationStatus("Map library did not load. Check internet connection, then reload.");
         return;
       }
-      map = L.map("map", { zoomControl: false, attributionControl: true }).setView([lat, lon], 16);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: "&copy; OpenStreetMap &copy; CARTO",
-        maxZoom: 20
-      }).addTo(map);
+      mapEl.innerHTML = ""; // clears a "did not load" message left by an earlier try
+      map = L.map("map", { zoomControl: false, attributionControl: true, maxZoom: 19 }).setView([lat, lon], 16);
+      addBaseMap();
       routeLine = L.polyline([], { color: "#ff4f8b", weight: 7, opacity: 0.72, lineCap: "round" }).addTo(map);
       currentMarker = L.circleMarker([lat, lon], { color: "#ffffff", weight: 3, fillColor: "#77c8ff", fillOpacity: 1, radius: 8 }).addTo(map);
       setTimeout(() => map.invalidateSize(true), 120);
+    }
+
+    function loadAsset(tag, attrs) {
+      return new Promise((resolve, reject) => {
+        const el = document.createElement(tag);
+        Object.assign(el, attrs);
+        el.onload = resolve;
+        el.onerror = () => reject(new Error("Could not load " + (attrs.src || attrs.href)));
+        document.head.appendChild(el);
+      });
+    }
+
+    // Loads a library file from the first CDN that answers.
+    function loadFromCdn(path) {
+      const tag = path.endsWith(".css") ? "link" : "script";
+      return CDNS.reduce((tried, cdn) => tried.catch(() =>
+        loadAsset(tag, tag === "link" ? { rel: "stylesheet", href: cdn + path } : { src: cdn + path })
+      ), Promise.reject());
+    }
+
+    function loadMapLibs() {
+      if (!mapLibsLoading) {
+        mapLibsLoading = Promise.all([
+          loadFromCdn(MAPLIBRE_CSS).catch(() => {}),
+          loadFromCdn(MAPLIBRE_JS).then(() => loadFromCdn(MAPLIBRE_LEAFLET_JS))
+        ]);
+      }
+      return mapLibsLoading;
+    }
+
+    function webglAvailable() {
+      try {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+        const lose = gl && gl.getExtension("WEBGL_lose_context");
+        if (lose) lose.loseContext();
+        return !!gl;
+      } catch { return false; }
+    }
+
+    function addBaseMap() {
+      const timeLimit = new Promise((_, reject) => setTimeout(() => reject(new Error("Map scripts took too long")), 15000));
+      Promise.resolve()
+        .then(() => { if (!webglAvailable()) throw new Error("WebGL is not available"); })
+        .then(() => Promise.race([loadMapLibs(), timeLimit]))
+        .then(() => {
+          if (!L.maplibreGL) throw new Error("MapLibre did not load");
+          const layer = L.maplibreGL({ style: OPENFREEMAP_STYLE, attributionControl: { customAttribution: OPENFREEMAP_CREDIT } });
+          baseLayer = layer;
+          layer.addTo(map);
+          const gl = layer.getMaplibreMap();
+          let styleLoaded = false;
+          gl.once("styledata", () => { styleLoaded = true; });
+          gl.on("error", event => { if (!styleLoaded) useOsmTiles(event && event.error); });
+          setTimeout(() => { if (!styleLoaded) useOsmTiles(new Error("OpenFreeMap did not answer")); }, 20000);
+        })
+        .catch(useOsmTiles);
+    }
+
+    function useOsmTiles(reason) {
+      if (baseLayer && baseLayer.isOsmFallback) return;
+      console.warn("Using OpenStreetMap tiles instead of OpenFreeMap:", reason);
+      if (baseLayer) {
+        try { map.removeLayer(baseLayer); }
+        catch { // a map layer that failed halfway through being added
+          map.off(baseLayer.getEvents(), baseLayer);
+          delete map._layers[L.stamp(baseLayer)];
+          if (baseLayer._container) baseLayer._container.remove();
+        }
+      }
+      // OpenStreetMap's tile policy requires the credit line and a Referer header, so this fallback
+      // only works when the app is opened from its web address, not as a local file.
+      baseLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      }).addTo(map);
+      baseLayer.isOsmFallback = true;
     }
 
     function renderRouteMapIfPossible() {
@@ -1228,10 +1464,10 @@
     function clearRoute() {
       if (!confirm("Clear local route memory and last GPS/cross-street estimate?")) return;
       routePath = [];
-      localStorage.removeItem(ROUTE_KEY);
-      localStorage.removeItem(LAST_LOCATION_KEY);
-      localStorage.removeItem(LAST_STREET_KEY);
-      localStorage.setItem(TRACKING_WAS_ON_KEY, "false");
+      appStorage.removeItem(ROUTE_KEY);
+      appStorage.removeItem(LAST_LOCATION_KEY);
+      appStorage.removeItem(LAST_STREET_KEY);
+      appStorage.setItem(TRACKING_WAS_ON_KEY, "false");
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
@@ -1242,15 +1478,15 @@
       renderLocationTitle();
       lastGeocodePoint = null;
       lastGeocodeAt = 0;
+      roadCache = null;
       if (routeLine) routeLine.setLatLngs([]);
       setLocationStatus("Local route memory cleared.");
     }
 
     function shouldGeocode(point, force = false) {
       if (force) return true;
-      const now = Date.now();
-      if (!lastGeocodePoint) return true;
-      if (now - lastGeocodeAt < 15000) return false;
+      if (Date.now() - lastGeocodeAt < 15000) return false;
+      if (!lastGeocodePoint) return true; // first lookup, or the last one failed: try again
       return calculateDistance(lastGeocodePoint.lat, lastGeocodePoint.lon, point.lat, point.lon) > 25;
     }
 
@@ -1265,17 +1501,19 @@
     }
 
     async function maybeUpdateStreetEstimate(point, force = false) {
+      if (streetLookupBusy) return; // one lookup at a time; the next GPS update picks up from here
       if (!shouldGeocode(point, force)) {
         const street = streetInput.value.trim();
         setLocationStatus(street ? `GPS acquired: ±${Math.round(point.accuracy || 0)}m. Cross streets: ${street}` : `GPS acquired: ±${Math.round(point.accuracy || 0)}m.`);
         return;
       }
+      streetLookupBusy = true;
       lastGeocodeAt = Date.now();
       lastGeocodePoint = point;
       try {
         const estimate = await estimateCrossStreets(point.lat, point.lon);
         if (estimate) {
-          localStorage.setItem(LAST_STREET_KEY, estimate);
+          saveLastStreet(estimate);
           if (streetWasAuto || !streetInput.value.trim() || force) {
             streetInput.value = estimate;
             streetWasAuto = true;
@@ -1287,19 +1525,28 @@
         }
       } catch (err) {
         console.warn(err);
+        lastGeocodePoint = null; // lets the next GPS update (15 s on) try again
         setLocationStatus(`GPS acquired: ±${Math.round(point.accuracy || 0)}m. Street lookup failed; type it manually.`);
+      } finally {
+        streetLookupBusy = false;
       }
     }
 
     async function estimateCrossStreets(lat, lon) {
-      const reverse = await reverseGeocode(lat, lon).catch(() => null);
+      // The address lookup and the nearby-roads lookup run side by side.
+      let reverseFailed = false;
+      let roadsFailed = false;
+      const [reverse, nearbyRoads] = await Promise.all([
+        reverseGeocode(lat, lon).catch(err => { console.warn(err); reverseFailed = true; return null; }),
+        nearbyNamedRoadsMultiRadius(lat, lon).catch(err => { console.warn(err); roadsFailed = true; return []; })
+      ]);
+      if (reverseFailed && roadsFailed) throw new Error("No street server answered");
       const primaryRoad = pickRoadName(reverse && reverse.address);
       const displayName = reverse && reverse.display_name ? reverse.display_name : "";
 
       // Greedy mode, intentionally closer to the older behavior:
       // pick the nearest two distinct named roads rather than over-validating angles.
       // This finds usable "cross streets" more often in messy GPS/OSM conditions.
-      const nearbyRoads = await nearbyNamedRoadsMultiRadius(lat, lon).catch(() => []);
       const distinct = distinctRoads(nearbyRoads);
 
       if (distinct.length >= 2) {
@@ -1339,30 +1586,64 @@
       url.searchParams.set("zoom", "18");
       url.searchParams.set("addressdetails", "1");
       if (GEOCODER_EMAIL) url.searchParams.set("email", GEOCODER_EMAIL);
-      const res = await fetch(url.toString(), { headers: { "Accept": "application/json" } });
-      if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
-      return res.json();
+      return fetchJson(url.toString(), 8000);
     }
 
-    async function nearbyNamedRoadsMultiRadius(lat, lon) {
-      const radii = [90, 180, 320, 500];
-      let best = [];
-      for (const radius of radii) {
-        const roads = await nearbyNamedRoads(lat, lon, radius).catch(() => []);
-        if (roads.length > best.length) best = roads;
-        if (distinctRoads(roads).length >= 2) return roads;
+    async function fetchJson(url, timeoutMs) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { headers: { "Accept": "application/json" }, signal: controller.signal });
+        if (!res.ok) throw new Error(`${new URL(url).host} answered ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
       }
-      return best;
     }
 
-    async function nearbyNamedRoads(lat, lon, radiusMeters) {
-      const query = `[out:json][timeout:10];way(around:${radiusMeters},${lat},${lon})["highway"]["name"];out tags geom;`;
-      const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
-      const res = await fetch(url, { headers: { "Accept": "application/json" } });
-      if (!res.ok) throw new Error(`Overpass lookup failed: ${res.status}`);
-      const data = await res.json();
+    // Tries each free Overpass server in turn. A server that errors or is busy gets a one-minute
+    // rest, as the main server's usage policy asks.
+    async function overpassQuery(query) {
+      const now = Date.now();
+      const servers = OVERPASS_SERVERS.filter(server => !(overpassRestUntil[server] > now));
+      if (!servers.length) throw new Error("Street servers are busy; trying again in a minute");
+      let lastError = null;
+      for (const server of servers) {
+        try {
+          const data = await fetchJson(server + "?data=" + encodeURIComponent(query), 12000);
+          if (data && data.remark && /error/i.test(data.remark)) throw new Error(data.remark);
+          return data;
+        } catch (err) {
+          lastError = err;
+          overpassRestUntil[server] = Date.now() + 60000;
+        }
+      }
+      throw lastError;
+    }
+
+    async function fetchNamedWays(lat, lon, radiusMeters) {
+      const query = `[out:json][timeout:10];way(around:${radiusMeters},${lat.toFixed(5)},${lon.toFixed(5)})["highway"]["name"];out tags geom;`;
+      const data = await overpassQuery(query);
+      return data.elements || [];
+    }
+
+    // Fetches named roads within 300 m (600 m where roads are sparse) and reuses them until you
+    // move ~150 m away, so a walking route needs a new lookup only every block or two.
+    async function nearbyNamedRoadsMultiRadius(lat, lon) {
+      let roads = [];
+      for (const radius of [300, 600]) {
+        const cacheCovers = roadCache && roadCache.radius >= radius &&
+          calculateDistance(lat, lon, roadCache.lat, roadCache.lon) <= roadCache.radius - 150;
+        if (!cacheCovers) roadCache = { lat, lon, radius, ways: await fetchNamedWays(lat, lon, radius) };
+        roads = rankNamedRoads(lat, lon, roadCache.ways);
+        if (distinctRoads(roads).length >= 2) break;
+      }
+      return roads;
+    }
+
+    function rankNamedRoads(lat, lon, ways) {
       const byName = new Map();
-      for (const el of data.elements || []) {
+      for (const el of ways) {
         if (!el.tags || !el.tags.name || !Array.isArray(el.geometry)) continue;
         const name = el.tags.name;
         const roadClass = el.tags.highway || "road";
@@ -1485,7 +1766,6 @@
     }
 
     document.getElementById("addNameBtn").addEventListener("click", addName);
-    document.getElementById("demoBtn").addEventListener("click", loadCandyDemo);
     document.getElementById("toggleNamesBtn").addEventListener("click", toggleNames);
     document.getElementById("saveBtn").addEventListener("click", openFormAndLog);
     document.getElementById("clearNamesBtn").addEventListener("click", clearNames);
@@ -1501,18 +1781,34 @@
     document.getElementById("clearRouteBtn").addEventListener("click", clearRoute);
     document.getElementById("qrOverlay").addEventListener("click", e => { if (e.target.id === "qrOverlay") closeQr(); });
 
-    document.getElementById("newName").addEventListener("keydown", e => { if (e.key === "Enter") addName(); });
     document.getElementById("saveUserBtn").addEventListener("click", saveUserName);
     document.getElementById("changeUserBtn").addEventListener("click", changeUserName);
     document.getElementById("userNameInput").addEventListener("keydown", e => { if (e.key === "Enter") saveUserName(); });
 
     streetInput.addEventListener("input", () => {
       streetWasAuto = false;
-      localStorage.setItem(LAST_STREET_KEY, streetInput.value.trim());
+      saveLastStreet(streetInput.value.trim());
       renderLocationTitle();
     });
 
     document.querySelectorAll(".chip").forEach(btn => { btn.addEventListener("click", () => toggleAction(btn.dataset.action)); });
+
+    // If the map library didn't arrive from unpkg (down, or blocked on this network), fetch the backup copy now
+    // so it is ready by the time the map is opened.
+    if (typeof L === "undefined") {
+      loadAsset("link", { rel: "stylesheet", href: CDNS[1] + LEAFLET_CSS }).catch(() => {});
+      loadAsset("script", { src: CDNS[1] + LEAFLET_JS }).catch(() => {});
+    }
+
+    // 24-hour wipe: on open, every minute, and when the app comes back on screen
+    // (phones pause timers while the browser is in the background).
+    wipeExpired();
+    if (!appStorage.persistent) {
+      document.querySelector(".wipeNote").textContent = "This view can't save: names and notes last only until it closes. Open the app from its web link to keep them for 24 h.";
+    }
+    setInterval(wipeAndRefresh, 60 * 1000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") wipeAndRefresh(); });
+    window.addEventListener("pageshow", wipeAndRefresh);
 
     loadUserName();
     loadLastStreet();
