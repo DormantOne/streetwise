@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light only" />
   <title>Street Memory</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -552,6 +553,51 @@
       .chip { min-height: 44px; font-size: 1.35rem; border-radius: 15px; }
       button { font-size: .94rem; }
       #map, #map.active { height: 190px !important; min-height: 190px !important; }
+    }
+  </style>
+  <style>
+    /* ===== Mobile & cross-device fixes (layout only, app behavior unchanged) ===== */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    /* The frosted blur behind each card is invisible on this smooth background but makes
+       scrolling heavy (and sometimes flickery) on Android, so cards skip it. */
+    .card { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .qrOverlay { -webkit-backdrop-filter: blur(10px); }
+
+    /* header: clear of notches, readable white text, finger-sized buttons */
+    .banner { padding: calc(6px + env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 6px max(10px, env(safe-area-inset-left)); }
+    .banner span { min-width: 0; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(36,36,58,.35); }
+    .bannerDemoBtn { height: 44px; min-height: 44px; padding: 0 14px; background: rgba(36,36,58,.30); text-shadow: 0 1px 2px rgba(36,36,58,.4); }
+    .qrBtn { height: 44px; min-height: 44px; width: 54px; min-width: 54px; }
+    .demoToast { top: calc(64px + env(safe-area-inset-top)); }
+    .app { padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+
+    /* every tappable control at least 44px */
+    .tinyBtn { min-height: 44px; padding: 10px 14px; }
+    .ghostBtn { min-height: 44px; }
+    .userShown { min-height: 44px; }
+    .removeNameBtn { height: 44px; min-height: 44px; min-width: 44px; }
+    .deleteNoteBtn { position: relative; height: 34px; min-height: 34px; min-width: 34px; }
+    .deleteNoteBtn::after { content: ""; position: absolute; inset: -6px; } /* 46px tap area */
+    button, a { touch-action: manipulation; }
+
+    /* long names / streets wrap instead of pushing things off screen */
+    .historyTop > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+    .did { overflow-wrap: anywhere; }
+    input:focus, textarea:focus { box-shadow: inset 0 0 0 2px var(--lav); }
+    button:focus-visible { outline: 3px solid var(--lav); outline-offset: 2px; }
+
+    /* QR popup scrolls instead of being cut off on short / landscape screens */
+    .qrOverlay {
+      align-items: flex-start; overflow-y: auto; overscroll-behavior: contain;
+      padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    }
+    .qrCard { margin: auto; }
+    /* Safari: keep the map's rounded corners clipping the map tiles */
+    #map { isolation: isolate; }
+
+    @media (prefers-reduced-motion: reduce) {
+      button, .demoToast { transition: none; }
+      button:active { transform: none; }
     }
   </style>
 </head>
